@@ -70,24 +70,24 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
   return (
     <div style={{minHeight:"100vh",position:"relative",display:"flex",flexDirection:"column" as const,
       alignItems:"center",justifyContent:"center",padding:"20px 16px",
-      background:"hsl(195,60%,5%)"}}>
+      background:"hsl(220,62%,5%)"}}>
       <CyberBackground/>
 
       {/* Logo — top left */}
       <div style={{position:"fixed",top:22,left:20,zIndex:20,display:"flex",alignItems:"center",gap:10}}>
         <div style={{width:34,height:34,borderRadius:10,
-          background:"linear-gradient(135deg,hsl(185,100%,40%),hsl(200,100%,52%))",
+          background:"linear-gradient(135deg,hsl(218,100%,48%),hsl(230,100%,62%))",
           display:"flex",alignItems:"center",justifyContent:"center",
-          boxShadow:"0 4px 20px rgba(0,220,200,0.35)"}}>
+          boxShadow:"0 4px 20px rgba(60,160,255,0.35)"}}>
           <Shield style={{width:16,height:16,color:"white"}}/>
         </div>
         <div>
           <div style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:800,
-            letterSpacing:"0.06em",color:"rgba(220,255,252,0.96)"}}>
+            letterSpacing:"0.06em",color:"rgba(210,235,255,0.96)"}}>
             Nexus<span style={{color:"hsl(185,100%,55%)",marginLeft:4}}>BIMS</span>
           </div>
           <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,
-            color:"rgba(0,200,185,0.4)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
+            color:"rgba(50,145,255,0.4)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
         </div>
       </div>
 
@@ -96,11 +96,11 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
         style={{position:"fixed",top:22,right:20,zIndex:20,
           display:"flex",alignItems:"center",gap:5,padding:"6px 13px",
           borderRadius:99,cursor:"pointer",
-          background:"rgba(0,220,200,0.07)",border:"1px solid rgba(0,220,200,0.2)",
+          background:"rgba(50,140,255,0.07)",border:"1px solid rgba(50,140,255,0.2)",
           fontFamily:"'Outfit',sans-serif",fontSize:11.5,fontWeight:500,
-          color:"rgba(0,230,210,0.65)",transition:"all .18s"}}
-        onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,220,200,0.14)";e.currentTarget.style.color="rgba(0,240,220,0.9)";}}
-        onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,220,200,0.07)";e.currentTarget.style.color="rgba(0,230,210,0.65)";}}>
+          color:"rgba(60,165,255,0.65)",transition:"all .18s"}}
+        onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,140,255,0.14)";e.currentTarget.style.color="rgba(0,240,220,0.9)";}}
+        onMouseLeave={e=>{e.currentTarget.style.background="rgba(50,140,255,0.07)";e.currentTarget.style.color="rgba(60,165,255,0.65)";}}>
         <Headphones style={{width:12,height:12}}/> Support
       </button>
 
@@ -111,11 +111,11 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
           transition={{duration:0.45,ease:[0.16,1,0.3,1]}}
           style={{
             padding:"32px 28px 26px",
-            background:"linear-gradient(160deg,rgba(0,20,30,0.94),rgba(0,12,22,0.97))",
-            border:"1px solid rgba(0,200,185,0.18)",
-            borderTop:"2px solid rgba(0,220,200,0.5)",
+            background:"linear-gradient(160deg,rgba(4,12,38,0.94),rgba(4,10,30,0.97))",
+            border:"1px solid rgba(50,145,255,0.18)",
+            borderTop:"2px solid rgba(60,165,255,0.5)",
             borderRadius:20,
-            boxShadow:"0 0 80px rgba(0,0,0,0.85),0 0 40px rgba(0,180,170,0.08),inset 0 1px 0 rgba(0,220,200,0.08)",
+            boxShadow:"0 0 80px rgba(0,0,0,0.85),0 0 40px rgba(0,180,170,0.08),inset 0 1px 0 rgba(50,140,255,0.08)",
             backdropFilter:"blur(30px)",
           }}>
           {children}
@@ -205,7 +205,7 @@ const LoginScreen = () => {
   const isError   = fpState === "not_in_db" || fpState === "no_users";
 
   /* Teal color system matching the background */
-  const fpColor  = isError ? "hsl(0,85%,62%)" : isPreview ? "hsl(175,100%,52%)" : isActive ? "hsl(185,100%,58%)" : "hsl(185,80%,45%)";
+  const fpColor  = isError ? "hsl(0,85%,62%)" : isPreview ? "hsl(175,100%,52%)" : isActive ? "hsl(218,100%,62%)" : "hsl(218,80%,52%)";
   const glowCol  = isError ? "rgba(220,60,60,0.6)" : isActive||isPreview ? "rgba(0,225,210,0.55)" : "rgba(0,180,170,0.3)";
   const borderCol= isError ? "rgba(220,60,60,0.5)"  : isActive ? "rgba(0,225,210,0.7)"  : isPreview ? "rgba(0,220,200,0.65)" : "rgba(0,180,170,0.22)";
 
@@ -226,21 +226,21 @@ const LoginScreen = () => {
         {/* Animated icon */}
         <motion.div
           animate={{boxShadow:[
-            "0 0 24px rgba(0,220,200,0.3)",
-            "0 0 48px rgba(0,220,200,0.55)",
-            "0 0 24px rgba(0,220,200,0.3)",
+            "0 0 24px rgba(55,155,255,0.3)",
+            "0 0 48px rgba(60,165,255,0.55)",
+            "0 0 24px rgba(55,155,255,0.3)",
           ]}}
           transition={{duration:2.8,repeat:Infinity,ease:"easeInOut"}}
           style={{width:62,height:62,borderRadius:18,margin:"0 auto 14px",
             background:"linear-gradient(135deg,rgba(0,180,165,0.2),rgba(0,100,120,0.15))",
-            border:"1.5px solid rgba(0,220,200,0.35)",
+            border:"1.5px solid rgba(60,160,255,0.35)",
             display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <Fingerprint style={{width:30,height:30,color:"hsl(185,100%,58%)",
-            filter:"drop-shadow(0 0 10px rgba(0,220,200,0.8))"}}/>
+          <Fingerprint style={{width:30,height:30,color:"hsl(218,100%,62%)",
+            filter:"drop-shadow(0 0 10px rgba(70,175,255,0.85))"}}/>
         </motion.div>
         <h1 style={{fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800,
-          letterSpacing:"0.1em",color:"rgba(220,255,252,0.98)",margin:"0 0 4px",
-          textShadow:"0 0 30px rgba(0,220,200,0.3)"}}>
+          letterSpacing:"0.1em",color:"rgba(210,235,255,0.98)",margin:"0 0 4px",
+          textShadow:"0 0 30px rgba(55,155,255,0.3)"}}>
           BIMS
         </h1>
         <p style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,letterSpacing:"0.18em",
@@ -251,10 +251,10 @@ const LoginScreen = () => {
 
       {/* ── SCANNER SECTION ── */}
       <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"center",marginBottom:16}}>
-        <div style={{height:1,flex:1,background:"linear-gradient(90deg,transparent,rgba(0,200,185,0.25))"}}/>
+        <div style={{height:1,flex:1,background:"linear-gradient(90deg,transparent,rgba(55,155,255,0.25))"}}/>
         <span style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"0.14em",
           color:"rgba(0,200,185,0.38)",textTransform:"uppercase" as const}}>Biometric Authentication</span>
-        <div style={{height:1,flex:1,background:"linear-gradient(90deg,rgba(0,200,185,0.25),transparent)"}}/>
+        <div style={{height:1,flex:1,background:"linear-gradient(90deg,rgba(55,155,255,0.25),transparent)"}}/>
       </div>
 
       <AnimatePresence mode="wait">
@@ -266,11 +266,11 @@ const LoginScreen = () => {
             <motion.div key={fpState} initial={{opacity:0,y:-6}} animate={{opacity:1,y:0}}
               style={{marginBottom:16,display:"flex",alignItems:"center",gap:8,
                 padding:"6px 16px",borderRadius:99,backdropFilter:"blur(12px)",
-                background:isError?"rgba(180,20,20,0.1)":isActive?"rgba(0,180,170,0.1)":"rgba(0,120,115,0.07)",
-                border:`1px solid ${isError?"rgba(200,40,40,0.35)":isActive?"rgba(0,220,200,0.45)":"rgba(0,160,155,0.2)"}`}}>
+                background:isError?"rgba(180,20,20,0.1)":isActive?"rgba(40,120,240,0.1)":"rgba(0,120,115,0.07)",
+                border:`1px solid ${isError?"rgba(200,40,40,0.35)":isActive?"rgba(60,165,255,0.45)":"rgba(0,160,155,0.2)"}`}}>
               <motion.div animate={{opacity:[1,0.15,1]}} transition={{duration:1.4,repeat:Infinity}}
                 style={{width:5,height:5,borderRadius:"50%",flexShrink:0,
-                  background:isError?"hsl(0,80%,62%)":isActive?"hsl(185,100%,62%)":"hsl(185,80%,52%)",
+                  background:isError?"hsl(0,80%,62%)":isActive?"hsl(218,100%,66%)":"hsl(185,80%,52%)",
                   boxShadow:"0 0 8px currentColor"}}/>
               <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"0.06em",
                 color:isError?"hsl(0,80%,68%)":isActive?"hsl(185,100%,72%)":"hsl(185,70%,58%)"}}>
@@ -367,9 +367,9 @@ const LoginScreen = () => {
                   display:"flex",alignItems:"center",justifyContent:"center",gap:10,
                   fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:700,
                   letterSpacing:"0.08em",cursor:"pointer",
-                  background:"linear-gradient(135deg,hsl(185,100%,38%),hsl(195,100%,48%))",
+                  background:"linear-gradient(135deg,hsl(218,100%,46%),hsl(225,100%,58%))",
                   border:"0",color:"hsl(185,80%,5%)",
-                  boxShadow:"0 6px 30px rgba(0,220,200,0.45),0 0 0 1px rgba(0,220,200,0.2),inset 0 1px 0 rgba(255,255,255,0.2)",
+                  boxShadow:"0 6px 30px rgba(60,165,255,0.45),0 0 0 1px rgba(50,140,255,0.2),inset 0 1px 0 rgba(255,255,255,0.2)",
                   marginBottom:6,position:"relative" as const}}>
                 <motion.span style={{position:"absolute" as const,inset:0,
                   background:"linear-gradient(110deg,transparent 20%,rgba(255,255,255,0.14) 50%,transparent 80%)"}}
@@ -389,64 +389,64 @@ const LoginScreen = () => {
               <div style={{display:"flex",flexDirection:"column" as const,alignItems:"center",gap:10,padding:"16px 0"}}>
                 <motion.div animate={{scale:[1,1.12,1]}} transition={{duration:0.8,repeat:Infinity}}
                   style={{width:44,height:44,borderRadius:"50%",
-                    background:"rgba(0,200,185,0.12)",border:"1px solid rgba(0,220,200,0.45)",
+                    background:"rgba(50,145,255,0.12)",border:"1px solid rgba(60,165,255,0.45)",
                     display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <CheckCircle style={{width:22,height:22,color:"hsl(185,100%,58%)"}}/>
+                  <CheckCircle style={{width:22,height:22,color:"hsl(218,100%,62%)"}}/>
                 </motion.div>
                 <p style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:"0.1em",
-                  textTransform:"uppercase" as const,color:"rgba(0,220,200,0.85)"}}>Granting Access…</p>
+                  textTransform:"uppercase" as const,color:"rgba(80,185,255,0.9)"}}>Granting Access…</p>
               </div>
             ) : (
               <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
                 style={{borderRadius:14,overflow:"hidden",
-                  border:"1px solid rgba(0,200,185,0.35)",
-                  background:"rgba(0,18,25,0.96)",
-                  boxShadow:"0 0 40px rgba(0,200,185,0.14)"}}>
+                  border:"1px solid rgba(55,155,255,0.35)",
+                  background:"rgba(4,12,32,0.96)",
+                  boxShadow:"0 0 40px rgba(50,145,255,0.14)"}}>
                 {/* Header strip */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
                   padding:"8px 14px",
-                  background:"rgba(0,200,185,0.07)",
-                  borderBottom:"1px solid rgba(0,200,185,0.15)"}}>
+                  background:"rgba(50,140,255,0.07)",
+                  borderBottom:"1px solid rgba(50,145,255,0.15)"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <motion.div animate={{opacity:[1,0.3,1]}} transition={{duration:1,repeat:Infinity}}
                       style={{width:7,height:7,borderRadius:"50%",
-                        background:"hsl(175,100%,55%)",boxShadow:"0 0 8px rgba(0,220,200,0.8)"}}/>
+                        background:"hsl(210,100%,62%)",boxShadow:"0 0 8px rgba(70,175,255,0.85)"}}/>
                     <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:700,
-                      letterSpacing:"0.16em",color:"rgba(0,220,200,0.85)",textTransform:"uppercase" as const}}>
+                      letterSpacing:"0.16em",color:"rgba(80,185,255,0.9)",textTransform:"uppercase" as const}}>
                       Identity Confirmed — Access In {countdown}s
                     </span>
                   </div>
                   <span style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:800,
-                    color:"hsl(185,100%,62%)"}}>{countdown}</span>
+                    color:"hsl(218,100%,66%)"}}>{countdown}</span>
                 </div>
                 {/* Profile */}
                 <div style={{display:"flex",gap:14,padding:"14px"}}>
                   {matchRecord.photo
-                    ? <img src={matchRecord.photo} alt="" style={{width:70,height:70,borderRadius:10,objectFit:"cover" as const,border:"1px solid rgba(0,200,185,0.35)",flexShrink:0}}/>
+                    ? <img src={matchRecord.photo} alt="" style={{width:70,height:70,borderRadius:10,objectFit:"cover" as const,border:"1px solid rgba(55,155,255,0.35)",flexShrink:0}}/>
                     : <div style={{width:70,height:70,borderRadius:10,
-                        background:"rgba(0,180,170,0.1)",border:"1px solid rgba(0,200,185,0.3)",
+                        background:"rgba(40,120,240,0.1)",border:"1px solid rgba(0,200,185,0.3)",
                         display:"flex",alignItems:"center",justifyContent:"center",
-                        fontSize:26,fontWeight:800,color:"hsl(185,100%,62%)",flexShrink:0}}>
+                        fontSize:26,fontWeight:800,color:"hsl(218,100%,66%)",flexShrink:0}}>
                         {matchUser.fullName.charAt(0).toUpperCase()}
                       </div>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontFamily:"'Syne',sans-serif",fontSize:16,fontWeight:700,
-                      color:"rgba(210,248,245,0.98)",marginBottom:6}}>{matchUser.fullName}</div>
+                      color:"rgba(210,238,255,0.98)",marginBottom:6}}>{matchUser.fullName}</div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 14px",marginBottom:10}}>
                       {[["ID",matchRecord.id],["ROLE",ROLE_LABELS[matchUser.role]],
                         ["USERNAME",`@${matchUser.username}`],["NATIONALITY",matchRecord.nationality||"—"]].map(([l,v])=>(
                         <div key={l}>
                           <div style={{fontFamily:"'DM Mono',monospace",fontSize:7,fontWeight:700,
-                            letterSpacing:"0.14em",color:"rgba(0,180,165,0.38)",textTransform:"uppercase" as const}}>{l}</div>
+                            letterSpacing:"0.14em",color:"rgba(50,140,255,0.38)",textTransform:"uppercase" as const}}>{l}</div>
                           <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,
-                            color:"rgba(190,242,238,0.85)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{v}</div>
+                            color:"rgba(185,225,255,0.88)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{v}</div>
                         </div>
                       ))}
                     </div>
                     {/* Progress bar */}
-                    <div style={{height:3,borderRadius:2,background:"rgba(0,180,170,0.12)",overflow:"hidden"}}>
+                    <div style={{height:3,borderRadius:2,background:"rgba(50,140,255,0.12)",overflow:"hidden"}}>
                       <motion.div style={{height:"100%",
-                        background:"linear-gradient(90deg,hsl(185,100%,48%),hsl(195,100%,58%))",originX:0}}
+                        background:"linear-gradient(90deg,hsl(218,100%,55%),hsl(225,100%,65%))",originX:0}}
                         animate={{width:`${((2-countdown)/2)*100}%`}}
                         transition={{duration:1,ease:"linear"}}/>
                     </div>
@@ -454,9 +454,9 @@ const LoginScreen = () => {
                       <button onClick={resetScan}
                         style={{background:"none",border:"none",cursor:"pointer",
                           fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"0.14em",
-                          color:"rgba(0,180,165,0.35)",transition:"color .15s"}}
+                          color:"rgba(50,140,255,0.35)",transition:"color .15s"}}
                         onMouseEnter={e=>e.currentTarget.style.color="rgba(0,220,200,0.72)"}
-                        onMouseLeave={e=>e.currentTarget.style.color="rgba(0,180,165,0.35)"}>
+                        onMouseLeave={e=>e.currentTarget.style.color="rgba(50,140,255,0.35)"}>
                         NOT ME — CANCEL
                       </button>
                     </div>
@@ -474,9 +474,9 @@ const LoginScreen = () => {
           style={{display:"flex",alignItems:"center",gap:6,margin:"0 auto",cursor:"pointer",
             background:"none",border:"none",padding:0,
             fontFamily:"'Outfit',sans-serif",fontSize:11,fontWeight:500,
-            letterSpacing:"0.04em",color:"rgba(0,180,165,0.38)",transition:"color .15s"}}
+            letterSpacing:"0.04em",color:"rgba(50,140,255,0.38)",transition:"color .15s"}}
           onMouseEnter={e=>(e.currentTarget.style.color="rgba(0,220,200,0.7)")}
-          onMouseLeave={e=>(e.currentTarget.style.color="rgba(0,180,165,0.38)")}>
+          onMouseLeave={e=>(e.currentTarget.style.color="rgba(50,140,255,0.38)")}>
           {showManual?<ChevronUp style={{width:12,height:12}}/>:<ChevronDown style={{width:12,height:12}}/>}
           Manual login (admin / owner)
         </button>
@@ -491,26 +491,26 @@ const LoginScreen = () => {
                 {manualPreview && (
                   <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0}}
                     style={{marginBottom:14,padding:"12px 14px",borderRadius:12,
-                      background:"rgba(0,180,170,0.08)",border:"1px solid rgba(0,200,185,0.25)"}}>
+                      background:"rgba(0,180,170,0.08)",border:"1px solid rgba(55,155,255,0.25)"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       {manualPreview.rec.photo
                         ? <img src={manualPreview.rec.photo} alt="" style={{width:44,height:44,borderRadius:8,objectFit:"cover" as const,border:"1px solid rgba(0,200,185,0.3)",flexShrink:0}}/>
                         : <div style={{width:44,height:44,borderRadius:8,
-                            background:"rgba(0,180,170,0.12)",border:"1px solid rgba(0,200,185,0.28)",
+                            background:"rgba(50,140,255,0.12)",border:"1px solid rgba(55,155,255,0.28)",
                             display:"flex",alignItems:"center",justifyContent:"center",
-                            fontSize:18,fontWeight:800,color:"hsl(185,100%,62%)",flexShrink:0}}>
+                            fontSize:18,fontWeight:800,color:"hsl(218,100%,66%)",flexShrink:0}}>
                             {manualPreview.user.fullName.charAt(0).toUpperCase()}
                           </div>}
                       <div>
                         <div style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:700,
-                          color:"rgba(200,245,242,0.95)"}}>{manualPreview.user.fullName}</div>
+                          color:"rgba(200,235,255,0.95)"}}>{manualPreview.user.fullName}</div>
                         <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,
-                          color:"rgba(0,200,185,0.55)"}}>{ROLE_LABELS[manualPreview.user.role]} · @{manualPreview.user.username}</div>
+                          color:"rgba(55,155,255,0.55)"}}>{ROLE_LABELS[manualPreview.user.role]} · @{manualPreview.user.username}</div>
                       </div>
                     </div>
-                    <div style={{marginTop:8,height:2,borderRadius:2,background:"rgba(0,180,170,0.12)",overflow:"hidden"}}>
+                    <div style={{marginTop:8,height:2,borderRadius:2,background:"rgba(50,140,255,0.12)",overflow:"hidden"}}>
                       <motion.div style={{height:"100%",
-                        background:"linear-gradient(90deg,hsl(185,100%,48%),hsl(195,100%,58%))",originX:0}}
+                        background:"linear-gradient(90deg,hsl(218,100%,55%),hsl(225,100%,65%))",originX:0}}
                         animate={{width:"100%"}} transition={{duration:1.1,ease:"linear"}}/>
                     </div>
                   </motion.div>
@@ -546,8 +546,8 @@ const LoginScreen = () => {
                       fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,
                       letterSpacing:"0.06em",
                       background:"linear-gradient(135deg,rgba(0,180,170,0.18),rgba(0,120,115,0.12))",
-                      border:"1.5px solid rgba(0,200,185,0.4)",
-                      color:"hsl(185,100%,70%)",transition:"all .18s"}}>
+                      border:"1.5px solid rgba(50,145,255,0.4)",
+                      color:"hsl(218,100%,72%)",transition:"all .18s"}}>
                     <Shield style={{width:14,height:14,flexShrink:0}}/>
                     Verify Identity
                   </motion.button>

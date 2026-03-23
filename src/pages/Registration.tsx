@@ -117,29 +117,31 @@ const DateInput = ({value, onChange, style}:{value:string;onChange:(v:string)=>v
 
 /* ── Shared field wrapper ── */
 const F=({label,children,required}:{label:string;children:React.ReactNode;required?:boolean})=>(
-  <div style={{display:"flex",flexDirection:"column" as const,gap:3}}>
-    <label style={{fontFamily:"'Inter',sans-serif",fontSize:8,fontWeight:700,
-      letterSpacing:"0.14em",textTransform:"uppercase" as const,
-      color:"rgba(0,160,200,0.42)"}}>
-      {label}{required&&<span style={{color:"rgba(220,60,60,0.8)",marginLeft:3}}>*</span>}
+  <div style={{display:"flex",flexDirection:"column" as const,gap:4}}>
+    <label style={{fontFamily:"'Syne',system-ui,sans-serif",fontSize:9.5,fontWeight:700,
+      letterSpacing:"0.12em",textTransform:"uppercase" as const,
+      color:"rgba(80,190,255,0.82)"}}>
+      {label}{required&&<span style={{color:"rgba(255,80,80,0.9)",marginLeft:3}}>*</span>}
     </label>
     {children}
   </div>
 );
 
 const SectionHeader=({icon:Icon,title}:{icon:any;title:string})=>(
-  <div style={{display:"flex",alignItems:"center",gap:8,paddingBottom:10,marginBottom:14,
-    borderBottom:"1px solid rgba(0,160,200,0.12)"}}>
-    <div style={{width:26,height:26,borderRadius:3,
-      background:"rgba(0,120,180,0.1)",border:"1px solid rgba(0,160,200,0.2)",
-      display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <Icon style={{width:12,height:12,color:"rgba(0,200,240,0.7)"}}/>
+  <div style={{display:"flex",alignItems:"center",gap:10,paddingBottom:12,marginBottom:16,
+    borderBottom:"1px solid rgba(50,140,255,0.18)"}}>
+    <div style={{width:32,height:32,borderRadius:9,
+      background:"linear-gradient(135deg,rgba(40,120,255,0.22),rgba(20,80,200,0.14))",
+      border:"1px solid rgba(70,160,255,0.4)",
+      display:"flex",alignItems:"center",justifyContent:"center",
+      boxShadow:"0 0 12px rgba(60,140,255,0.2)"}}>
+      <Icon style={{width:14,height:14,color:"rgba(100,190,255,0.95)"}}/> 
     </div>
-    <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:700,
-      letterSpacing:"0.1em",color:"rgba(200,225,255,0.88)",margin:0,textTransform:"uppercase"}}>{title}</h2>
+    <h2 style={{fontFamily:"'Syne',system-ui,sans-serif",fontSize:13,fontWeight:800,
+      letterSpacing:"0.08em",color:"rgba(180,225,255,0.98)",margin:0,textTransform:"uppercase" as const,
+      textShadow:"0 0 18px rgba(80,160,255,0.35)"}}>{title}</h2>
   </div>
 );
-
 const ToggleStyle=(active:boolean,hue=185)=>({
   fontSize:"0.8rem",fontWeight:700,
   border:      active?`2px solid hsl(${hue},100%,55%)`:`1.5px solid hsla(${hue},70%,55%,0.38)`,
@@ -1015,7 +1017,7 @@ const Registration = () => {
           </div>
           <div>
             <span className="font-display text-base font-bold tracking-wider text-foreground block leading-tight">NEW REGISTRATION</span>
-            <span className="font-mono text-[10px] tracking-widest" style={{color:"hsla(192,100%,62%,0.55)"}}>STEP {step+1} OF {STEPS.length} — {STEPS[step].label.toUpperCase()}</span>
+            <span className="font-mono text-[10px] tracking-widest" style={{color:"rgba(100,185,255,0.78)",fontFamily:"'DM Mono',monospace"}}> STEP {step+1} OF {STEPS.length} — {STEPS[step].label.toUpperCase()}</span>
           </div>
         </div>
         <span className="font-mono text-[10px] hidden md:block" style={{color:"hsla(192,100%,62%,0.4)"}}>CIVIL_REGISTRATION_v3</span>
@@ -1031,16 +1033,18 @@ const Registration = () => {
                 <button onClick={()=>i<step&&setStep(i)}
                   style={{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:2,flexShrink:0,fontFamily:"'Inter',sans-serif",fontSize:8.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase" as const,transition:"all 0.15s"}}
                   style={{
-                    background:active?"hsla(192,100%,55%,0.18)":done?"hsla(140,80%,45%,0.12)":"hsla(38,30%,15%,0.4)",
-                    border:active?"1.5px solid hsla(192,100%,55%,0.55)":done?"1.5px solid hsla(140,80%,45%,0.4)":"1.5px solid hsla(38,40%,22%,0.35)",
-                    color:active?"hsl(38,90%,75%)":done?"hsl(210,100%,65%)":"hsla(38,50%,50%,0.5)",
+                    background:active?"rgba(50,130,255,0.22)":done?"rgba(30,180,120,0.12)":"rgba(255,255,255,0.04)",
+                    border:active?"1.5px solid rgba(80,165,255,0.75)":done?"1.5px solid rgba(50,200,140,0.5)":"1.5px solid rgba(255,255,255,0.08)",
+                    color:active?"hsl(215,100%,82%)":done?"hsl(160,80%,68%)":"rgba(130,170,220,0.55)",
                     cursor:i<step?"pointer":"default",
+                    borderRadius:8,
+                    boxShadow:active?"0 0 14px rgba(70,150,255,0.28)":"none",
                   }}>
                   {done?<Check className="w-3 h-3"/>:<s.icon className="w-3 h-3"/>}
                   <span className="hidden sm:inline">{s.label}</span>
                   <span className="sm:hidden">{i+1}</span>
                 </button>
-                {i<STEPS.length-1&&<div className="w-4 h-px flex-shrink-0" style={{background:i<step?"hsla(140,80%,45%,0.4)":"hsla(38,40%,22%,0.3)"}}/>}
+                {i<STEPS.length-1&&<div className="w-4 h-px flex-shrink-0" style={{background:i<step?"rgba(50,200,140,0.45)":"rgba(255,255,255,0.07)"}}/>}
               </React.Fragment>
             );
           })}
@@ -1052,7 +1056,7 @@ const Registration = () => {
         <div style={{maxWidth:"680px",margin:"0 auto",padding:"16px 16px"}}>
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{opacity:0,x:24}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-24}} transition={{duration:0.18}}
-              className="card-surface rounded-sm" style={{padding:"16px 20px", boxShadow:"0 0 40px rgba(0,0,0,0.8)"}}>
+              className="card-surface rounded-sm" style={{padding:"18px 22px", boxShadow:"0 0 50px rgba(0,0,0,0.85),inset 0 1px 0 rgba(60,140,255,0.08)", borderColor:"rgba(40,110,255,0.2)", borderTop:"1.5px solid rgba(70,160,255,0.32)"}}>
               {stepProps[step]?.component}
             </motion.div>
           </AnimatePresence>
@@ -1076,10 +1080,10 @@ const Registration = () => {
               <button onClick={goNext}
                 className="flex items-center gap-2 px-6 py-3 rounded-xl font-display font-bold tracking-widest text-sm transition-all"
                 style={{
-                  background:"hsla(192,100%,52%,0.2)",
-                  border:"2px solid hsla(38,85%,58%,0.65)",
-                  color:"hsl(40,100%,88%)",
-                  boxShadow:"0 0 24px hsla(192,100%,55%,0.22)",
+                  background:"linear-gradient(135deg,rgba(50,130,255,0.28),rgba(30,90,220,0.18))",
+                  border:"2px solid rgba(80,170,255,0.7)",
+                  color:"hsl(215,100%,88%)",
+                  boxShadow:"0 0 28px rgba(60,150,255,0.35)",
                 }}>
                 NEXT <ChevronRight className="w-4 h-4"/>
               </button>

@@ -79,9 +79,9 @@ export default function CyberBackground() {
       } else {
         /* Fallback gradient — teal/dark matching fp_bg */
         const g = ctx.createLinearGradient(0, 0, W, H);
-        g.addColorStop(0, "hsl(190,60%,6%)");
-        g.addColorStop(0.5, "hsl(200,55%,4%)");
-        g.addColorStop(1, "hsl(195,65%,5%)");
+        g.addColorStop(0, "hsl(218,65%,5%)");
+        g.addColorStop(0.5, "hsl(225,60%,4%)");
+        g.addColorStop(1, "hsl(220,65%,4%)");
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
       }
@@ -91,11 +91,11 @@ export default function CyberBackground() {
       ctx.fillRect(0, 0, W, H);
 
       /* Teal accent overlay matching the circuit board image */
-      const teal = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.7);
-      teal.addColorStop(0, `rgba(0,220,200,${0.04 + 0.02 * Math.sin(t * 0.8)})`);
-      teal.addColorStop(0.6, "rgba(0,160,180,0.02)");
-      teal.addColorStop(1, "transparent");
-      ctx.fillStyle = teal;
+      const blueGlow = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.7);
+      blueGlow.addColorStop(0, `rgba(50,150,255,${0.04 + 0.02 * Math.sin(t * 0.8)})`);
+      blueGlow.addColorStop(0.6, "rgba(30,100,220,0.02)");
+      blueGlow.addColorStop(1, "transparent");
+      ctx.fillStyle = blueGlow;
       ctx.fillRect(0, 0, W, H);
 
       /* 3 — Floating network nodes */
@@ -122,7 +122,7 @@ export default function CyberBackground() {
             ctx.beginPath();
             ctx.moveTo(nx[i] * W, ny[i] * H);
             ctx.lineTo(nx[j] * W, ny[j] * H);
-            ctx.strokeStyle = `rgba(0,220,200,${(1 - d / 130) * 0.12})`;
+            ctx.strokeStyle = `rgba(50,150,255,${(1 - d / 130) * 0.12})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -134,11 +134,11 @@ export default function CyberBackground() {
         const x = nx[i] * W, y = ny[i] * H, r = nr[i];
         ctx.beginPath();
         ctx.arc(x, y, r * (0.85 + 0.2 * pulse), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,225,210,${(i < 6 ? 0.72 : 0.28) * pulse})`;
+        ctx.fillStyle = `rgba(55,158,255,${(i < 6 ? 0.72 : 0.28) * pulse})`;
         ctx.fill();
         if (i < 6) {
           ctx.beginPath(); ctx.arc(x, y, r * 2.4, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(0,220,200,${0.16 * pulse})`; ctx.lineWidth = 0.8; ctx.stroke();
+          ctx.strokeStyle = `rgba(50,150,255,${0.16 * pulse})`; ctx.lineWidth = 0.8; ctx.stroke();
         }
       }
 
@@ -150,14 +150,14 @@ export default function CyberBackground() {
         if (x2 > x1) {
           const g = ctx.createLinearGradient(x1, y, x2, y);
           g.addColorStop(0, "transparent");
-          g.addColorStop(0.7, `rgba(0,230,210,${b.a * 0.35})`);
-          g.addColorStop(1, `rgba(0,255,230,${b.a * 0.7})`);
+          g.addColorStop(0.7, `rgba(60,165,255,${b.a * 0.35})`);
+          g.addColorStop(1, `rgba(80,190,255,${b.a * 0.7})`);
           ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y);
           ctx.strokeStyle = g; ctx.lineWidth = 1.2; ctx.stroke();
           /* bright head dot */
-          ctx.save(); ctx.shadowBlur = 8; ctx.shadowColor = "rgba(0,240,220,0.9)";
+          ctx.save(); ctx.shadowBlur = 8; ctx.shadowColor = "rgba(80,195,255,0.92)";
           ctx.beginPath(); ctx.arc(x2, y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0,255,230,${b.a * 0.9})`; ctx.fill(); ctx.restore();
+          ctx.fillStyle = `rgba(80,190,255,${b.a * 0.9})`; ctx.fill(); ctx.restore();
         }
       }
 
@@ -165,8 +165,8 @@ export default function CyberBackground() {
       if (M.x >= 0) {
         const R = 170;
         const mg = ctx.createRadialGradient(M.x, M.y, 0, M.x, M.y, R);
-        mg.addColorStop(0, `rgba(0,220,200,${0.10 + 0.04 * Math.sin(t * 3)})`);
-        mg.addColorStop(0.5, "rgba(0,180,170,0.03)");
+        mg.addColorStop(0, `rgba(50,150,255,${0.10 + 0.04 * Math.sin(t * 3)})`);
+        mg.addColorStop(0.5, "rgba(30,100,220,0.04)");
         mg.addColorStop(1, "transparent");
         ctx.fillStyle = mg;
         ctx.beginPath(); ctx.arc(M.x, M.y, R, 0, Math.PI * 2); ctx.fill();
@@ -180,7 +180,7 @@ export default function CyberBackground() {
         ctx.beginPath();
         ctx.moveTo(TRAIL[i - 1].x, TRAIL[i - 1].y);
         ctx.lineTo(TRAIL[i].x, TRAIL[i].y);
-        ctx.strokeStyle = `rgba(0,230,210,${(1 - age) * 0.45})`;
+        ctx.strokeStyle = `rgba(60,165,255,${(1 - age) * 0.45})`;
         ctx.lineWidth = (1 - age) * 2;
         ctx.stroke();
       }
@@ -194,7 +194,7 @@ export default function CyberBackground() {
       for (let i = RINGS.length - 1; i >= 0; i--) {
         const rp = RINGS[i]; rp.r += 3.2; rp.a *= 0.90;
         ctx.save();
-        ctx.shadowBlur = 10; ctx.shadowColor = `rgba(0,230,210,0.8)`;
+        ctx.shadowBlur = 10; ctx.shadowColor = `rgba(60,170,255,0.85)`;
         ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
         ctx.strokeStyle = `hsla(${rp.hue},100%,70%,${rp.a})`;
         ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
@@ -206,14 +206,14 @@ export default function CyberBackground() {
         if (d.life >= d.ml) { DOTS.splice(i, 1); continue; }
         const p = d.life / d.ml, a = p < 0.2 ? p / 0.2 : 1 - (p - 0.2) / 0.8;
         ctx.beginPath(); ctx.arc(d.x, d.y, 2.5 * (1 - p * 0.5), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,230,210,${Math.max(0, a) * 0.88})`; ctx.fill();
+        ctx.fillStyle = `rgba(60,165,255,${Math.max(0, a) * 0.88})`; ctx.fill();
       }
 
       /* 8 — Subtle scanning horizontal line that slowly moves */
       const scanY = ((t * 0.035) % 1) * H;
       const scanG = ctx.createLinearGradient(0, scanY - 1, 0, scanY + 1);
       scanG.addColorStop(0, "transparent");
-      scanG.addColorStop(0.5, `rgba(0,230,210,0.035)`);
+      scanG.addColorStop(0.5, `rgba(60,165,255,0.04)`);
       scanG.addColorStop(1, "transparent");
       ctx.fillStyle = scanG; ctx.fillRect(0, scanY - 1, W, 2);
 
@@ -226,7 +226,7 @@ export default function CyberBackground() {
       raf = requestAnimationFrame(draw);
     }
 
-    ctx.fillStyle = "hsl(195,60%,5%)";
+    ctx.fillStyle = "hsl(220,62%,5%)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     raf = requestAnimationFrame(draw);
 

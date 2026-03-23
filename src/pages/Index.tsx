@@ -624,65 +624,115 @@ Respond ONLY with valid JSON (no markdown):
             </div>
           </div>
 
-          {/* Scanner disc */}
-          <div style={{position:"relative",flexShrink:0}}>
+          {/* Scanner — Hexagonal biometric terminal */}
+          <div style={{position:"relative",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+
+            {/* Outer ambient pulse */}
             <motion.div
-              animate={{scale:[0.88,1.1,0.88],opacity:[0.28,0.55,0.28]}}
-              transition={{duration:3.5,repeat:Infinity,ease:"easeInOut"}}
-              style={{position:"absolute",inset:-48,borderRadius:"50%",background:`radial-gradient(circle,${scanGlow} 0%,transparent 65%)`,pointerEvents:"none"}}
+              animate={{scale:[0.9,1.12,0.9],opacity:[0.25,0.5,0.25]}}
+              transition={{duration:3.8,repeat:Infinity,ease:"easeInOut"}}
+              style={{position:"absolute",inset:-50,borderRadius:"50%",
+                background:`radial-gradient(circle,${scanGlow} 0%,transparent 65%)`,
+                pointerEvents:"none"}}
             />
-            <svg style={{position:"absolute",inset:-28,overflow:"visible",pointerEvents:"none"}} viewBox="0 0 300 300" width="300" height="300">
-              <motion.circle cx="150" cy="150" r="144" fill="none"
-                stroke={scanColor} strokeWidth="1.8" strokeDasharray="45 520" strokeLinecap="round"
+
+            {/* Hexagonal outer ring SVG */}
+            <svg style={{position:"absolute",width:310,height:310,pointerEvents:"none"}}
+              viewBox="0 0 310 310">
+              {/* Static hex outline */}
+              <polygon points="155,8 292,82 292,228 155,302 18,228 18,82"
+                fill="none" stroke={`${scanColor}22`} strokeWidth="1"/>
+              {/* Animated hex border */}
+              <motion.polygon points="155,8 292,82 292,228 155,302 18,228 18,82"
+                fill="none" stroke={scanColor} strokeWidth="1.5"
+                strokeDasharray="60 400"
                 style={{filter:`drop-shadow(0 0 8px ${scanGlow})`}}
-                animate={{rotate:[0,360]}}
-                transition={{duration:isScanning?1.2:4,repeat:Infinity,ease:"linear"}}
-              />
-              <motion.circle cx="150" cy="150" r="144" fill="none"
-                stroke={`${scanColor}35`} strokeWidth="0.8" strokeDasharray="9 30"
-                animate={{rotate:[360,0]}}
-                transition={{duration:7,repeat:Infinity,ease:"linear"}}
-              />
-              {Array.from({length:36}).map((_,i)=>{
-                const a=(i/36)*Math.PI*2-Math.PI/2, R=144, len=i%9===0?13:i%3===0?7:3;
-                return (
-                  <line key={i}
-                    x1={150+(R-len)*Math.cos(a)} y1={150+(R-len)*Math.sin(a)}
-                    x2={150+R*Math.cos(a)} y2={150+R*Math.sin(a)}
-                    stroke={`${scanColor}${i%9===0?"bb":i%3===0?"55":"28"}`}
-                    strokeWidth={i%9===0?1.5:0.6}
-                  />
-                );
-              })}
+                animate={{strokeDashoffset:[0,-460]}}
+                transition={{duration:isScanning?1.4:5,repeat:Infinity,ease:"linear"}}/>
+              <motion.polygon points="155,8 292,82 292,228 155,302 18,228 18,82"
+                fill="none" stroke={`${scanColor}33`} strokeWidth="0.7"
+                strokeDasharray="18 52"
+                animate={{strokeDashoffset:[0,280]}}
+                transition={{duration:8,repeat:Infinity,ease:"linear"}}/>
+              {/* Corner circuit nodes */}
+              {[[155,8],[292,82],[292,228],[155,302],[18,228],[18,82]].map(([px,py],i)=>(
+                <motion.circle key={i} cx={px} cy={py} r="4"
+                  fill={scanColor}
+                  animate={{opacity:[0.4,1,0.4],r:[3,5,3]}}
+                  transition={{duration:2,delay:i*0.35,repeat:Infinity}}
+                  style={{filter:`drop-shadow(0 0 5px ${scanGlow})`}}/>
+              ))}
+              {/* Cross-hairs */}
+              <line x1="155" y1="18" x2="155" y2="44" stroke={`${scanColor}55`} strokeWidth="1.5"/>
+              <line x1="155" y1="266" x2="155" y2="292" stroke={`${scanColor}55`} strokeWidth="1.5"/>
+              <line x1="24" y1="155" x2="50" y2="155" stroke={`${scanColor}55`} strokeWidth="1.5"/>
+              <line x1="260" y1="155" x2="286" y2="155" stroke={`${scanColor}55`} strokeWidth="1.5"/>
             </svg>
-            <div className={isScanning?"scanner-pulse":""} style={{width:242,height:242,borderRadius:"50%",
-              background:isMatch
-                ?"radial-gradient(circle at 38% 38%,hsla(158,80%,10%,0.97),hsla(158,80%,3%,0.99))"
-                :isNoMatch
-                  ?"radial-gradient(circle at 38% 38%,hsla(354,80%,10%,0.97),hsla(354,80%,3%,0.99))"
-                  :"radial-gradient(circle at 38% 38%,rgba(8,22,62,0.97),rgba(2,8,28,0.99))",
-              border:`2px solid ${scanColor}55`,
-              boxShadow:`0 0 60px ${scanGlow}22,inset 0 0 60px rgba(0,0,0,0.5)`,
-              display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:10,
-              position:"relative",overflow:"hidden",transition:"all 0.4s"}}>
-              <div style={{position:"absolute",inset:22,borderRadius:"50%",border:`1px solid ${scanColor}25`,pointerEvents:"none"}}/>
-              <div style={{position:"absolute",inset:44,borderRadius:"50%",border:`1px dashed ${scanColor}18`,pointerEvents:"none"}}/>
+
+            {/* Inner disc — main scanner body */}
+            <div
+              className={isScanning?"scanner-pulse":""}
+              style={{
+                width:234,height:234,borderRadius:"50%",
+                background:isMatch
+                  ?"radial-gradient(circle at 38% 32%,hsla(158,80%,10%,0.97),hsla(158,80%,3%,0.99))"
+                  :isNoMatch
+                    ?"radial-gradient(circle at 38% 32%,hsla(354,80%,10%,0.97),hsla(354,80%,3%,0.99))"
+                    :"radial-gradient(circle at 38% 32%,rgba(6,18,52,0.97),rgba(2,8,26,0.99))",
+                border:`2px solid ${scanColor}55`,
+                boxShadow:`0 0 70px ${scanGlow}25,0 0 120px ${scanGlow}10,inset 0 0 60px rgba(0,0,0,0.6)`,
+                display:"flex",flexDirection:"column" as const,
+                alignItems:"center",justifyContent:"center",gap:10,
+                position:"relative",overflow:"hidden",transition:"all 0.45s",
+                zIndex:1,
+              }}>
+
+              {/* Concentric rings inside disc */}
+              <div style={{position:"absolute",inset:18,borderRadius:"50%",border:`1px solid ${scanColor}20`,pointerEvents:"none"}}/>
+              <div style={{position:"absolute",inset:36,borderRadius:"50%",border:`1px dashed ${scanColor}14`,pointerEvents:"none"}}/>
+
+              {/* Radial grid lines */}
+              <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:0.12,pointerEvents:"none"}} viewBox="0 0 234 234">
+                {[0,45,90,135].map(deg=>{
+                  const r=deg*Math.PI/180;
+                  return <g key={deg}>
+                    <line x1={117} y1={117} x2={117+117*Math.cos(r)} y2={117+117*Math.sin(r)} stroke={scanColor} strokeWidth="0.6"/>
+                    <line x1={117} y1={117} x2={117-117*Math.cos(r)} y2={117-117*Math.sin(r)} stroke={scanColor} strokeWidth="0.6"/>
+                  </g>;
+                })}
+              </svg>
+
+              {/* Horizontal scan beam */}
               {isScanning && (
                 <motion.div
                   animate={{y:["-55%","155%"]}}
-                  transition={{duration:0.82,repeat:Infinity,ease:"linear"}}
-                  style={{position:"absolute",left:0,right:0,height:3,background:`linear-gradient(90deg,transparent,${scanColor}dd,transparent)`,boxShadow:`0 0 16px ${scanGlow}`}}
+                  transition={{duration:0.88,repeat:Infinity,ease:"linear"}}
+                  style={{position:"absolute",left:0,right:0,height:3,
+                    background:`linear-gradient(90deg,transparent,${scanColor}dd 30%,white 50%,${scanColor}dd 70%,transparent)`,
+                    boxShadow:`0 0 18px ${scanGlow},0 0 36px ${scanGlow}55`}}
                 />
               )}
+
+              {/* Fingerprint icon */}
               <motion.div
                 animate={isScanning?{scale:[1,1.1,1],opacity:[0.8,1,0.8]}:{scale:1,opacity:1}}
-                transition={{duration:0.82,repeat:isScanning?Infinity:0}}>
-                <Fingerprint style={{width:74,height:74,color:scanColor,filter:`drop-shadow(0 0 20px ${scanGlow})`}}/>
+                transition={{duration:0.88,repeat:isScanning?Infinity:0}}>
+                <Fingerprint style={{width:78,height:78,color:scanColor,
+                  filter:`drop-shadow(0 0 24px ${scanGlow}) drop-shadow(0 0 48px ${scanGlow}55)`}}/>
               </motion.div>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"0.25em",color:`${scanColor}80`,textTransform:"uppercase" as const}}>
+
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,
+                letterSpacing:"0.28em",color:`${scanColor}80`,textTransform:"uppercase" as const}}>
                 {isScanning?"SCANNING…":isMatch?"VERIFIED":isNoMatch?"NO MATCH":"PLACE FINGER"}
               </span>
             </div>
+
+            {/* Circuit corner accents outside disc */}
+            {[
+              {top:-8,left:"50%",transform:"translateX(-50%)",w:30,h:12,border:"2px solid",r:"0",bt:true,br:false,bl:false,bb:false},
+            ].map((_,i)=>(
+              <div key={i}/>
+            ))}
           </div>
 
           {/* Scan button */}
