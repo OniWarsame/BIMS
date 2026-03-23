@@ -312,7 +312,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
     setTimeout(() => { printWin.print(); }, 500);
   };
 
-  const mono:React.CSSProperties={fontFamily:"'Courier New',monospace"};
+  const mono:React.CSSProperties={fontFamily:"'JetBrains Mono','Courier New',monospace"};
   const back=()=>{ if(step==="categories") navigate("/"); else if(step==="templates"){setStep("categories");setSelCat(null);} else{setStep("templates");setSelTpl(null);setOutput("");} };
 
   return(
@@ -341,20 +341,57 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
           {/* ── CATEGORIES ── */}
           {step==="categories"&&(
             <motion.div key="cats" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}}>
-              <p style={{fontSize:12,color:"rgba(52,211,153,0.6)",letterSpacing:"0.1em",marginBottom:24}}>
+              <p style={{fontSize:12,color:"rgba(140,220,200,0.82)",letterSpacing:"0.1em",marginBottom:24}}>
                 Documents are generated instantly using your biometric profile — no internet required
               </p>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:16}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
                 {CATEGORIES.map((cat,i)=>(
-                  <motion.div key={cat.id} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:i*0.07}}
+                  <motion.div key={cat.id} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
                     onClick={()=>pickCategory(cat)}
-                    style={{padding:"24px 20px",borderRadius:16,background:cat.bg,border:`2px solid ${cat.border}`,cursor:"pointer",transition:"all .2s",boxShadow:`0 4px 20px ${dimBorder(cat.border,"0.15")}`}}
-                    onMouseEnter={e=>{(e.currentTarget as HTMLDivElement).style.transform="translateY(-5px)";(e.currentTarget as HTMLDivElement).style.boxShadow=`0 14px 40px ${dimBorder(cat.border,"0.35")}`;}}
-                    onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.transform="";(e.currentTarget as HTMLDivElement).style.boxShadow=`0 4px 20px ${dimBorder(cat.border,"0.15")}`;}}> 
-                    <div style={{fontSize:38,marginBottom:12}}>{cat.icon}</div>
-                    <div style={{fontSize:15,fontWeight:700,letterSpacing:"0.06em",color:cat.color,marginBottom:6}}>{cat.label}</div>
-                    <div style={{fontSize:11,color:`${cat.color}ee`,lineHeight:1.6,marginBottom:14}}>{cat.desc}</div>
-                    <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.16em",padding:"3px 10px",borderRadius:6,background:`${cat.color}28`,border:`1px solid ${cat.border}`,color:cat.color}}>{cat.templates.length} TEMPLATES</span>
+                    whileHover={{y:-5,scale:1.02}}
+                    whileTap={{scale:.98}}
+                    style={{
+                      padding:"22px 20px",
+                      borderRadius:16,
+                      background:`linear-gradient(145deg,rgba(4,16,46,0.92),rgba(2,8,30,0.94))`,
+                      border:`1px solid ${cat.border.replace("0.8","0.28")}`,
+                      borderTop:`2px solid ${cat.border.replace("0.8","0.65")}`,
+                      cursor:"pointer",
+                      transition:"border-color .22s,box-shadow .22s",
+                      boxShadow:`0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)`,
+                      backdropFilter:"blur(22px)",
+                      position:"relative" as const,overflow:"hidden",
+                    }}
+                    onMouseEnter={e=>{
+                      const el=e.currentTarget as HTMLElement;
+                      el.style.boxShadow=`0 12px 40px rgba(0,0,0,0.5),0 0 30px ${cat.border.replace("0.8","0.18")},inset 0 1px 0 rgba(255,255,255,0.09)`;
+                    }}
+                    onMouseLeave={e=>{
+                      const el=e.currentTarget as HTMLElement;
+                      el.style.boxShadow=`0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)`;
+                    }}>
+                    {/* Background glow accent */}
+                    <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle,${cat.bg},transparent 70%)`,pointerEvents:"none"}}/>
+                    {/* Circuit dots */}
+                    <div style={{position:"absolute",inset:0,opacity:.07,backgroundImage:`radial-gradient(circle,${cat.color} 1px,transparent 1px)`,backgroundSize:"16px 16px",pointerEvents:"none"}}/>
+                    {/* Icon in security frame */}
+                    <div style={{
+                      width:52,height:52,borderRadius:14,
+                      background:`${cat.bg}`,
+                      border:`1.5px solid ${cat.border.replace("0.8","0.5")}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:26,marginBottom:14,
+                      boxShadow:`0 4px 16px ${cat.bg}, 0 0 20px ${cat.border.replace("0.8","0.2")}`,
+                      position:"relative" as const,
+                    }}>{cat.icon}</div>
+                    {/* Label */}
+                    <div style={{fontSize:14,fontWeight:700,letterSpacing:"0.04em",color:cat.color,marginBottom:5,fontFamily:"'Syne',sans-serif",textShadow:`0 0 20px ${cat.color}55`}}>{cat.label}</div>
+                    <div style={{fontSize:11,color:`rgba(180,230,250,0.65)`,lineHeight:1.6,marginBottom:14}}>{cat.desc}</div>
+                    {/* Template count badge */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.14em",padding:"3px 10px",borderRadius:99,background:`${cat.color}18`,border:`1px solid ${cat.border.replace("0.8","0.45")}`,color:cat.color,fontFamily:"'JetBrains Mono',monospace"}}>{cat.templates.length} TEMPLATES</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={cat.color} strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
                   </motion.div>
                 ))}
               </div>

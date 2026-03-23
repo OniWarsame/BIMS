@@ -471,142 +471,101 @@ Respond ONLY with valid JSON (no markdown):
   const isScanning = scanState === "scanning";
   const isIdle     = scanState === "idle";
 
-  const roleColors: Record<string,string> = {
-    owner:"hsl(270,80%,70%)", admin:"hsl(354,82%,64%)",
-    operator:"hsl(36,95%,60%)", analyst:"hsl(200,100%,62%)"
+  const RC: Record<string,string> = {
+    owner:"hsl(270,80%,72%)", admin:"hsl(354,88%,68%)",
+    operator:"hsl(195,100%,62%)", analyst:"hsl(158,80%,55%)",
   };
-  const RC = roleColors;
   const RU = currentUser?.role || "analyst";
 
+  // Security-themed command definitions
   const CMDS = [
-    { label:"Register",    sub:"Enroll Biometric Subject", Icon:UserPlus, path:"/register", hue:218, color:"hsl(218,100%,68%)" },
-    { label:"Database",    sub:"Access Records Vault",     Icon:Database, path:"/database", hue:196, color:"hsl(196,100%,62%)" },
-    { label:"Deep Search", sub:"OSINT Intelligence Query", Icon:Search,   path:null,        hue:270, color:"hsl(270,80%,70%)", osint:true },
+    { label:"Register",    sub:"Enroll Biometric Subject", Icon:UserPlus,  path:"/register", hue:200, color:"hsl(200,100%,68%)", shape:"hexagon" },
+    { label:"Database",    sub:"Access Records Vault",     Icon:Database,  path:"/database", hue:195, color:"hsl(195,100%,62%)", shape:"shield"  },
+    { label:"Deep Search", sub:"OSINT Intelligence Query", Icon:Search,    path:null,         hue:270, color:"hsl(270,80%,70%)",  shape:"target",  osint:true },
     ...(userIsAdmin ? [
-      { label:"Users",   sub:"Access Control",          Icon:Users,    path:"/users",    hue:36,  color:"hsl(36,100%,60%)"  },
-      { label:"Reports", sub:"Audit & Activity Log",    Icon:FileText, path:"/reports",  hue:158, color:"hsl(158,80%,52%)"  },
-      { label:"Create",  sub:"Generate Documents",      Icon:FileText, path:"/create",   hue:218, color:"hsl(218,100%,68%)" },
+      { label:"Users",   sub:"Access Control",          Icon:Users,    path:"/users",    hue:36,  color:"hsl(36,100%,62%)",  shape:"badge"   },
+      { label:"Reports", sub:"Audit & Activity Log",    Icon:FileText, path:"/reports",  hue:158, color:"hsl(158,80%,54%)",  shape:"circuit" },
+      { label:"Create",  sub:"Generate Documents",      Icon:FileText, path:"/create",   hue:216, color:"hsl(216,100%,68%)", shape:"chip"    },
     ] : [
-      { label:"Create",  sub:"Generate Documents",      Icon:FileText, path:"/create",   hue:218, color:"hsl(218,100%,68%)" },
+      { label:"Create",  sub:"Generate Documents",      Icon:FileText, path:"/create",   hue:216, color:"hsl(216,100%,68%)", shape:"chip"    },
     ]),
-  ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; osint?:boolean }[];
+  ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean }[];
 
-  const scanColor  = isMatch ? "hsl(158,80%,52%)"        : isNoMatch ? "hsl(354,85%,60%)"        : isScanning ? "hsl(36,100%,56%)"        : "hsl(218,100%,68%)";
-  const scanGlow   = isMatch ? "rgba(50,200,130,0.55)"   : isNoMatch ? "rgba(220,60,60,0.55)"     : isScanning ? "rgba(255,160,30,0.55)"    : "rgba(50,140,255,0.55)";
+  const scanColor = isMatch?"hsl(158,80%,55%)":isNoMatch?"hsl(354,85%,62%)":isScanning?"hsl(36,100%,58%)":"hsl(200,100%,65%)";
+  const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(0,180,255,0.6)";
+
+  // Security shape SVG paths for each command button
+  const ShapeIcon = ({ shape, hue, size=18 }:{ shape:string; hue:number; size?:number }) => {
+    const c = `hsl(${hue},100%,70%)`;
+    const s = size;
+    switch(shape){
+      case "hexagon": return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke={c} strokeWidth="1.5" fill="none"/><polygon points="12,6 18,9.5 18,14.5 12,18 6,14.5 6,9.5" stroke={c} strokeWidth="0.8" fill={c} fillOpacity=".12"/></svg>;
+      case "shield":  return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C17.5 22.15 21 17.25 21 12V6L12 2z" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".12"/><path d="M9 12l2 2 4-4" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+      case "target":  return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={c} strokeWidth="1.2" fill="none"/><circle cx="12" cy="12" r="6" stroke={c} strokeWidth="1" fill="none" opacity=".7"/><circle cx="12" cy="12" r="2.5" fill={c}/><line x1="12" y1="2" x2="12" y2="6" stroke={c} strokeWidth="1.2"/><line x1="12" y1="18" x2="12" y2="22" stroke={c} strokeWidth="1.2"/><line x1="2" y1="12" x2="6" y2="12" stroke={c} strokeWidth="1.2"/><line x1="18" y1="12" x2="22" y2="12" stroke={c} strokeWidth="1.2"/></svg>;
+      case "badge":   return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="3" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".1"/><circle cx="12" cy="9" r="3" stroke={c} strokeWidth="1.2" fill="none"/><path d="M6 20c0-3.31 2.69-5 6-5s6 1.69 6 5" stroke={c} strokeWidth="1.2" strokeLinecap="round" fill="none"/></svg>;
+      case "circuit": return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><rect x="17" y="8" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><rect x="10" y="3" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><rect x="10" y="17" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><line x1="7" y1="10" x2="10" y2="10" stroke={c} strokeWidth="1.2"/><line x1="14" y1="10" x2="17" y2="10" stroke={c} strokeWidth="1.2"/><line x1="12" y1="7" x2="12" y2="10" stroke={c} strokeWidth="1.2"/><line x1="12" y1="14" x2="12" y2="17" stroke={c} strokeWidth="1.2"/><circle cx="12" cy="12" r="2" fill={c} fillOpacity=".6"/></svg>;
+      case "chip":    return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".1"/><rect x="9" y="9" width="6" height="6" rx="1" stroke={c} strokeWidth="1" fill={c} fillOpacity=".2"/><line x1="9" y1="2" x2="9" y2="6" stroke={c} strokeWidth="1.2"/><line x1="12" y1="2" x2="12" y2="6" stroke={c} strokeWidth="1.2"/><line x1="15" y1="2" x2="15" y2="6" stroke={c} strokeWidth="1.2"/><line x1="9" y1="18" x2="9" y2="22" stroke={c} strokeWidth="1.2"/><line x1="12" y1="18" x2="12" y2="22" stroke={c} strokeWidth="1.2"/><line x1="15" y1="18" x2="15" y2="22" stroke={c} strokeWidth="1.2"/><line x1="2" y1="9" x2="6" y2="9" stroke={c} strokeWidth="1.2"/><line x1="2" y1="12" x2="6" y2="12" stroke={c} strokeWidth="1.2"/><line x1="2" y1="15" x2="6" y2="15" stroke={c} strokeWidth="1.2"/><line x1="18" y1="9" x2="22" y2="9" stroke={c} strokeWidth="1.2"/><line x1="18" y1="12" x2="22" y2="12" stroke={c} strokeWidth="1.2"/><line x1="18" y1="15" x2="22" y2="15" stroke={c} strokeWidth="1.2"/></svg>;
+      default: return null;
+    }
+  };
 
   return (
-    <div style={{minHeight:"100vh",overflow:"hidden",background:"var(--c-void)",position:"relative",fontFamily:"'Outfit',-apple-system,sans-serif"}}>
+    <div style={{minHeight:"100vh",overflow:"hidden",background:"transparent",position:"relative",fontFamily:"'Outfit',-apple-system,sans-serif"}}>
       <CyberBackground/>
 
-      {/* ═══════════════ NAV BAR ═══════════════ */}
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:40,height:52,
-        display:"flex",alignItems:"center",padding:"0 20px",gap:10,
-        background:"rgba(2,4,15,0.65)",borderBottom:"1px solid rgba(255,255,255,0.07)",
-        backdropFilter:"blur(52px) saturate(180%)"}}>
-
-        {/* Logo */}
+      {/* ─── NAV ─── */}
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:40,height:52,display:"flex",alignItems:"center",padding:"0 20px",gap:10,background:"rgba(1,5,18,0.72)",borderBottom:"1px solid rgba(255,255,255,0.07)",backdropFilter:"blur(52px) saturate(180%)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginRight:16,flexShrink:0}}>
-          <div style={{width:32,height:32,borderRadius:10,
-            background:"linear-gradient(135deg,hsl(218,100%,56%),hsl(232,100%,68%))",
-            display:"flex",alignItems:"center",justifyContent:"center",
-            boxShadow:"0 4px 16px rgba(40,100,255,0.4)"}}>
+          <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,hsl(200,100%,50%),hsl(220,100%,62%))",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(0,160,255,0.45)"}}>
             <Shield style={{width:16,height:16,color:"white"}}/>
           </div>
           <div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(210,235,255,0.95)"}}>
-              Nexus<span style={{color:"hsl(218,100%,72%)",marginLeft:4}}>BIMS</span>
-            </div>
-            <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"rgba(80,140,220,0.42)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
+            <div style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(220,245,255,0.97)"}}>Nexus<span style={{color:"hsl(200,100%,68%)",marginLeft:4}}>BIMS</span></div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(100,180,230,0.48)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
           </div>
         </div>
-
-        {/* Status pills */}
         <div className="nav-status-pills" style={{display:"flex",gap:5,flex:1,alignItems:"center"}}>
-          {([{l:"System Online",H:158},{l:"Vault Secured",H:218},{l:"AES-256",H:36}] as const).map(({l,H},i)=>(
-            <div key={l} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 9px",borderRadius:99,
-              background:`hsla(${H},80%,50%,0.07)`,border:`1px solid hsla(${H},80%,50%,0.2)`}}>
-              <div className="status-dot" style={{background:`hsl(${H},90%,58%)`,boxShadow:`0 0 6px hsl(${H},90%,55%)`,animationDelay:`${i*0.8}s`}}/>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"0.05em",color:`hsla(${H},60%,70%,0.7)`}}>{l}</span>
+          {([{l:"System Online",H:158},{l:"Vault Secured",H:200},{l:"AES-256",H:36}] as const).map(({l,H},i)=>(
+            <div key={l} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 9px",borderRadius:99,background:`hsla(${H},80%,50%,0.08)`,border:`1px solid hsla(${H},80%,50%,0.22)`}}>
+              <div className="status-dot" style={{background:`hsl(${H},90%,60%)`,boxShadow:`0 0 6px hsl(${H},90%,58%)`,animationDelay:`${i*0.8}s`}}/>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.05em",color:`hsla(${H},65%,78%,0.82)`}}>{l}</span>
             </div>
           ))}
         </div>
-
-        {/* Right controls */}
         <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
           <button onClick={()=>setShowSupport(true)} className="btn-ghost" style={{fontSize:11.5,padding:"5px 12px",borderRadius:99}}>
             <Headphones style={{width:12,height:12}}/><span className="nav-support-text">Support</span>
           </button>
-          <button onClick={()=>setShowNotif(v=>!v)}
-            style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",
-              background:"rgba(255,255,255,0.055)",border:"1px solid rgba(255,255,255,0.1)",
-              display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(130,185,255,0.6)",transition:"all .18s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.14)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.055)";}}>
+          <button onClick={()=>setShowNotif(v=>!v)} style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(140,200,255,0.7)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,160,255,0.16)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Bell style={{width:13,height:13}}/>
-            {notifCount>0 && <span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,100%,68%)",border:"1.5px solid var(--c-void)",boxShadow:"0 0 6px rgba(50,140,255,0.8)"}}/>}
+            {notifCount>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(200,100%,65%)",border:"1.5px solid rgba(1,5,18,0.8)",boxShadow:"0 0 6px rgba(0,180,255,0.8)"}}/>}
           </button>
-          <button onClick={()=>setShowDM(v=>!v)}
-            style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",
-              background:"rgba(255,255,255,0.055)",border:"1px solid rgba(255,255,255,0.1)",
-              display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(130,185,255,0.6)",transition:"all .18s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.14)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.055)";}}>
+          <button onClick={()=>setShowDM(v=>!v)} style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(140,200,255,0.7)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,160,255,0.16)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <MessageSquare style={{width:13,height:13}}/>
-            {dmUnread>0 && <span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,70%)",border:"1.5px solid var(--c-void)"}}/>}
+            {dmUnread>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,68%)",border:"1.5px solid rgba(1,5,18,0.8)"}}/>}
           </button>
           <div style={{width:1,height:20,background:"rgba(255,255,255,0.1)",margin:"0 2px"}}/>
-          <button onClick={()=>setShowUserMenu(v=>!v)}
-            style={{display:"flex",alignItems:"center",gap:8,padding:"4px 12px 4px 5px",borderRadius:99,cursor:"pointer",
-              background:"rgba(255,255,255,0.055)",border:"1px solid rgba(255,255,255,0.1)",transition:"all .18s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.1)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.055)";}}>
-            <div style={{width:24,height:24,borderRadius:"50%",background:`${RC[RU]}20`,border:`2px solid ${RC[RU]}55`,
-              display:"flex",alignItems:"center",justifyContent:"center",
-              fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:700,color:RC[RU]}}>
-              {(currentUser?.username||"?")[0].toUpperCase()}
-            </div>
+          <button onClick={()=>setShowUserMenu(v=>!v)} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 12px 4px 5px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,160,255,0.12)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
+            <div style={{width:24,height:24,borderRadius:"50%",background:`${RC[RU]}22`,border:`2px solid ${RC[RU]}66`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,color:RC[RU]}}>{(currentUser?.username||"?")[0].toUpperCase()}</div>
             <div>
-              <div style={{fontFamily:"'Outfit',sans-serif",fontSize:11,fontWeight:600,color:"rgba(210,235,255,0.9)",lineHeight:1.2}}>
-                {currentUser?.username||"user"}
-              </div>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:RC[RU],letterSpacing:"0.05em",lineHeight:1}}>
-                {(currentUser?.role||"analyst").toUpperCase()}
-              </div>
+              <div style={{fontFamily:"'Outfit',sans-serif",fontSize:11,fontWeight:600,color:"rgba(220,245,255,0.95)",lineHeight:1.2}}>{currentUser?.username||"user"}</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:RC[RU],letterSpacing:"0.05em",lineHeight:1}}>{(currentUser?.role||"analyst").toUpperCase()}</div>
             </div>
           </button>
-          <button
-            onClick={()=>{doLogout();window.location.href="/login";}}
-            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",
-              background:"transparent",border:"1px solid rgba(200,60,60,0.22)",
-              fontFamily:"'Outfit',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(220,80,80,0.55)",transition:"all .18s"}}
-            onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,110,110,0.92)";e.currentTarget.style.background="rgba(200,50,50,0.1)";}}
-            onMouseLeave={e=>{e.currentTarget.style.color="rgba(220,80,80,0.55)";e.currentTarget.style.background="transparent";}}>
+          <button onClick={()=>{doLogout();window.location.href="/login";}} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",background:"transparent",border:"1px solid rgba(200,60,60,0.25)",fontFamily:"'Outfit',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(240,100,100,0.65)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,130,130,0.95)";e.currentTarget.style.background="rgba(200,50,50,0.12)";}} onMouseLeave={e=>{e.currentTarget.style.color="rgba(240,100,100,0.65)";e.currentTarget.style.background="transparent";}}>
             <LogOut style={{width:11,height:11}}/> Logout
           </button>
         </div>
-
-        {/* User dropdown */}
         <AnimatePresence>
-          {showUserMenu && (
-            <motion.div
-              initial={{opacity:0,y:-8,scale:0.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.96}}
-              transition={{duration:0.18}}
-              className="bio-card"
-              style={{position:"absolute",top:58,right:16,minWidth:180,zIndex:60,padding:"8px 0",borderRadius:14,boxShadow:"0 24px 64px rgba(0,0,0,0.9)"}}>
-              <div style={{padding:"8px 14px 7px",borderBottom:"1px solid rgba(60,120,255,0.12)",marginBottom:4}}>
-                <div style={{fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,color:"rgba(210,235,255,0.92)"}}>
-                  {currentUser?.fullName||currentUser?.username}
-                </div>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"rgba(80,150,230,0.45)",marginTop:2}}>
-                  @{currentUser?.username}
-                </div>
+          {showUserMenu&&(
+            <motion.div initial={{opacity:0,y:-8,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:.96}} transition={{duration:.18}}
+              className="bio-card" style={{position:"absolute",top:58,right:16,minWidth:180,zIndex:60,padding:"8px 0",borderRadius:14,boxShadow:"0 24px 64px rgba(0,0,0,0.92)"}}>
+              <div style={{padding:"8px 14px 7px",borderBottom:"1px solid rgba(0,160,255,0.14)",marginBottom:4}}>
+                <div style={{fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,color:"rgba(220,245,255,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(100,180,230,0.52)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
               {[{label:"My Profile",path:"/profile"},{label:"Settings",path:"/settings"}].map(({label,path})=>(
-                <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}}
-                  style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",
-                    cursor:"pointer",fontFamily:"'Outfit',sans-serif",fontSize:12.5,color:"rgba(110,180,240,0.55)",transition:"all .14s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.1)";e.currentTarget.style.color="rgba(170,220,255,0.92)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(110,180,240,0.55)";}}>
+                <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}} style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Outfit',sans-serif",fontSize:12.5,color:"rgba(130,200,245,0.65)",transition:"all .14s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,160,255,0.1)";e.currentTarget.style.color="rgba(180,230,255,0.95)";}} onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(130,200,245,0.65)";}}>
                   {label}
                 </button>
               ))}
@@ -615,196 +574,175 @@ Respond ONLY with valid JSON (no markdown):
         </AnimatePresence>
       </div>
 
-      {/* ═══════════════ MAIN CONTENT ═══════════════ */}
-      <div style={{position:"fixed",top:52,left:0,right:0,bottom:0,zIndex:2,
-        display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",
-        padding:"12px 20px 16px",overflow:"hidden"}}>
-        <motion.div
-          initial={{opacity:0,y:20}} animate={{opacity:1,y:0}}
-          transition={{duration:0.5,ease:[0.16,1,0.3,1]}}
-          style={{width:"100%",maxWidth:660,display:"flex",flexDirection:"column" as const,alignItems:"center",gap:14}}>
+      {/* ─── MAIN CONTENT ─── */}
+      <div style={{position:"fixed",top:52,left:0,right:0,bottom:0,zIndex:2,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"12px 20px 16px",overflow:"hidden"}}>
+        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.55,ease:[.16,1,.3,1]}}
+          style={{width:"100%",maxWidth:680,display:"flex",flexDirection:"column" as const,alignItems:"center",gap:16}}>
 
           {/* Title */}
           <div style={{textAlign:"center" as const}}>
-            <h1 style={{fontFamily:"'Syne',sans-serif",fontSize:"clamp(14px,2vw,22px)",fontWeight:800,
-              letterSpacing:"0.12em",color:"rgba(205,232,255,0.96)",textTransform:"uppercase" as const,margin:"0 0 6px 0"}}>
+            <h1 style={{fontFamily:"'Syne',sans-serif",fontSize:"clamp(15px,2.2vw,24px)",fontWeight:800,letterSpacing:"0.1em",color:"rgba(220,245,255,0.98)",textTransform:"uppercase" as const,margin:"0 0 6px 0",textShadow:"0 0 30px rgba(0,200,255,0.35)"}}>
               Biometric Identity Scanner
             </h1>
             <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
-              <motion.span
-                animate={{opacity:[1,0.15,1]}}
-                transition={{duration:isScanning?0.45:2.2,repeat:Infinity}}
-                style={{display:"inline-block",width:6,height:6,borderRadius:"50%",
-                  background:scanColor,boxShadow:`0 0 10px ${scanGlow}`,flexShrink:0}}/>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9.5,letterSpacing:"0.14em",
-                color:`${scanColor}cc`,textTransform:"uppercase" as const}}>
+              <motion.span animate={{opacity:[1,.15,1]}} transition={{duration:isScanning?.45:2.2,repeat:Infinity}}
+                style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:scanColor,boxShadow:`0 0 12px ${scanGlow}`,flexShrink:0}}/>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,letterSpacing:"0.14em",color:`${scanColor}ee`,textTransform:"uppercase" as const}}>
                 {isScanning?"SCANNING BIOMETRIC DATA…":isMatch?"IDENTITY VERIFIED":isNoMatch?"NO MATCH FOUND":"SYSTEM READY"}
               </span>
             </div>
           </div>
 
-          {/* Scanner disc */}
+          {/* ─── REDESIGNED SCANNER ─── */}
           <div style={{position:"relative",flexShrink:0}}>
+            {/* Outer pulse */}
+            <motion.div animate={{scale:[.88,1.1,.88],opacity:[.28,.58,.28]}} transition={{duration:3.5,repeat:Infinity,ease:"easeInOut"}}
+              style={{position:"absolute",inset:-48,borderRadius:"50%",background:`radial-gradient(circle,${scanGlow} 0%,transparent 65%)`,pointerEvents:"none"}}/>
 
-            {/* Ambient glow ring */}
-            <motion.div
-              animate={{scale:[0.88,1.1,0.88],opacity:[0.3,0.6,0.3]}}
-              transition={{duration:3.5,repeat:Infinity,ease:"easeInOut"}}
-              style={{position:"absolute",inset:-40,borderRadius:"50%",
-                background:`radial-gradient(circle,${scanGlow} 0%,transparent 68%)`,
-                pointerEvents:"none"}}
-            />
-
-            {/* Rotating SVG arcs */}
-            <svg style={{position:"absolute",inset:-22,overflow:"visible",pointerEvents:"none"}}
-              viewBox="0 0 284 284" width="284" height="284">
-              <motion.circle cx="142" cy="142" r="136" fill="none"
-                stroke={scanColor} strokeWidth="1.8" strokeDasharray="42 520" strokeLinecap="round"
+            {/* Hexagonal outer ring */}
+            <svg style={{position:"absolute",inset:-28,overflow:"visible",pointerEvents:"none"}} viewBox="0 0 300 300" width="300" height="300">
+              {/* Outer hexagon */}
+              <motion.polygon points="150,8 284,80 284,220 150,292 16,220 16,80"
+                fill="none" stroke={scanColor} strokeWidth="1.2" strokeDasharray="18 8" opacity=".55"
+                style={{filter:`drop-shadow(0 0 6px ${scanGlow})`}}
+                animate={{rotate:[0,360]}} transition={{duration:isScanning?4:12,repeat:Infinity,ease:"linear"}}/>
+              {/* Inner hexagon */}
+              <motion.polygon points="150,30 268,94 268,206 150,270 32,206 32,94"
+                fill="none" stroke={`${scanColor}55`} strokeWidth=".8"
+                animate={{rotate:[360,0]}} transition={{duration:20,repeat:Infinity,ease:"linear"}}/>
+              {/* Rotating arc segments */}
+              <motion.circle cx="150" cy="150" r="138" fill="none"
+                stroke={scanColor} strokeWidth="2" strokeDasharray="45 540" strokeLinecap="round"
                 style={{filter:`drop-shadow(0 0 8px ${scanGlow})`}}
-                animate={{rotate:[0,360]}} transition={{duration:isScanning?1.1:3.5,repeat:Infinity,ease:"linear"}}/>
-              <motion.circle cx="142" cy="142" r="136" fill="none"
-                stroke={`${scanColor}38`} strokeWidth="0.8" strokeDasharray="8 28"
-                animate={{rotate:[360,0]}} transition={{duration:7,repeat:Infinity,ease:"linear"}}/>
-              {Array.from({length:36}).map((_,i)=>{
-                const a=(i/36)*Math.PI*2-Math.PI/2, R=136, len=i%9===0?12:i%3===0?6:3;
-                return (
-                  <line key={i}
-                    x1={142+(R-len)*Math.cos(a)} y1={142+(R-len)*Math.sin(a)}
-                    x2={142+R*Math.cos(a)} y2={142+R*Math.sin(a)}
-                    stroke={`${scanColor}${i%9===0?"bb":i%3===0?"55":"28"}`}
-                    strokeWidth={i%9===0?1.4:0.6}/>
-                );
+                animate={{rotate:[0,360]}} transition={{duration:isScanning?1.1:4,repeat:Infinity,ease:"linear"}}/>
+              {/* Corner scan brackets */}
+              {[[16,80],[284,80],[284,220],[16,220]].map(([bx,by],i)=>{
+                const dx=bx<150?1:-1, dy=by<150?1:-1;
+                return <g key={i}><line x1={bx} y1={by} x2={bx+dx*24} y2={by} stroke={scanColor} strokeWidth="2.5" strokeLinecap="round" opacity=".9"/><line x1={bx} y1={by} x2={bx} y2={by+dy*24} stroke={scanColor} strokeWidth="2.5" strokeLinecap="round" opacity=".9"/><circle cx={bx} cy={by} r="3" fill={scanColor} opacity=".8"/></g>;
               })}
-              {[0,90,180,270].map(deg=>{
-                const a=deg*Math.PI/180;
-                return (
-                  <line key={deg}
-                    x1={142+130*Math.cos(a)} y1={142+130*Math.sin(a)}
-                    x2={142+150*Math.cos(a)} y2={142+150*Math.sin(a)}
-                    stroke={`${scanColor}66`} strokeWidth="1.5" strokeLinecap="round"/>
-                );
+              {/* Tick marks */}
+              {Array.from({length:40}).map((_,i)=>{
+                const a=(i/40)*Math.PI*2-Math.PI/2,R=138,len=i%10===0?14:i%5===0?8:4;
+                return <line key={i} x1={150+(R-len)*Math.cos(a)} y1={150+(R-len)*Math.sin(a)} x2={150+R*Math.cos(a)} y2={150+R*Math.sin(a)} stroke={`${scanColor}${i%10===0?"cc":i%5===0?"66":"33"}`} strokeWidth={i%10===0?1.5:.7}/>;
               })}
             </svg>
 
-            {/* Main disc */}
-            <div
-              className={isScanning?"scanner-pulse":""}
-              style={{
-                width:238, height:238, borderRadius:"50%",
-                background: isMatch
-                  ? "radial-gradient(circle at 35% 35%,hsla(158,80%,10%,0.96),hsla(158,80%,3%,0.98))"
-                  : isNoMatch
-                    ? "radial-gradient(circle at 35% 35%,hsla(354,80%,10%,0.96),hsla(354,80%,3%,0.98))"
-                    : "radial-gradient(circle at 35% 35%,rgba(10,24,66,0.97),rgba(3,8,28,0.99))",
-                border:`2px solid ${scanColor}55`,
-                boxShadow:`0 0 60px ${scanGlow}22,inset 0 0 60px rgba(0,0,0,0.5)`,
-                display:"flex", flexDirection:"column" as const,
-                alignItems:"center", justifyContent:"center", gap:10,
-                position:"relative", overflow:"hidden",
-                transition:"all 0.4s",
-              }}>
-              <div style={{position:"absolute",inset:22,borderRadius:"50%",border:`1px solid ${scanColor}28`,pointerEvents:"none"}}/>
-              <div style={{position:"absolute",inset:44,borderRadius:"50%",border:`1px dashed ${scanColor}18`,pointerEvents:"none"}}/>
-              {isScanning && (
-                <motion.div
-                  animate={{y:["-50%","150%"]}}
-                  transition={{duration:0.85,repeat:Infinity,ease:"linear"}}
-                  style={{position:"absolute",left:0,right:0,height:2,
-                    background:`linear-gradient(90deg,transparent,${scanColor}cc,transparent)`,
-                    boxShadow:`0 0 12px ${scanGlow}`}}/>
+            {/* Main scanner disc — now hexagonal shape via CSS clip */}
+            <div className={isScanning?"scanner-pulse":""} style={{
+              width:244, height:244, borderRadius:"50%",
+              background: isMatch
+                ? "radial-gradient(circle at 40% 35%,hsla(158,80%,12%,0.97),hsla(158,80%,4%,0.99))"
+                : isNoMatch
+                  ? "radial-gradient(circle at 40% 35%,hsla(354,80%,12%,0.97),hsla(354,80%,4%,0.99))"
+                  : "radial-gradient(circle at 40% 35%,rgba(0,20,60,0.97),rgba(0,5,22,0.99))",
+              border:`2px solid ${scanColor}66`,
+              boxShadow:`0 0 0 6px ${scanGlow}18,0 0 60px ${scanGlow}25,inset 0 0 80px rgba(0,0,0,0.6)`,
+              display:"flex",flexDirection:"column" as const,
+              alignItems:"center",justifyContent:"center",gap:10,
+              position:"relative",overflow:"hidden",
+              transition:"all 0.4s",
+            }}>
+              {/* Circuit board dot pattern */}
+              <div style={{position:"absolute",inset:0,opacity:.12,backgroundImage:`radial-gradient(circle,${scanColor} 1px,transparent 1px)`,backgroundSize:"22px 22px",pointerEvents:"none"}}/>
+              {/* Inner rings */}
+              <div style={{position:"absolute",inset:20,borderRadius:"50%",border:`1px solid ${scanColor}30`,pointerEvents:"none"}}/>
+              <div style={{position:"absolute",inset:40,borderRadius:"50%",border:`1px dashed ${scanColor}20`,pointerEvents:"none"}}/>
+              {/* Scan line */}
+              {isScanning&&(
+                <motion.div animate={{y:["-55%","155%"]}} transition={{duration:.8,repeat:Infinity,ease:"linear"}}
+                  style={{position:"absolute",left:0,right:0,height:3,background:`linear-gradient(90deg,transparent,${scanColor}dd,transparent)`,boxShadow:`0 0 16px ${scanGlow}`}}/>
               )}
-              <motion.div
-                animate={isScanning?{scale:[1,1.08,1],opacity:[0.78,1,0.78]}:{scale:1,opacity:1}}
-                transition={{duration:0.85,repeat:isScanning?Infinity:0}}>
-                <Fingerprint style={{width:68,height:68,color:scanColor,filter:`drop-shadow(0 0 18px ${scanGlow})`}}/>
+              {/* Fingerprint icon with glow */}
+              <motion.div animate={isScanning?{scale:[1,1.1,1],opacity:[.8,1,.8]}:{scale:1,opacity:1}} transition={{duration:.8,repeat:isScanning?Infinity:0}}>
+                <Fingerprint style={{width:74,height:74,color:scanColor,filter:`drop-shadow(0 0 20px ${scanGlow}) drop-shadow(0 0 40px ${scanGlow}55)`}}/>
               </motion.div>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,letterSpacing:"0.22em",
-                color:`${scanColor}80`,textTransform:"uppercase" as const}}>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.25em",color:`${scanColor}88`,textTransform:"uppercase" as const}}>
                 {isScanning?"SCANNING…":isMatch?"VERIFIED":isNoMatch?"NO MATCH":"PLACE FINGER"}
               </span>
             </div>
           </div>
 
-          {/* Scan button */}
-          <motion.button
-            onClick={handleScan} disabled={!isIdle}
-            whileHover={isIdle?{scale:1.015,y:-1}:{}} whileTap={isIdle?{scale:0.98}:{}}
+          {/* ─── SCAN BUTTON ─── */}
+          <motion.button onClick={handleScan} disabled={!isIdle}
+            whileHover={isIdle?{scale:1.018,y:-2}:{}} whileTap={isIdle?{scale:.98}:{}}
             style={{
-              display:"flex", alignItems:"center", justifyContent:"center", gap:9,
-              padding:"12px 44px", borderRadius:13,
-              fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:700,
-              letterSpacing:"0.1em", textTransform:"uppercase" as const,
-              color: isIdle ? "white" : isScanning ? "rgba(255,160,40,0.9)" : isMatch ? "hsl(158,80%,65%)" : "hsl(354,85%,70%)",
-              background: isIdle
-                ? "linear-gradient(135deg,hsl(218,100%,56%),hsl(232,100%,68%))"
+              display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+              padding:"13px 48px",
+              borderRadius:14,
+              fontFamily:"'Syne',sans-serif",fontSize:15,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase" as const,
+              color:isIdle?"white":isScanning?"rgba(255,165,40,.92)":isMatch?"hsl(158,80%,68%)":"hsl(354,85%,72%)",
+              background:isIdle
+                ? "linear-gradient(135deg,hsl(200,100%,50%),hsl(220,100%,62%))"
                 : isScanning
-                  ? "linear-gradient(135deg,rgba(200,120,20,0.18),rgba(160,80,10,0.1))"
+                  ? "linear-gradient(135deg,rgba(200,120,20,.2),rgba(160,80,10,.12))"
                   : isMatch
-                    ? "linear-gradient(135deg,rgba(30,160,90,0.18),rgba(20,100,60,0.1))"
-                    : "linear-gradient(135deg,rgba(180,40,40,0.18),rgba(120,20,20,0.1))",
-              border: isIdle ? "0" : `1.5px solid ${scanColor}44`,
-              boxShadow: isIdle
-                ? "0 6px 28px rgba(30,90,255,0.45),inset 0 1px 0 rgba(255,255,255,0.18)"
-                : `0 0 24px ${scanGlow}20`,
-              cursor: isIdle ? "pointer" : "default",
-              opacity: isIdle ? 1 : 0.88,
+                    ? "linear-gradient(135deg,rgba(30,160,90,.2),rgba(20,100,60,.12))"
+                    : "linear-gradient(135deg,rgba(180,40,40,.2),rgba(120,20,20,.12))",
+              border:isIdle?"0":`1.5px solid ${scanColor}55`,
+              boxShadow:isIdle?"0 6px 30px rgba(0,160,255,0.5),0 0 0 1px rgba(0,190,255,0.2),inset 0 1px 0 rgba(255,255,255,0.18)":`0 0 28px ${scanGlow}25`,
+              cursor:isIdle?"pointer":"default",
+              opacity:isIdle?1:.88,
               transition:"all 0.3s",
-              width:"100%", maxWidth:340,
+              width:"100%",maxWidth:360,
+              position:"relative" as const, overflow:"hidden",
             }}>
+            {/* Shimmer */}
+            {isIdle&&<motion.div style={{position:"absolute",top:0,left:"-70%",width:"40%",height:"100%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)",transform:"skewX(-14deg)"}} animate={{left:["−70%","130%"]}} transition={{duration:2.5,repeat:Infinity,repeatDelay:1.5}}/>}
             {isScanning
-              ? <><div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${scanColor}44`,borderTopColor:scanColor,animation:"spin 0.7s linear infinite"}}/> SCANNING...</>
-              : <><Fingerprint style={{width:18,height:18}}/> INITIATE SCAN</>}
+              ? <><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid ${scanColor}55`,borderTopColor:scanColor,animation:"spin .7s linear infinite"}}/> SCANNING...</>
+              : <><Fingerprint style={{width:19,height:19}}/> INITIATE SCAN</>}
           </motion.button>
 
-          {/* Command grid */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,width:"100%"}}>
-            {CMDS.map(({label,sub,Icon,path,hue,color,osint},i)=>(
+          {/* ─── COMMAND GRID — Security-shaped buttons ─── */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,width:"100%"}}>
+            {CMDS.map(({label,sub,Icon,path,hue,color,shape,osint},i)=>(
               <motion.button key={label}
-                initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} transition={{delay:0.45+i*0.04}}
-                whileHover={{y:-3,scale:1.022}} whileTap={{scale:0.97}}
+                initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:.45+i*.05}}
+                whileHover={{y:-4,scale:1.025}} whileTap={{scale:.97}}
                 onClick={()=>osint?setShowDeepSearch(true):path?navigate(path):null}
                 style={{
-                  display:"flex", flexDirection:"column" as const, alignItems:"flex-start",
-                  padding:"13px 14px",
-                  background:"linear-gradient(160deg,rgba(8,18,50,0.92),rgba(4,12,36,0.90))",
-                  border:`1px solid hsla(${hue},80%,60%,0.15)`,
-                  borderTop:`1.5px solid hsla(${hue},80%,60%,0.32)`,
-                  borderRadius:13, cursor:"pointer",
-                  transition:"border-color 0.22s,box-shadow 0.22s",
-                  boxShadow:"0 4px 20px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)",
-                  backdropFilter:"blur(20px)",
-                  position:"relative" as const, overflow:"hidden",
+                  display:"flex",flexDirection:"column" as const,alignItems:"flex-start",
+                  padding:"14px 15px",
+                  background:`linear-gradient(160deg,rgba(4,18,52,0.94),rgba(2,10,36,0.92))`,
+                  border:`1px solid hsla(${hue},90%,62%,0.18)`,
+                  borderTop:`2px solid hsla(${hue},90%,65%,0.45)`,
+                  borderRadius:14,cursor:"pointer",
+                  transition:"border-color .22s,box-shadow .22s",
+                  boxShadow:`0 4px 22px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)`,
+                  backdropFilter:"blur(22px)",
+                  position:"relative" as const,overflow:"hidden",
                   textAlign:"left" as const,
                 }}
                 onMouseEnter={e=>{
                   const el=e.currentTarget as HTMLElement;
-                  el.style.borderTopColor=`hsla(${hue},80%,65%,0.62)`;
-                  el.style.boxShadow=`0 8px 28px rgba(0,0,0,0.5),0 0 18px hsla(${hue},80%,50%,0.11),inset 0 1px 0 rgba(255,255,255,0.07)`;
+                  el.style.borderTopColor=`hsla(${hue},90%,70%,0.72)`;
+                  el.style.boxShadow=`0 10px 32px rgba(0,0,0,0.5),0 0 24px hsla(${hue},90%,55%,0.16),inset 0 1px 0 rgba(255,255,255,0.09)`;
                 }}
                 onMouseLeave={e=>{
                   const el=e.currentTarget as HTMLElement;
-                  el.style.borderTopColor=`hsla(${hue},80%,60%,0.32)`;
-                  el.style.boxShadow="0 4px 20px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)";
+                  el.style.borderTopColor=`hsla(${hue},90%,65%,0.45)`;
+                  el.style.boxShadow=`0 4px 22px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)`;
                 }}>
-                <div style={{position:"absolute",top:0,right:0,width:44,height:44,
-                  background:`radial-gradient(circle at top right,hsla(${hue},80%,60%,0.1),transparent 60%)`,
-                  pointerEvents:"none"}}/>
-                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:5}}>
-                  <div style={{width:26,height:26,borderRadius:8,
-                    background:`hsla(${hue},80%,55%,0.13)`,border:`1px solid hsla(${hue},80%,60%,0.26)`,
-                    display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    {Icon && <Icon style={{width:13,height:13,color}}/>}
+                {/* Corner radial accent */}
+                <div style={{position:"absolute",top:0,right:0,width:55,height:55,background:`radial-gradient(circle at top right,hsla(${hue},90%,62%,0.13),transparent 65%)`,pointerEvents:"none"}}/>
+                {/* Circuit dot texture */}
+                <div style={{position:"absolute",inset:0,opacity:.06,backgroundImage:`radial-gradient(circle,hsla(${hue},80%,65%,1) 1px,transparent 1px)`,backgroundSize:"14px 14px",pointerEvents:"none"}}/>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,position:"relative" as const}}>
+                  {/* Security-shaped icon container */}
+                  <div style={{
+                    width:30,height:30,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    background:`hsla(${hue},80%,55%,0.14)`,
+                    border:`1px solid hsla(${hue},80%,62%,0.32)`,
+                    borderRadius: shape==="hexagon"?"4px":shape==="shield"?"8px 8px 12px 12px":shape==="target"?"50%":"8px",
+                    boxShadow:`0 0 12px hsla(${hue},80%,55%,0.2)`,
+                  }}>
+                    <ShapeIcon shape={shape} hue={hue} size={16}/>
                   </div>
-                  <span style={{fontFamily:"'Syne',sans-serif",fontSize:12.5,fontWeight:700,
-                    color:"rgba(215,235,255,0.92)",letterSpacing:"0.02em"}}>{label}</span>
-                  {osint && (
-                    <span style={{fontSize:7.5,fontWeight:700,padding:"1px 5px",borderRadius:4,
-                      background:"hsla(270,80%,55%,0.2)",border:"1px solid hsla(270,80%,65%,0.32)",
-                      color:"hsl(270,80%,72%)",letterSpacing:"0.06em"}}>OSINT</span>
-                  )}
+                  <span style={{fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,color:"rgba(220,245,255,0.95)",letterSpacing:"0.025em"}}>{label}</span>
+                  {osint&&<span style={{fontSize:7.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"hsla(270,80%,55%,0.22)",border:"1px solid hsla(270,80%,65%,0.38)",color:"hsl(270,80%,78%)",letterSpacing:"0.06em"}}>OSINT</span>}
                 </div>
-                <span style={{fontFamily:"'Outfit',sans-serif",fontSize:10,
-                  color:"rgba(110,165,220,0.48)",lineHeight:1.3}}>{sub}</span>
+                <span style={{fontFamily:"'Outfit',sans-serif",fontSize:10.5,color:"rgba(140,210,240,0.62)",lineHeight:1.35,position:"relative" as const}}>{sub}</span>
               </motion.button>
             ))}
           </div>
@@ -812,7 +750,6 @@ Respond ONLY with valid JSON (no markdown):
         </motion.div>
       </div>
 
-      {/* Modals */}
       <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)} currentUser={currentUser}/>
       <DirectMessagePanel open={showDM} onClose={()=>setShowDM(false)} currentUser={currentUser}/>
 

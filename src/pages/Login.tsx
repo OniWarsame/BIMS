@@ -50,11 +50,13 @@ export const doLogin  = (user: BIMSUser) => sessionStorage.setItem(SESSION_KEY, 
 export const doLogout = () => sessionStorage.removeItem(SESSION_KEY);
 
 export const ROLE_COLORS: Record<UserRole, string> = {
-  admin: "hsl(0,90%,68%)", operator: "hsl(185,100%,66%)",
-  analyst: "hsl(195,85%,65%)", viewer: "hsl(140,80%,62%)",
+  owner:    "hsl(270,80%,72%)",
+  admin:    "hsl(354,88%,68%)",
+  operator: "hsl(195,100%,62%)",
+  analyst:  "hsl(158,80%,55%)",
 };
 export const ROLE_LABELS: Record<UserRole, string> = {
-  admin: "ADMIN", operator: "OPERATOR", analyst: "ANALYST", viewer: "VIEWER",
+  owner: "OWNER", admin: "ADMIN", operator: "OPERATOR", analyst: "ANALYST",
 };
 
 /* ── helpers ── */
@@ -68,7 +70,7 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
   return (
     <div style={{minHeight:"100vh",position:"relative",display:"flex",flexDirection:"column" as const,
       alignItems:"center",justifyContent:"center",padding:"24px 16px",
-      background:"rgb(4,8,16)"}}>
+      background:"transparent"}}>
       <CyberBackground/>
 
       {/* BIMS logo top-left */}
