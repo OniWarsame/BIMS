@@ -19,12 +19,12 @@ interface Category {
 const CATEGORIES:Category[] = [
   { id:"cv", label:"Curriculum Vitae", icon:"📄", color:"#60a5fa", bg:"rgba(96,165,250,0.22)", border:"rgba(96,165,250,0.8)", desc:"Professional resume from your biometric profile",
     templates:[
-      {id:"cv-classic",   name:"Classic Professional", desc:"Clean single-column, perfect for banking, law and government.",     preview:"📋"},
-      {id:"cv-modern",    name:"Modern Executive",      desc:"Two-column with photo, colour accents and skills sidebar.",          preview:"🎨"},
-      {id:"cv-minimal",   name:"Minimal Clean",         desc:"Pure whitespace, typography-focused for creative industries.",       preview:"⬜"},
-      {id:"cv-technical", name:"Technical Expert",      desc:"Skills-matrix layout for engineering and technology roles.",         preview:"⚙️"},
-      {id:"cv-academic",  name:"Academic / Research",   desc:"Publications and education-first layout for academia.",              preview:"🎓"},
-      {id:"cv-executive", name:"Senior Executive",      desc:"Bold header with leadership achievements and board-level experience.",preview:"👔"},
+      {id:"cv-classic",   name:"Embassy & Government CV",  desc:"Formal single-column format accepted by embassies, consulates and government bodies worldwide.",     preview:"🏛️"},
+      {id:"cv-modern",    name:"University Application",    desc:"Structured academic CV with photo panel — accepted by universities for MSc/PhD admissions.",          preview:"🎓"},
+      {id:"cv-minimal",   name:"UN / International Org",    desc:"Clean typographic layout conforming to UN and international organisation standards.",                  preview:"🌐"},
+      {id:"cv-technical", name:"Professional Engineer",     desc:"Competency-matrix format for engineering councils, visa sponsors and technical recruiters.",            preview:"⚙️"},
+      {id:"cv-academic",  name:"Academic Research Profile", desc:"Publications, citations and research-first layout for academic appointments and grants.",              preview:"📚"},
+      {id:"cv-executive", name:"Senior Executive / C-Suite", desc:"Board-level achievement CV with leadership summary — suitable for directorship applications.",       preview:"💼"},
     ]},
   { id:"contract", label:"Official Contract", icon:"📜", color:"#fb923c", bg:"rgba(251,146,60,0.22)", border:"rgba(251,146,60,0.8)", desc:"Contract templates with your personal details pre-filled",
     templates:[
@@ -313,12 +313,51 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
   };
 
   const mono:React.CSSProperties={fontFamily:"'JetBrains Mono','Courier New',monospace"};
-  const back=()=>{ if(step==="categories") navigate("/"); else if(step==="templates"){setStep("categories");setSelCat(null);} else{setStep("templates");setSelTpl(null);setOutput("");} };
+  const back=()=>{
+    if(step==="categories") navigate("/");
+    else if(step==="templates"){ setStep("categories"); setSelCat(null); }
+    else { setStep("templates"); setSelTpl(null); setOutput(""); }
+  };
 
   return(
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",...mono}}>
       <CyberBackground/>
 
+      {/* Custom header with smart back button */}
+      <div style={{position:"sticky",top:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"space-between",
+        padding:"12px 24px",background:"rgba(0,5,18,0.68)",borderBottom:"1px solid rgba(0,200,255,0.12)",
+        backdropFilter:"blur(48px)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <motion.button onClick={back} whileHover={{scale:1.04,x:-2}} whileTap={{scale:0.97}}
+            style={{display:"flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:11,
+              background:"rgba(0,200,255,0.09)",
+              border:"1.5px solid rgba(0,200,255,0.3)",
+              color:"rgba(0,220,255,0.9)",cursor:"pointer",transition:"all .18s"}}
+            onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(0,200,255,0.18)";el.style.borderColor="rgba(0,230,255,0.55)";el.style.boxShadow="0 0 20px rgba(0,200,255,0.2)";}}
+            onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(0,200,255,0.09)";el.style.borderColor="rgba(0,200,255,0.3)";el.style.boxShadow="none";}}>
+            <ArrowLeft style={{width:15,height:15}}/>
+            <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.1em"}}>
+              {step==="result"?"← BACK TO TEMPLATES":step==="templates"?"← CATEGORIES":"← HOME"}
+            </span>
+          </motion.button>
+          <div>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,letterSpacing:"0.06em",color:"rgba(200,245,255,0.96)"}}>
+              {step==="categories"?"CREATE FOR ME":step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
+            </div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(0,190,230,0.45)",marginTop:1,letterSpacing:"0.06em"}}>
+              {step==="categories"?"SELECT DOCUMENT TYPE":step==="templates"?`← ${selCat?.label.toUpperCase() || "CATEGORY"}  ›  CHOOSE TEMPLATE`:`← ${selCat?.label.toUpperCase() || "TEMPLATES"}  ›  PREVIEW`}
+            </div>
+          </div>
+        </div>
+        {allRecords.length > 1 && (
+          <select value={record?.id||""} onChange={e=>setRecord(allRecords.find(r=>r.id===e.target.value)||null)}
+            className="input-cyber" style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,
+              letterSpacing:"0.08em",padding:"6px 12px",borderRadius:8,maxWidth:200}}>
+            {allRecords.map(r=><option key={r.id} value={r.id}>{r.name} {r.surname}</option>)}
+          </select>
+        )}
+      </div>
+      <div style={{display:"none"}}>
       <PageHeader
         title={step==="categories"?"CREATE FOR ME":step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
         subtitle={step==="categories"?"SELECT DOCUMENT TYPE":step==="templates"?"CHOOSE A TEMPLATE":"PREVIEW & DOWNLOAD"}
@@ -335,6 +374,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
           ) : undefined
         }
       />
+      </div>
       <div style={{flex:1,padding:"24px 28px 72px",position:"relative",zIndex:1,maxWidth:1100,width:"100%",margin:"0 auto"}}>
         <AnimatePresence mode="wait">
 
@@ -504,7 +544,14 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
                   </div>
                 </div>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
-                  <button onClick={()=>{setStep("templates");setSelTpl(null);setOutput("");}} style={{...mono,fontSize:10,fontWeight:700,letterSpacing:"0.12em",padding:"8px 14px",borderRadius:9,border:"1px solid rgba(203,178,120,0.35)",background:"transparent",color:"rgba(203,178,120,0.7)",cursor:"pointer"}}>← CHANGE</button>
+                  <button onClick={()=>{setStep("templates");setSelTpl(null);setOutput("");}}
+                    style={{...mono,display:"flex",alignItems:"center",gap:7,fontSize:11,fontWeight:700,letterSpacing:"0.1em",padding:"10px 18px",borderRadius:10,
+                      border:"1.5px solid rgba(0,200,255,0.35)",background:"rgba(0,180,255,0.08)",
+                      color:"rgba(0,220,255,0.85)",cursor:"pointer",transition:"all .18s",fontFamily:"'Orbitron',sans-serif"}}
+                    onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,190,255,0.18)";e.currentTarget.style.borderColor="rgba(0,220,255,0.6)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,180,255,0.08)";e.currentTarget.style.borderColor="rgba(0,200,255,0.35)";}}>
+                    ← CHOOSE ANOTHER TEMPLATE
+                  </button>
                   <button onClick={()=>pickTemplate(selTpl!)} style={{display:"flex",alignItems:"center",gap:5,...mono,fontSize:10,fontWeight:700,letterSpacing:"0.12em",padding:"8px 14px",borderRadius:9,border:`1px solid ${selCat?.border}`,background:selCat?.bg,color:selCat?.color,cursor:"pointer"}}><RefreshCw size={11}/> REFRESH</button>
                   <button onClick={handleDownload} style={{display:"flex",alignItems:"center",gap:5,...mono,fontSize:10,fontWeight:700,letterSpacing:"0.12em",padding:"8px 14px",borderRadius:9,border:`1.5px solid ${selCat?.border}`,background:selCat?.bg,color:selCat?.color,cursor:"pointer"}}><Download size={12}/> DOWNLOAD</button>
                   <button onClick={handlePrint} style={{display:"flex",alignItems:"center",gap:5,...mono,fontSize:10,fontWeight:700,letterSpacing:"0.12em",padding:"8px 14px",borderRadius:9,border:"1.5px solid rgba(232,200,112,0.55)",background:"rgba(232,200,112,0.14)",color:"#f0dc90",cursor:"pointer"}}><Printer size={12}/> PRINT</button>

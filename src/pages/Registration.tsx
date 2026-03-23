@@ -128,18 +128,26 @@ const F=({label,children,required}:{label:string;children:React.ReactNode;requir
 );
 
 const SectionHeader=({icon:Icon,title}:{icon:any;title:string})=>(
-  <div style={{display:"flex",alignItems:"center",gap:10,paddingBottom:12,marginBottom:16,
-    borderBottom:"1px solid rgba(50,140,255,0.18)"}}>
-    <div style={{width:32,height:32,borderRadius:9,
-      background:"linear-gradient(135deg,rgba(40,120,255,0.22),rgba(20,80,200,0.14))",
-      border:"1px solid rgba(70,160,255,0.4)",
+  <div style={{display:"flex",alignItems:"center",gap:12,paddingBottom:14,marginBottom:18,
+    borderBottom:"1px solid rgba(0,200,255,0.15)",position:"relative" as const}}>
+    {/* Accent line on the left */}
+    <div style={{position:"absolute",left:-24,top:0,bottom:14,width:3,
+      background:"linear-gradient(180deg,hsl(195,100%,55%),transparent)",
+      borderRadius:"0 2px 2px 0"}}/>
+    <div style={{width:36,height:36,borderRadius:10,flexShrink:0,
+      background:"linear-gradient(135deg,rgba(0,180,255,0.18),rgba(0,80,200,0.12))",
+      border:"1.5px solid rgba(0,200,255,0.38)",
       display:"flex",alignItems:"center",justifyContent:"center",
-      boxShadow:"0 0 12px rgba(60,140,255,0.2)"}}>
-      <Icon style={{width:14,height:14,color:"rgba(100,190,255,0.95)"}}/> 
+      boxShadow:"0 0 16px rgba(0,190,255,0.2),inset 0 1px 0 rgba(0,220,255,0.12)"}}>
+      <Icon style={{width:16,height:16,color:"hsl(195,100%,68%)",filter:"drop-shadow(0 0 4px rgba(0,200,255,0.6))"}}/>
     </div>
-    <h2 style={{fontFamily:"'Syne',system-ui,sans-serif",fontSize:13,fontWeight:800,
-      letterSpacing:"0.08em",color:"rgba(180,225,255,0.98)",margin:0,textTransform:"uppercase" as const,
-      textShadow:"0 0 18px rgba(80,160,255,0.35)"}}>{title}</h2>
+    <div>
+      <h2 style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:800,
+        letterSpacing:"0.12em",color:"rgba(180,240,255,0.98)",margin:0,textTransform:"uppercase" as const,
+        textShadow:"0 0 16px rgba(0,200,255,0.35)"}}>{title}</h2>
+      <div style={{width:40,height:1.5,marginTop:4,borderRadius:1,
+        background:"linear-gradient(90deg,hsl(195,100%,55%),transparent)"}}/>
+    </div>
   </div>
 );
 const ToggleStyle=(active:boolean,hue=185)=>({
@@ -705,31 +713,51 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
       </div>
 
       {/* ── SYSTEM ACCESS ACCOUNT ── */}
-      <div className="rounded-2xl overflow-hidden" style={{border:"1.5px solid hsla(195,100%,55%,0.4)",background:"hsla(195,100%,45%,0.05)"}}>
+      <div style={{borderRadius:16,overflow:"hidden",
+        border:"2px solid rgba(0,200,255,0.25)",
+        background:"linear-gradient(160deg,rgba(0,15,36,0.96),rgba(0,8,24,0.98))",
+        boxShadow:"0 0 40px rgba(0,180,255,0.08),inset 0 1px 0 rgba(0,220,255,0.08)"}}>
         {/* Header toggle */}
-        <div className="flex items-center justify-between px-5 py-4 cursor-pointer"
-          style={{borderBottom: acctCreate ? "1px solid hsla(195,100%,55%,0.2)" : "none", background:"hsla(195,100%,45%,0.08)"}}
-          onClick={()=>setAcctCreate(!acctCreate)}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{background:"hsla(195,100%,50%,0.15)",border:"1.5px solid hsla(195,100%,55%,0.45)"}}>
-              <Shield className="w-4 h-4" style={{color:"hsl(195,100%,72%)"}}/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+          padding:"16px 20px",cursor:"pointer",
+          borderBottom: acctCreate ? "1px solid rgba(0,200,255,0.15)" : "none",
+          background:"rgba(0,200,255,0.05)",
+          transition:"background .18s"}}
+          onClick={()=>setAcctCreate(!acctCreate)}
+          onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="rgba(0,200,255,0.09)"}
+          onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="rgba(0,200,255,0.05)"}>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <div style={{width:44,height:44,borderRadius:14,flexShrink:0,
+              background:"linear-gradient(135deg,rgba(0,180,255,0.18),rgba(0,80,200,0.12))",
+              border:"1.5px solid rgba(0,200,255,0.4)",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:"0 0 20px rgba(0,190,255,0.2)"}}>
+              <Shield style={{width:20,height:20,color:"hsl(195,100%,70%)",filter:"drop-shadow(0 0 6px rgba(0,200,255,0.7))"}}/>
             </div>
             <div>
-              <p className="font-display font-bold text-sm tracking-wider" style={{color:"hsl(195,100%,80%)"}}>SYSTEM ACCESS ACCOUNT</p>
-              <p className="font-mono text-[10px] tracking-wider mt-0.5" style={{color:"hsla(195,80%,65%,0.55)"}}>
+              <p style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,
+                letterSpacing:"0.1em",color:"hsl(195,100%,80%)",margin:0,
+                textShadow:"0 0 16px rgba(0,200,255,0.4)"}}>SYSTEM ACCESS ACCOUNT</p>
+              <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.08em",
+                color:"rgba(0,180,220,0.5)",margin:"3px 0 0"}}>
                 Create login credentials for this identity to access BIMS
               </p>
             </div>
           </div>
           {/* Toggle */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="font-mono text-[10px] font-bold tracking-wider" style={{color:acctCreate?"hsl(195,100%,72%)":"hsla(38,60%,50%,0.5)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+            <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.12em",
+              color:acctCreate?"hsl(195,100%,72%)":"rgba(120,140,160,0.5)"}}>
               {acctCreate?"ENABLED":"DISABLED"}
             </span>
-            <div className="w-11 h-6 rounded-full transition-all flex items-center px-0.5"
-              style={{background:acctCreate?"hsla(195,100%,45%,0.4)":"hsla(0,0%,25%,0.4)",border:`1.5px solid ${acctCreate?"hsla(195,100%,55%,0.6)":"hsla(0,0%,35%,0.4)"}`}}>
-              <div className="w-4 h-4 rounded-full transition-all" style={{background:acctCreate?"hsl(195,100%,72%)":"hsl(0,0%,55%)",transform:acctCreate?"translateX(20px)":"translateX(0)"}}/>
+            <div style={{width:44,height:24,borderRadius:99,transition:"all .22s",display:"flex",alignItems:"center",padding:"0 2px",
+              background:acctCreate?"rgba(0,200,255,0.25)":"rgba(60,80,100,0.25)",
+              border:`1.5px solid ${acctCreate?"rgba(0,215,255,0.6)":"rgba(80,110,140,0.35)"}`,
+              boxShadow:acctCreate?"0 0 12px rgba(0,200,255,0.3)":"none"}}>
+              <div style={{width:18,height:18,borderRadius:"50%",transition:"all .22s",
+                background:acctCreate?"hsl(195,100%,68%)":"hsl(210,20%,55%)",
+                boxShadow:acctCreate?"0 0 8px rgba(0,200,255,0.6)":"none",
+                transform:acctCreate?"translateX(20px)":"translateX(0)"}}/>
             </div>
           </div>
         </div>

@@ -54,47 +54,65 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
 
 /* ── Password-Only Lock Screen ── */
 const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => void }) => {
-  const [pin,      setPin]      = useState("");
-  const [error,    setError]    = useState("");
-  const [checking, setChecking] = useState(false);
-  const [granted,  setGranted]  = useState(false);
+  type ScanState = "idle"|"scanning"|"preview"|"granting"|"error";
+  const [scanState, setScanState] = useState<ScanState>("idle");
+  const [matchUser, setMatchUser] = useState<any>(null);
+  const [countdown, setCountdown] = useState(2);
   const currentUser = getCurrentUser();
+  const scanRef = useRef<ReturnType<typeof setTimeout>|null>(null);
 
-  const tryPin = () => {
-    if (!pin.trim()) return;
-    setChecking(true); setError("");
-    setTimeout(() => {
-      const ok = currentUser
-        ? (() => { try { const us = JSON.parse(localStorage.getItem("bims_users")||"[]"); const u = us.find((u:any)=>u.username===currentUser.username); return u && pin === u.password; } catch { return false; } })()
-        : unlockDatabase(pin, "UNKNOWN");
-      if (ok) {
-        if (currentUser) unlockDatabase(pin, currentUser.username);
-        setGranted(true);
-        setTimeout(() => onUnlock(), 1100);
-      } else { setError("INCORRECT PASSWORD — ACCESS DENIED"); setPin(""); setChecking(false); }
-    }, 680);
+  useEffect(()=>{
+    if(scanState!=="preview"){setCountdown(2);return;}
+    const iv=setInterval(()=>setCountdown(p=>{if(p<=1){clearInterval(iv);return 0;}return p-1;}),1000);
+    return()=>clearInterval(iv);
+  },[scanState]);
+
+  useEffect(()=>()=>{if(scanRef.current)clearTimeout(scanRef.current);},[]);
+
+  const startScan = () => {
+    if(scanState==="scanning"||scanState==="preview"||scanState==="granting") return;
+    setScanState("scanning");
+    scanRef.current = setTimeout(()=>{
+      const users:any[] = JSON.parse(localStorage.getItem("bims_users")||"[]");
+      const user = currentUser
+        ? users.find((u:any)=>u.username===currentUser.username&&u.active)
+        : users.find((u:any)=>u.active);
+      if(!user){setScanState("error");return;}
+      setMatchUser(user);
+      setScanState("preview");
+      // auto-grant after countdown
+      scanRef.current = setTimeout(()=>{
+        setScanState("granting");
+        unlockDatabase(user.password||"auto", user.username);
+        setTimeout(()=>onUnlock(),900);
+      },2000);
+    },2400);
   };
 
+  const resetScan = ()=>{
+    if(scanRef.current)clearTimeout(scanRef.current);
+    setScanState("idle"); setMatchUser(null);
+  };
+
+  const fpColor  = scanState==="error"?"hsl(0,85%,62%)":scanState==="preview"||scanState==="granting"?"hsl(195,100%,58%)":scanState==="scanning"?"hsl(195,100%,65%)":"hsl(195,80%,45%)";
+  const glowCol  = scanState==="error"?"rgba(220,60,60,0.6)":scanState==="scanning"||scanState==="preview"||scanState==="granting"?"rgba(0,200,255,0.55)":"rgba(0,160,220,0.3)";
+
   const sideLeft = [
-    {icon:"🔒", label:"VAULT LOCK",  val:"AES-256"},
-    {icon:"⚡", label:"SESSION",     val:"ACTIVE"},
-    {icon:"🛡️", label:"CLEARANCE",  val:"L3 RESTRICTED"},
-    {icon:"🔐", label:"PROTOCOL",   val:"TLS 1.3"},
-    {icon:"◉",  label:"STATUS",     val:"STANDBY"},
+    {icon:"🔒", label:"VAULT LOCK", val:"AES-256"},
+    {icon:"⚡", label:"SESSION", val:"ACTIVE"},
+    {icon:"🛡️", label:"CLEARANCE", val:"L3 RESTRICTED"},
+    {icon:"🔐", label:"PROTOCOL", val:"TLS 1.3"},
+    {icon:"◉", label:"STATUS", val:"STANDBY"},
   ];
-  const sideRight = ["ACCESS","ENCRYPT","VAULT"];
-  const sideRightPct = [87,100,64];
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
       <CyberBackground />
-
       {/* BACK NAV */}
       <div className="fixed top-0 left-0 right-0 z-20 flex items-center px-4 py-3 cyber-header">
         <button onClick={onBack}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 transition-all font-hud text-sm font-bold tracking-[0.16em]"
-          style={{fontFamily:"'Orbitron',monospace",fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:"hsl(192,100%,72%)",textShadow:"0 0 12px hsla(192,100%,58%,0.8)"}}
-          onMouseEnter={e=>e.currentTarget.style.background="hsla(192,100%,52%,0.08)"}
+          style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:"hsl(195,100%,72%)",background:"none",border:"none",cursor:"pointer",padding:"6px 10px",borderRadius:8,transition:"all .18s"}}
+          onMouseEnter={e=>e.currentTarget.style.background="rgba(0,200,255,0.08)"}
           onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           <ArrowLeft className="w-4 h-4"/>DATABASE ACCESS
         </button>
@@ -104,144 +122,146 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
       <div className="fixed left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2.5 pointer-events-none">
         {sideLeft.map((item,i)=>(
           <motion.div key={i}
-            initial={{opacity:0,x:-24}} animate={{opacity:1,x:0}} transition={{delay:i*0.12,duration:0.4}}
-            style={{background:"hsla(215,55%,5%,0.82)",border:"1px solid hsla(192,100%,52%,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
+            initial={{opacity:0,x:-24}} animate={{opacity:1,x:0}} transition={{delay:i*0.12}}
+            style={{background:"rgba(0,8,24,0.85)",border:"1px solid rgba(0,200,255,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
             <motion.div animate={{opacity:[0.35,0.7,0.35]}} transition={{duration:2.5+i*0.4,repeat:Infinity,delay:i*0.3}}>
               <div className="flex items-center gap-2">
                 <span style={{fontSize:12}}>{item.icon}</span>
                 <div>
-                  <div className="font-hud" style={{fontSize:7,letterSpacing:"0.22em",color:"hsla(192,80%,55%,0.42)"}}>{item.label}</div>
-                  <div className="font-hud font-bold" style={{fontSize:9,color:"hsl(192,100%,65%)"}}>{item.val}</div>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:7,letterSpacing:"0.22em",color:"rgba(0,180,220,0.42)"}}>{item.label}</div>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,color:"hsl(195,100%,65%)"}}>{item.val}</div>
                 </div>
               </div>
             </motion.div>
           </motion.div>
         ))}
-        {/* vertical glow line */}
-        <motion.div className="absolute -right-1 top-0 bottom-0 w-px pointer-events-none"
-          style={{background:"linear-gradient(180deg,transparent,hsla(192,100%,55%,0.4),transparent)"}}
-          animate={{opacity:[0.3,0.7,0.3]}} transition={{duration:2.2,repeat:Infinity}}/>
-        {/* scan sweep */}
-        <motion.div className="absolute left-0 right-0 h-px pointer-events-none"
-          style={{background:"linear-gradient(90deg,transparent,hsla(192,100%,55%,0.6),transparent)"}}
-          animate={{top:["0%","100%","0%"]}} transition={{duration:3.5,repeat:Infinity,ease:"easeInOut"}}/>
-      </div>
-
-      {/* RIGHT SIDEBAR */}
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3 pointer-events-none" style={{width:140}}>
-        {/* binary rain */}
-        {Array.from({length:6},(_,i)=>(
-          <motion.div key={i} className="font-mono text-right"
-            style={{fontSize:8,letterSpacing:"0.22em",color:`hsla(192,100%,${52+i*4}%,${0.06+i*0.025})`}}
-            animate={{opacity:[0.04,0.2,0.04]}} transition={{duration:1.4+i*0.25,delay:i*0.18,repeat:Infinity}}>
-            {Array.from({length:8},()=>Math.round(Math.random())).join(" ")}
-          </motion.div>
-        ))}
-        {/* progress bars */}
-        <div className="flex flex-col gap-2 mt-2">
-          {sideRight.map((label,i)=>(
-            <motion.div key={i} initial={{opacity:0,x:24}} animate={{opacity:1,x:0}} transition={{delay:0.4+i*0.2}}>
-              <div className="flex justify-between mb-0.5">
-                <span className="font-hud" style={{fontSize:7,letterSpacing:"0.18em",color:"hsla(192,80%,55%,0.38)"}}>{label}</span>
-                <span className="font-hud font-bold" style={{fontSize:7,color:"hsl(192,100%,62%)"}}>{sideRightPct[i]}%</span>
-              </div>
-              <div className="rounded-full" style={{height:2,background:"hsla(192,60%,20%,0.35)"}}>
-                <motion.div className="h-full rounded-full"
-                  style={{background:`linear-gradient(90deg,hsl(192,100%,52%),hsl(${210+i*20},100%,60%))`}}
-                  initial={{width:0}} animate={{width:`${sideRightPct[i]}%`}}
-                  transition={{duration:1.4,delay:0.6+i*0.3,ease:"easeOut"}}/>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        {/* vertical glow */}
-        <motion.div className="absolute -left-1 top-0 bottom-0 w-px pointer-events-none"
-          style={{background:"linear-gradient(180deg,transparent,hsla(192,100%,55%,0.35),transparent)"}}
-          animate={{opacity:[0.3,0.7,0.3]}} transition={{duration:2.5,repeat:Infinity}}/>
       </div>
 
       {/* MAIN CARD */}
-      <motion.div
-        initial={{opacity:0,y:28,scale:0.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:0.35,ease:"easeOut"}}
-        className="relative z-[1] w-full max-w-sm mt-14 card-surface rounded-2xl p-8 text-center"
-        style={{border:"1px solid hsla(192,100%,52%,0.38)",borderTop:"1px solid hsla(192,100%,65%,0.45)",
-          boxShadow:"0 0 80px hsla(192,100%,52%,0.14),0 0 0 1px hsla(192,100%,52%,0.06),0 24px 64px rgba(0,0,0,.88)",
-          background:"hsla(215,55%,5%,0.9)"}}>
+      <motion.div initial={{opacity:0,y:28,scale:0.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:0.35}}
+        style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,marginTop:56,padding:"32px 28px",textAlign:"center" as const,
+          background:"linear-gradient(160deg,rgba(0,10,28,0.95),rgba(0,6,20,0.98))",
+          border:"1px solid rgba(0,200,255,0.28)",borderTop:"2px solid rgba(0,215,255,0.5)",
+          borderRadius:20,boxShadow:"0 0 80px rgba(0,200,255,0.12),0 24px 64px rgba(0,0,0,0.9)",
+          backdropFilter:"blur(30px)"}}>
 
-        {/* corner brackets */}
+        {/* Corner brackets */}
         {["top-2 left-2 border-t border-l","top-2 right-2 border-t border-r","bottom-2 left-2 border-b border-l","bottom-2 right-2 border-b border-r"].map((cls,i)=>(
           <motion.div key={i} className={`absolute w-4 h-4 ${cls}`}
-            style={{borderColor:"hsla(192,100%,52%,0.38)"}}
+            style={{borderColor:"rgba(0,200,255,0.38)"}}
             animate={{opacity:[0.4,0.9,0.4]}} transition={{duration:2,delay:i*0.4,repeat:Infinity}}/>
         ))}
 
-        {/* icon */}
-        <motion.div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-          style={{background:"hsla(192,100%,52%,0.08)",border:"1px solid hsla(192,100%,58%,0.45)",
-            boxShadow:"0 0 32px hsla(192,100%,52%,0.18),inset 0 1px 0 hsla(192,100%,65%,0.1)"}}
-          animate={{boxShadow:["0 0 32px hsla(192,100%,52%,0.18)","0 0 52px hsla(192,100%,52%,0.32)","0 0 32px hsla(192,100%,52%,0.18)"]}}
-          transition={{duration:3,repeat:Infinity,ease:"easeInOut"}}>
-          {granted
-            ? <motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:"spring",stiffness:300}}>
-                <CheckCircle className="w-8 h-8" style={{color:"hsl(192,100%,68%)",filter:"drop-shadow(0 0 10px hsla(192,100%,55%,0.9))"}}/>
-              </motion.div>
-            : <Lock className="w-8 h-8" style={{color:"hsl(192,100%,68%)",filter:"drop-shadow(0 0 10px hsla(192,100%,55%,0.9))"}}/>}
-        </motion.div>
-
-        <h1 className="font-hud text-xl font-black tracking-[0.22em] mb-1"
-          style={{color:"hsl(192,100%,72%)",textShadow:"0 0 20px hsla(192,100%,58%,0.8),0 0 40px hsla(192,100%,52%,0.3)"}}>
+        <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:18,fontWeight:900,letterSpacing:"0.18em",
+          color:"hsl(195,100%,72%)",textShadow:"0 0 20px rgba(0,200,255,0.8)",marginBottom:4}}>
           DATABASE ACCESS
         </h1>
-        <p className="font-hud text-[9px] tracking-[0.28em] mb-5" style={{color:"hsla(192,80%,55%,0.45)"}}>
-          RESTRICTED — AUTHORISED PERSONNEL ONLY
+        <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.22em",
+          color:"rgba(0,180,220,0.45)",marginBottom:20,textTransform:"uppercase" as const}}>
+          BIOMETRIC VERIFICATION REQUIRED
         </p>
 
-        {currentUser && !granted && (
-          <div className="flex items-center justify-center gap-2 mb-4 px-3 py-1.5 rounded-lg mx-auto"
-            style={{background:"hsla(192,100%,52%,0.06)",border:"1px solid hsla(192,100%,52%,0.18)",width:"fit-content"}}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{background:"hsl(192,100%,60%)",boxShadow:"0 0 6px hsla(192,100%,55%,0.7)"}}/>
-            <span className="font-hud text-[9px] tracking-[0.18em]" style={{color:"hsla(192,80%,62%,0.65)"}}>
-              SIGNED IN AS <span style={{color:"hsl(192,100%,72%)"}}>{currentUser.username.toUpperCase()}</span>
+        {/* Scanner disc */}
+        <div style={{position:"relative",display:"inline-block",marginBottom:20}}>
+          <motion.div animate={{scale:[0.88,1.1,0.88],opacity:[0.3,0.6,0.3]}} transition={{duration:3.2,repeat:Infinity}}
+            style={{position:"absolute",inset:-36,borderRadius:"50%",background:`radial-gradient(circle,${glowCol} 0%,transparent 68%)`,pointerEvents:"none"}}/>
+          <svg style={{position:"absolute",inset:-20,overflow:"visible",pointerEvents:"none"}} viewBox="0 0 260 260" width="260" height="260">
+            <motion.circle cx="130" cy="130" r="124" fill="none"
+              stroke={fpColor} strokeWidth="1.8" strokeDasharray="38 480" strokeLinecap="round"
+              style={{filter:`drop-shadow(0 0 7px ${glowCol})`}}
+              animate={{rotate:[0,360]}} transition={{duration:scanState==="scanning"?1.1:4,repeat:Infinity,ease:"linear"}}/>
+            <motion.circle cx="130" cy="130" r="124" fill="none"
+              stroke={`${fpColor}35`} strokeWidth="0.8" strokeDasharray="8 26"
+              animate={{rotate:[360,0]}} transition={{duration:7,repeat:Infinity,ease:"linear"}}/>
+          </svg>
+          <div className={scanState==="scanning"?"scanner-pulse":""} style={{width:220,height:220,borderRadius:"50%",
+            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(0,18,42,0.97),rgba(0,8,24,0.99))",
+            border:`2px solid ${fpColor}55`,
+            boxShadow:`0 0 60px ${glowCol}20,inset 0 0 60px rgba(0,0,0,0.5)`,
+            display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:10,
+            position:"relative",overflow:"hidden",transition:"all 0.4s"}}>
+            <div style={{position:"absolute",inset:20,borderRadius:"50%",border:`1px solid ${fpColor}25`,pointerEvents:"none"}}/>
+            {scanState==="scanning" && (
+              <motion.div animate={{y:["-55%","155%"]}} transition={{duration:0.85,repeat:Infinity,ease:"linear"}}
+                style={{position:"absolute",left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${fpColor}dd,transparent)`,boxShadow:`0 0 14px ${glowCol}`}}/>
+            )}
+            {scanState==="granting" ? (
+              <motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:"spring",stiffness:300}}>
+                <CheckCircle style={{width:60,height:60,color:"hsl(195,100%,65%)",filter:`drop-shadow(0 0 18px ${glowCol})`}}/>
+              </motion.div>
+            ) : (
+              <motion.div animate={scanState==="scanning"?{scale:[1,1.09,1],opacity:[0.78,1,0.78]}:{scale:1,opacity:1}}
+                transition={{duration:0.85,repeat:scanState==="scanning"?Infinity:0}}>
+                <Fingerprint style={{width:72,height:72,color:fpColor,filter:`drop-shadow(0 0 20px ${glowCol})`}}/>
+              </motion.div>
+            )}
+            <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:"0.22em",color:`${fpColor}80`,textTransform:"uppercase" as const}}>
+              {scanState==="scanning"?"SCANNING…":scanState==="preview"||scanState==="granting"?"VERIFIED":scanState==="error"?"ERROR":"PLACE FINGER"}
             </span>
           </div>
-        )}
+        </div>
 
-        {granted ? (
-          <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} className="py-4">
-            <motion.div animate={{opacity:[0.6,1,0.6]}} transition={{duration:0.9,repeat:Infinity}}
-              className="font-hud text-sm tracking-[0.24em] mb-3" style={{color:"hsl(192,100%,68%)"}}>
-              ✓ &nbsp; ACCESS GRANTED
+        {/* Identity card on preview */}
+        <AnimatePresence>
+          {(scanState==="preview"||scanState==="granting") && matchUser && (
+            <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+              style={{borderRadius:12,overflow:"hidden",border:"1px solid rgba(0,200,255,0.3)",
+                background:"rgba(0,10,28,0.95)",marginBottom:16,textAlign:"left" as const}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                padding:"8px 14px",background:"rgba(0,200,255,0.06)",borderBottom:"1px solid rgba(0,200,255,0.15)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <motion.div animate={{opacity:[1,0.3,1]}} transition={{duration:1,repeat:Infinity}}
+                    style={{width:7,height:7,borderRadius:"50%",background:"hsl(195,100%,58%)",boxShadow:"0 0 8px rgba(0,200,255,0.8)"}}/>
+                  <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.16em",color:"rgba(0,215,255,0.85)"}}>
+                    IDENTITY CONFIRMED — ACCESS IN {countdown}s
+                  </span>
+                </div>
+                <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,color:"hsl(195,100%,65%)"}}>{countdown}</span>
+              </div>
+              <div style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12}}>
+                <div style={{width:44,height:44,borderRadius:10,background:"rgba(0,180,255,0.12)",border:"1px solid rgba(0,200,255,0.3)",
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"hsl(195,100%,65%)",flexShrink:0}}>
+                  {matchUser.fullName?.charAt(0).toUpperCase()||"?"}
+                </div>
+                <div>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,color:"rgba(200,245,255,0.96)"}}>{matchUser.fullName}</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,195,240,0.55)",marginTop:2}}>
+                    {matchUser.role?.toUpperCase()} · @{matchUser.username}
+                  </div>
+                </div>
+              </div>
+              <div style={{height:3,margin:"0 14px 12px",borderRadius:2,background:"rgba(0,180,220,0.12)",overflow:"hidden"}}>
+                <motion.div style={{height:"100%",background:"linear-gradient(90deg,hsl(195,100%,48%),hsl(210,100%,60%))",originX:0}}
+                  animate={{width:`${((2-countdown)/2)*100}%`}} transition={{duration:1,ease:"linear"}}/>
+              </div>
+              <div style={{textAlign:"right" as const,paddingRight:14,paddingBottom:10}}>
+                <button onClick={resetScan} style={{background:"none",border:"none",cursor:"pointer",
+                  fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:"0.12em",color:"rgba(0,180,220,0.35)",transition:"color .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.color="rgba(0,220,255,0.7)"}
+                  onMouseLeave={e=>e.currentTarget.style.color="rgba(0,180,220,0.35)"}>
+                  NOT ME — CANCEL
+                </button>
+              </div>
             </motion.div>
-            <div className="h-px rounded-full overflow-hidden mx-6" style={{background:"hsla(192,60%,20%,0.4)"}}>
-              <motion.div className="h-full" style={{background:"linear-gradient(90deg,hsl(192,100%,55%),hsl(210,100%,62%))"}}
-                initial={{width:"0%"}} animate={{width:"100%"}} transition={{duration:1,ease:"easeInOut"}}/>
-            </div>
-          </motion.div>
-        ) : (
-          <>
-            <div className="mb-2 text-left">
-              <label className="text-label">ENTER PASSWORD</label>
-              <input type="password" value={pin}
-                onChange={e=>{setPin(e.target.value);setError("");}}
-                onKeyDown={e=>e.key==="Enter"&&tryPin()}
-                placeholder="••••••••" maxLength={32} autoFocus
-                className="input-cyber text-center font-bold"
-                style={{fontSize:"1.3rem",letterSpacing:"0.5em",borderColor:error?"hsl(0,90%,58%)":undefined}}/>
-            </div>
-            <div className="h-6 flex items-center justify-center mb-3">
-              {error && <motion.p initial={{opacity:0,y:-4}} animate={{opacity:1,y:0}}
-                className="font-hud text-[9px] tracking-[0.16em]" style={{color:"hsl(0,90%,65%)"}}>{error}</motion.p>}
-            </div>
-            <button onClick={tryPin} disabled={checking||!pin.trim()}
-              className="btn-cyan w-full h-11 rounded-lg flex items-center justify-center gap-2 text-[11px] mb-3 disabled:opacity-40"
-              onMouseEnter={e=>{if(!checking&&pin.trim())e.currentTarget.style.background="hsla(192,100%,52%,0.22)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="hsla(192,100%,52%,0.1)";}}>
-              {checking
-                ? <><div className="w-4 h-4 border-2 rounded-full animate-spin"
-                    style={{borderColor:"hsla(192,100%,55%,0.3)",borderTopColor:"hsl(192,100%,68%)"}}/>VERIFYING...</>
-                : <><Lock className="w-4 h-4"/>UNLOCK DATABASE</>}
-            </button>
-          </>
+          )}
+        </AnimatePresence>
+
+        {/* Scan button */}
+        {(scanState==="idle"||scanState==="error") && (
+          <motion.button onClick={startScan}
+            whileHover={{scale:1.015,y:-2}} whileTap={{scale:0.97}}
+            style={{width:"100%",height:46,borderRadius:13,display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+              fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,letterSpacing:"0.1em",
+              color:"hsl(205,80%,4%)",cursor:"pointer",border:"0",
+              background:"linear-gradient(135deg,hsl(195,100%,45%),hsl(210,100%,58%))",
+              boxShadow:"0 6px 28px rgba(0,200,255,0.45),inset 0 1px 0 rgba(255,255,255,0.2)",
+              position:"relative" as const,overflow:"hidden"}}>
+            <motion.span style={{position:"absolute" as const,inset:0,
+              background:"linear-gradient(110deg,transparent 20%,rgba(255,255,255,0.15) 50%,transparent 80%)"}}
+              animate={{x:["-100%","100%"]}} transition={{duration:2.4,repeat:Infinity,repeatDelay:0.6}}/>
+            <Fingerprint style={{width:18,height:18}}/>
+            {scanState==="error"?"RETRY SCAN":"SCAN FINGERPRINT"}
+          </motion.button>
         )}
       </motion.div>
     </div>

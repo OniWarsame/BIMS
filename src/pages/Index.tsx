@@ -522,21 +522,14 @@ Respond ONLY with valid JSON (no markdown):
             <Shield style={{width:16,height:16,color:"white"}}/>
           </div>
           <div>
-            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(220,240,255,0.96)"}}>
-              Nexus<span style={{color:"hsl(200,100%,68%)",marginLeft:4}}>BIMS</span>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:900,letterSpacing:"0.1em",color:"rgba(200,245,255,0.98)",textShadow:"0 0 18px rgba(0,200,255,0.45)"}}>
+              BIMS
             </div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(80,150,220,0.45)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,color:"rgba(0,185,230,0.42)",letterSpacing:"0.12em",textTransform:"uppercase",marginTop:1}}>Biometric Identity Management System</div>
           </div>
         </div>
 
-        <div className="nav-status-pills" style={{display:"flex",gap:5,flex:1,alignItems:"center"}}>
-          {([{l:"Online",H:158},{l:"Secured",H:200},{l:"AES-256",H:36}] as const).map(({l,H},i)=>(
-            <div key={l} style={{display:"flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:99,background:`hsla(${H},80%,50%,0.08)`,border:`1px solid hsla(${H},80%,50%,0.22)`}}>
-              <div className="status-dot" style={{background:`hsl(${H},90%,58%)`,boxShadow:`0 0 5px hsl(${H},90%,55%)`,animationDelay:`${i*0.8}s`}}/>
-              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:`hsla(${H},60%,70%,0.7)`}}>{l}</span>
-            </div>
-          ))}
-        </div>
+        <div style={{flex:1}}/>
 
         <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
           <button onClick={()=>setShowSupport(true)}
@@ -561,15 +554,14 @@ Respond ONLY with valid JSON (no markdown):
           </button>
           <div style={{width:1,height:20,background:"rgba(255,255,255,0.1)",margin:"0 2px"}}/>
           <button onClick={()=>setShowUserMenu(v=>!v)}
-            style={{display:"flex",alignItems:"center",gap:8,padding:"4px 10px 4px 4px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",transition:"all .18s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,120,255,0.1)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
-            <div style={{width:24,height:24,borderRadius:"50%",background:`${RC[RU]}22`,border:`2px solid ${RC[RU]}55`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,color:RC[RU]}}>
-              {(currentUser?.username||"?")[0].toUpperCase()}
+            style={{display:"flex",alignItems:"center",gap:7,padding:"4px 12px 4px 4px",borderRadius:99,cursor:"pointer",background:`${RC[RU]}12`,border:`1px solid ${RC[RU]}38`,transition:"all .18s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background=`${RC[RU]}20`;}}
+            onMouseLeave={e=>{e.currentTarget.style.background=`${RC[RU]}12`;}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:`${RC[RU]}25`,border:`2px solid ${RC[RU]}66`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:800,color:RC[RU]}}>
+              {(currentUser?.role||"analyst")[0].toUpperCase()}
             </div>
-            <div>
-              <div style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:600,color:"rgba(210,235,255,0.92)",lineHeight:1.2}}>{currentUser?.username||"user"}</div>
-              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:RC[RU],letterSpacing:"0.05em",lineHeight:1}}>{(currentUser?.role||"analyst").toUpperCase()}</div>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,color:RC[RU],letterSpacing:"0.1em"}}>
+              {(currentUser?.role||"analyst").toUpperCase()}
             </div>
           </button>
           <button onClick={()=>{doLogout();window.location.href="/login";}}
@@ -609,9 +601,25 @@ Respond ONLY with valid JSON (no markdown):
 
           {/* Title */}
           <div style={{textAlign:"center" as const}}>
-            <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(15px,2.2vw,24px)",fontWeight:800,letterSpacing:"0.1em",color:"rgba(220,245,255,0.98)",textTransform:"uppercase" as const,margin:"0 0 6px"}}>
-              Biometric Identity Scanner
-            </h1>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:8}}>
+              <motion.div
+                animate={{boxShadow:["0 0 20px rgba(0,200,255,0.3)","0 0 40px rgba(0,200,255,0.6)","0 0 20px rgba(0,200,255,0.3)"]}}
+                transition={{duration:2.8,repeat:Infinity,ease:"easeInOut"}}
+                style={{width:48,height:48,borderRadius:14,
+                  background:"linear-gradient(135deg,rgba(0,160,255,0.2),rgba(0,80,200,0.15))",
+                  border:"1.5px solid rgba(0,200,255,0.4)",
+                  display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(0,200,255,0.8))"}}/>
+              </motion.div>
+              <div style={{textAlign:"left" as const}}>
+                <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(0,200,255,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
+                  BIMS
+                </h1>
+                <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"clamp(6px,0.85vw,8.5px)",letterSpacing:"0.18em",color:"rgba(0,195,235,0.48)",margin:"4px 0 0",textTransform:"uppercase" as const}}>
+                  Biometric Identity Management System
+                </p>
+              </div>
+            </div>
             <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
               <motion.span
                 animate={{opacity:[1,0.15,1]}}
