@@ -82,12 +82,12 @@
 @layer base {
   * { @apply border-border; }
 
-  html { scroll-behavior: smooth; background: hsl(205,55%,5%); }
+  html { scroll-behavior: smooth; background: #020e18; }
 
   body {
     font-family: 'Exo 2', -apple-system, sans-serif;
     font-weight: 400;
-    background: hsl(205,55%,5%);
+    background: transparent;
     color: var(--ice);
     font-size: 14px;
     -webkit-font-smoothing: antialiased;

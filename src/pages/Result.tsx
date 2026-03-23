@@ -522,7 +522,7 @@ const ResultPage = () => {
         {showEdit && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-14 overflow-y-auto"
-            style={{background:"hsla(25,15%,4%,0.94)",backdropFilter:"blur(18px)"}}>
+            style={{background:"rgba(4,14,24,0.92)",backdropFilter:"blur(18px)"}}>
             <motion.div initial={{scale:0.94,y:20}} animate={{scale:1,y:0}} exit={{scale:0.94,y:20}} transition={{duration:0.22}}
               className="card-surface rounded-2xl overflow-hidden w-full max-w-3xl mb-8"
               style={{border:"1.5px solid hsla(33,100%,52%,0.45)",boxShadow:"0 0 80px hsla(33,100%,52%,0.1),0 24px 60px rgba(0,0,0,.8)"}}>
@@ -845,7 +845,7 @@ const ResultPage = () => {
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
             <ArrowLeft className="w-4 h-4"/>
           </button>
-          <div className="w-9 h-9 rounded border border-primary/30 flex items-center justify-center" style={{ background:"hsla(192,100%,52%,0.08)" }}>
+          <div className="w-9 h-9 rounded border border-primary/30 flex items-center justify-center" style={{ background:"rgba(40,185,215,0.08)" }}>
             <Shield className="w-4 h-4 text-primary" />
           </div>
           <div>

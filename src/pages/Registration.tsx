@@ -44,7 +44,7 @@ const STEPS = [
 const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:boolean;onClose:()=>void}) => (
   <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
     className="fixed inset-0 z-50 flex items-center justify-center p-6"
-    style={{background:"hsla(25,15%,4%,0.94)",backdropFilter:"blur(16px)"}} onClick={onClose}>
+    style={{background:"rgba(4,14,24,0.92)",backdropFilter:"blur(16px)"}} onClick={onClose}>
     <motion.div initial={{scale:0.92,y:16}} animate={{scale:1,y:0}} exit={{scale:0.92}}
       className="card-surface rounded-xl overflow-hidden max-w-xl w-full"
       style={{border:"1.5px solid hsla(192,100%,55%,0.4)",boxShadow:"0 0 60px hsla(192,100%,55%,0.12)"}}
@@ -56,7 +56,7 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
           <X className="w-4 h-4"/>
         </button>
       </div>
-      <div className="p-5 flex items-center justify-center min-h-40" style={{background:"hsla(25,12%,5%,0.9)"}}>
+      <div className="p-5 flex items-center justify-center min-h-40" style={{background:"rgba(4,14,24,0.92)"}}>
         {isImg
           ? <img src={src} alt={title} className="max-w-full max-h-80 object-contain rounded-lg"/>
           : <div className="text-center space-y-3">
@@ -153,7 +153,7 @@ const SectionHeader=({icon:Icon,title}:{icon:any;title:string})=>(
 const ToggleStyle=(active:boolean,hue=185)=>({
   fontSize:"0.8rem",fontWeight:700,
   border:      active?`2px solid hsl(${hue},100%,55%)`:`1.5px solid hsla(${hue},70%,55%,0.38)`,
-  background:  active?`hsla(${hue},100%,50%,0.18)`:"hsla(25,12%,9%,0.85)",
+  background:  active?`hsla(${hue},100%,50%,0.18)`:"rgba(4,14,24,0.72)",
   color:       active?`hsl(${hue},100%,82%)`:`hsl(${hue},60%,65%)`,
   boxShadow:   active?`0 0 16px hsla(${hue},100%,50%,0.22)`:"none",
 });
@@ -1040,7 +1040,7 @@ const Registration = () => {
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
             <ArrowLeft className="w-4 h-4"/>
           </button>
-          <div className="w-9 h-9 rounded border border-primary/30 flex items-center justify-center" style={{background:"hsla(192,100%,52%,0.08)"}}>
+          <div className="w-9 h-9 rounded border border-primary/30 flex items-center justify-center" style={{background:"rgba(40,185,215,0.08)"}}>
             <Shield className="w-4 h-4 text-primary"/>
           </div>
           <div>

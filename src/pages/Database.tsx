@@ -36,7 +36,7 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
           <X className="w-4 h-4 text-primary"/>
         </button>
       </div>
-      <div className="p-5 flex items-center justify-center min-h-48" style={{background:"hsla(185,80%,4%,0.95)"}}>
+      <div className="p-5 flex items-center justify-center min-h-48" style={{background:"rgba(4,18,28,0.94)"}}>
         {isImg
           ? <img src={src} alt={title} className="max-w-full max-h-96 object-contain rounded-lg" style={{border:"1px solid hsla(185,55%,28%,0.3)"}}/>
           : <div className="text-center space-y-3">

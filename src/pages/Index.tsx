@@ -61,12 +61,12 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
         fontFamily:"'Orbitron',sans-serif", fontSize:8, fontWeight:700, letterSpacing:"0.14em",
         padding:"5px 12px", borderRadius:6, cursor:"pointer",
         border:`1px solid ${isEdit?"hsla(192,100%,52%,0.4)":"hsla(142,80%,50%,0.55)"}`,
-        background:isEdit?"hsla(192,100%,52%,0.08)":"hsla(142,80%,45%,0.1)",
+        background:isEdit?"rgba(40,185,215,0.08)":"hsla(142,80%,45%,0.1)",
         color:isEdit?"hsl(192,68%,72%)":"hsl(142,80%,68%)",
         transition:"all .15s"
       } as React.CSSProperties}
       onMouseEnter={e=>{e.currentTarget.style.background=isEdit?"hsla(192,100%,52%,0.2)":"hsla(142,80%,45%,0.22)"; e.currentTarget.style.boxShadow=isEdit?"0 0 12px hsla(192,100%,52%,0.3)":"0 0 12px hsla(142,80%,50%,0.3)";}}
-      onMouseLeave={e=>{e.currentTarget.style.background=isEdit?"hsla(192,100%,52%,0.08)":"hsla(142,80%,45%,0.1)"; e.currentTarget.style.boxShadow="none";}}>
+      onMouseLeave={e=>{e.currentTarget.style.background=isEdit?"rgba(40,185,215,0.08)":"hsla(142,80%,45%,0.1)"; e.currentTarget.style.boxShadow="none";}}>
       {isEdit ? "✏ EDIT RESPONSE" : "↩ RESPOND TO USER"}
     </button>
   );
@@ -80,7 +80,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
         placeholder="Type your response to the user — this will also be sent as a Direct Message…"
         style={{
           width:"100%", boxSizing:"border-box" as const,
-          background:"hsla(215,55%,4%,0.92)",
+          background:"rgba(4,18,32,0.92)",
           border:"1px solid hsla(192,100%,52%,0.35)",
           borderRadius:7, outline:"none", resize:"none",
           color:"hsl(192,55%,94%)",
