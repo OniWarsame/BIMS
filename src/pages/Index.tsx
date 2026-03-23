@@ -471,22 +471,6 @@ Respond ONLY with valid JSON (no markdown):
   const isScanning = scanState === "scanning";
   const isIdle     = scanState === "idle";
 
-  const SC  = isMatch?"#00e87a":isNoMatch?"#ff3b3b":isScanning?"#ff9000":"#00d4ff";
-  const SH  = isMatch?145:isNoMatch?0:isScanning?32:200;
-  const RC:Record<string,string> = {owner:"hsl(270,80%,70%)",admin:"hsl(0,80%,64%)",operator:"hsl(32,95%,60%)",analyst:"hsl(200,100%,62%)"};
-  const RU  = currentUser?.role||"analyst";
-
-  const CMDS = [
-    {label:"Register",    sub:"Enroll Biometric Subject",   Icon:UserPlus,  path:"/register", hue:200},
-    {label:"Database",    sub:"Access Records Vault",       Icon:Database,  path:"/database", hue:180},
-    {label:"Deep Search", sub:"OSINT Intelligence Query",   Icon:Search,    path:null,        hue:270, osint:true},
-    ...(userIsAdmin?[
-      {label:"Users",     sub:"Access Control",             Icon:Users,     path:"/users",    hue:32 },
-      {label:"Reports",   sub:"Audit & Activity Log",       Icon:FileText,  path:"/reports",  hue:145},
-      {label:"Create",    sub:"Generate Documents",         Icon:null,      path:"/create",   hue:200},
-    ]:[{label:"Create",   sub:"Generate Documents",         Icon:null,      path:"/create",   hue:200}]),
-  ] as {label:string;sub:string;Icon:any;path:string|null;hue:number;osint?:boolean}[];
-
   const roleColors: Record<string,string> = {
     owner:"hsl(270,80%,70%)", admin:"hsl(354,82%,64%)",
     operator:"hsl(36,95%,60%)", analyst:"hsl(200,100%,62%)"
