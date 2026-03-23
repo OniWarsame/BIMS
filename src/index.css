@@ -82,7 +82,7 @@
 @layer base {
   * { @apply border-border; }
 
-  html { scroll-behavior: smooth; background: #020e18; }
+  html { scroll-behavior: smooth; background: transparent; }
 
   body {
     font-family: 'Exo 2', -apple-system, sans-serif;

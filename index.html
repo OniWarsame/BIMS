@@ -6,21 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BIMS — Biometric Identity Management System</title>
     <style>
-      /* FORCE best.jpg as background — guaranteed regardless of JS/canvas */
-      html, body {
-        margin: 0; padding: 0;
-        min-height: 100vh;
-        background-color: #020e18;
-        background-image: url('/best.jpg');
-        background-size: cover;
-        background-position: center center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html {
+        background: #020e18 url('/best.jpg') no-repeat center center / cover fixed;
+        min-height: 100%;
       }
-      #root {
-        min-height: 100vh;
+      body {
         background: transparent;
+        min-height: 100vh;
+        font-family: 'Exo 2', sans-serif;
       }
+      #root { min-height: 100vh; background: transparent; }
     </style>
   </head>
   <body>
