@@ -11,73 +11,89 @@ interface PageHeaderProps {
   rightContent?: React.ReactNode;
 }
 
-/* Exact from Index.tsx: hsl(185,100%,62%) teal, hsl(192,100%,52%) cyan */
-const CY  = "hsl(192,100%,68%)";
-const CYd = "hsla(192,100%,52%,";
-const TE  = "hsl(185,100%,76%)";
-
 export default function PageHeader({ title, subtitle, icon, showLogo, rightContent }: PageHeaderProps) {
   const navigate = useNavigate();
+
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 20,
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "11px 24px",
-      background: "transparent",
-      borderBottom: "1px solid hsla(178,60%,40%,0.22)",
-      boxShadow: "0 1px 0 hsla(185,100%,52%,0.08)",
-      backdropFilter: "blur(24px) saturate(1.5)",
+      padding: "12px 24px",
+      background: "rgba(4,10,30,0.82)",
+      borderBottom: "1px solid rgba(0,160,255,0.12)",
+      backdropFilter: "blur(32px) saturate(2) brightness(1.08)",
+      WebkitBackdropFilter: "blur(32px) saturate(2) brightness(1.08)",
+      boxShadow: "0 1px 0 rgba(0,200,255,0.08), 0 8px 32px rgba(0,0,0,0.3)",
     }}>
 
       {/* Left */}
       <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
         {showLogo ? (
-          <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:11, flexShrink:0 }}>
+            {/* iOS-style icon */}
             <div style={{
-              width:36, height:36, borderRadius:9, flexShrink:0,
-              background:`${CYd}0.12)`, border:`1.5px solid ${CYd}0.45)`,
+              width:38, height:38, borderRadius:14, flexShrink:0,
+              background: "linear-gradient(145deg, hsl(195,100%,28%), hsl(210,100%,20%))",
+              border: "1px solid rgba(0,200,255,0.35)",
               display:"flex", alignItems:"center", justifyContent:"center",
-              boxShadow:`0 0 16px ${CYd}0.25)`,
+              boxShadow: "0 4px 18px rgba(0,160,220,0.5), inset 0 1px 0 rgba(255,255,255,0.18)",
             }}>
-              <Shield style={{ width:18, height:18, color:CY, filter:`drop-shadow(0 0 6px ${CYd}0.9))` }}/>
+              {/* Custom DNA/fingerprint icon */}
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="3" stroke="rgba(0,230,255,0.9)" strokeWidth="1.5"/>
+                <path d="M10 4 Q14 7 14 10 Q14 13 10 16" stroke="rgba(0,200,255,0.7)" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                <path d="M10 4 Q6 7 6 10 Q6 13 10 16"  stroke="rgba(0,200,255,0.7)" strokeWidth="1" strokeLinecap="round" fill="none"/>
+                <circle cx="10" cy="2" r="1" fill="rgba(0,230,255,0.8)"/>
+                <circle cx="10" cy="18" r="1" fill="rgba(0,230,255,0.8)"/>
+                <circle cx="2" cy="10" r="1" fill="rgba(0,200,255,0.6)"/>
+                <circle cx="18" cy="10" r="1" fill="rgba(0,200,255,0.6)"/>
+              </svg>
             </div>
             <div>
               <div style={{
                 fontFamily:"'Orbitron',monospace", fontSize:14, fontWeight:900,
-                letterSpacing:"0.2em", color:TE,
-                textShadow:`0 0 14px hsla(185,100%,55%,0.55)`,
+                letterSpacing:"0.22em", color:"hsl(185,100%,76%)",
+                textShadow:"0 0 14px hsla(185,100%,55%,0.55)",
               }}>BIMS</div>
               <div style={{
-                fontFamily:"'Orbitron',monospace", fontSize:7, letterSpacing:"0.18em",
-                color:"hsla(35,65%,60%,0.65)", marginTop:1,
+                fontFamily:"'Orbitron',monospace", fontSize:6.5, letterSpacing:"0.16em",
+                color:"hsla(35,65%,60%,0.6)", marginTop:1,
               }}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</div>
             </div>
           </div>
         ) : (
           <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
             <motion.button onClick={() => navigate("/")}
-              whileHover={{ scale:1.08, x:-2 }} whileTap={{ scale:0.94 }}
+              whileHover={{ scale:1.06, x:-2 }} whileTap={{ scale:0.92 }}
               style={{
-                width:34, height:34, borderRadius:9, flexShrink:0,
-                background:`${CYd}0.08)`, border:`1px solid ${CYd}0.38)`,
+                width:34, height:34, borderRadius:12, flexShrink:0,
+                background: "linear-gradient(145deg, rgba(0,100,180,0.22), rgba(0,60,140,0.14))",
+                border: "1px solid rgba(0,180,255,0.35)",
                 display:"flex", alignItems:"center", justifyContent:"center",
-                color:CY, cursor:"pointer",
-                boxShadow:`0 0 18px ${CYd}0.2)`,
-                transition:"all .15s",
+                color:"rgba(0,210,255,0.8)", cursor:"pointer",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)",
+                transition:"all .18s ease",
               }}
-              onMouseEnter={e => { const el=e.currentTarget as HTMLElement;
-                el.style.background=`${CYd}0.18)`; el.style.boxShadow=`0 0 28px ${CYd}0.38)`; }}
-              onMouseLeave={e => { const el=e.currentTarget as HTMLElement;
-                el.style.background=`${CYd}0.08)`; el.style.boxShadow=`0 0 18px ${CYd}0.2)`; }}>
-              <ArrowLeft style={{ width:15, height:15 }}/>
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.background = "linear-gradient(145deg, rgba(0,140,220,0.32), rgba(0,90,180,0.22))";
+                el.style.boxShadow = "0 4px 18px rgba(0,0,0,0.35), 0 0 18px rgba(0,160,255,0.25), inset 0 1px 0 rgba(255,255,255,0.1)";
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.background = "linear-gradient(145deg, rgba(0,100,180,0.22), rgba(0,60,140,0.14))";
+                el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)";
+              }}>
+              <ArrowLeft style={{ width:14, height:14 }}/>
             </motion.button>
 
             {icon && (
               <div style={{
-                width:34, height:34, borderRadius:9, flexShrink:0,
-                background:`${CYd}0.1)`, border:`1.5px solid ${CYd}0.4)`,
+                width:34, height:34, borderRadius:12, flexShrink:0,
+                background: "linear-gradient(145deg, rgba(0,100,180,0.2), rgba(0,60,140,0.12))",
+                border: "1px solid rgba(0,160,255,0.28)",
                 display:"flex", alignItems:"center", justifyContent:"center",
-                boxShadow:`0 0 14px ${CYd}0.2)`,
+                boxShadow: "0 4px 14px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07)",
               }}>
                 {icon}
               </div>
@@ -85,15 +101,15 @@ export default function PageHeader({ title, subtitle, icon, showLogo, rightConte
 
             <div style={{ minWidth:0 }}>
               <div style={{
-                fontFamily:"'Orbitron',monospace", fontSize:13, fontWeight:900,
-                letterSpacing:"0.18em", color:CY,
-                textShadow:`0 0 16px ${CYd}0.8)`,
+                fontFamily:"'Orbitron',monospace", fontSize:12, fontWeight:800,
+                letterSpacing:"0.18em", color:"hsl(192,100%,68%)",
+                textShadow:"0 0 16px hsla(192,100%,52%,0.8)",
                 overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const,
               }}>{title}</div>
               {subtitle && (
                 <div style={{
-                  fontFamily:"'Orbitron',monospace", fontSize:7, letterSpacing:"0.18em",
-                  color:`${CYd}0.4)`, marginTop:2,
+                  fontFamily:"'IBM Plex Mono',monospace", fontSize:7.5, letterSpacing:"0.12em",
+                  color:"hsla(192,100%,52%,0.38)", marginTop:2,
                   overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const,
                 }}>{subtitle}</div>
               )}
