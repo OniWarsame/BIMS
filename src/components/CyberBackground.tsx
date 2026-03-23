@@ -5,63 +5,100 @@ export default function CyberBackground() {
 
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
-    const ctx    = canvas.getContext("2d"); if (!ctx) return;
-    let   raf    = 0;
+    const ctx = canvas.getContext("2d"); if (!ctx) return;
+    let raf = 0, t = 0;
 
-    const M = { x: -999, y: -999, px: -999, py: -999, click: false, down: false };
-    const onMove  = (e: MouseEvent) => { M.px = M.x; M.py = M.y; M.x = e.clientX; M.y = e.clientY; };
-    const onDown  = () => { M.click = true; M.down = true;  setTimeout(() => { M.click = false; }, 200); };
-    const onUp    = () => { M.down  = false; };
+    const M = { x: -999, y: -999, click: false, down: false };
+    const onMove  = (e: MouseEvent) => { M.x = e.clientX; M.y = e.clientY; };
+    const onTouch = (e: TouchEvent) => { M.x = e.touches[0].clientX; M.y = e.touches[0].clientY; };
+    const onDown  = () => { M.click = true; M.down = true; setTimeout(() => (M.click = false), 200); };
+    const onUp    = () => { M.down = false; };
     const onLeave = () => { M.x = -999; M.y = -999; };
-    window.addEventListener("mousemove",  onMove,  { passive: true });
-    window.addEventListener("mousedown",  onDown);
-    window.addEventListener("mouseup",    onUp);
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup",   onUp);
     window.addEventListener("mouseleave", onLeave);
+
+    /* Background image */
+    const img = new Image();
+    img.src = "/hex_bg.jpg";
+    let imgLoaded = false;
+    img.onload = () => { imgLoaded = true; };
 
     const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     resize();
     window.addEventListener("resize", resize);
 
-    const img = new Image();
-    img.src = "/bio_theme.jpg";
-    let imgLoaded = false;
-    img.onload = () => { imgLoaded = true; };
+    /* Types */
+    interface Ripple { x:number; y:number; r:number; maxR:number; a:number; hue:number; }
+    interface Spark  { x:number; y:number; vx:number; vy:number; life:number; maxLife:number; hue:number; }
+    interface HexNode { col:number; row:number; lit:number; pulse:number; pulseSpd:number; }
+    interface DataPkt { hcol:number; hrow:number; prog:number; spd:number; }
 
-    const PARTICLES = Array.from({ length: 80 }, () => ({
-      x:  Math.random(), y:  Math.random(),
-      vx: (Math.random() - 0.5) * 0.0004,
-      vy: (Math.random() - 0.5) * 0.0004,
-      r:  0.6 + Math.random() * 1.4,
-      hue: Math.random() > 0.7 ? 30 : 200,
-      alpha: 0.25 + Math.random() * 0.45,
-    }));
+    const RIPPLES: Ripple[] = [];
+    const SPARKS:  Spark[]  = [];
+    const TRAIL:   { x:number; y:number; t:number }[] = [];
 
-    const RIPPLES: { x:number; y:number; r:number; maxR:number; alpha:number; hue:number }[] = [];
+    /* Hex grid state */
+    const HEX_SIZE = 52;
+    let HEX_NODES: HexNode[] = [];
+    let DATA_PKTS: DataPkt[] = [];
 
-    const SCANLINES = [
-      { x:0.02, y:0.05, w:0.45, h:0.44, scanY:0, spd:0.0035, hue:200, label:"BIOMETRIC SCAN" },
-      { x:0.53, y:0.05, w:0.45, h:0.44, scanY:0, spd:0.004,  hue:200, label:"FACIAL ANALYSIS" },
-      { x:0.02, y:0.52, w:0.45, h:0.45, scanY:0, spd:0.003,  hue:30,  label:"DNA SEQUENCE"    },
-      { x:0.53, y:0.52, w:0.45, h:0.45, scanY:0, spd:0.0045, hue:200, label:"SIGNAL TRACE"    },
-    ];
+    function buildHexNodes(W: number, H: number) {
+      HEX_NODES = [];
+      const cols = Math.ceil(W / (HEX_SIZE * 1.73)) + 3;
+      const rows = Math.ceil(H / (HEX_SIZE * 1.5)) + 3;
+      for (let r = -1; r < rows; r++) {
+        for (let c = -1; c < cols; c++) {
+          HEX_NODES.push({
+            col: c, row: r,
+            lit: Math.random() * 0.3,
+            pulse: Math.random() * Math.PI * 2,
+            pulseSpd: 0.008 + Math.random() * 0.018,
+          });
+        }
+      }
+      DATA_PKTS = Array.from({ length: 6 }, () => ({
+        hcol: Math.floor(Math.random() * Math.ceil(W / (HEX_SIZE * 1.73))),
+        hrow: Math.floor(Math.random() * Math.ceil(H / (HEX_SIZE * 1.5))),
+        prog: Math.random(),
+        spd: 0.003 + Math.random() * 0.005,
+      }));
+    }
 
-    const TICKERS = Array.from({ length: 6 }, (_, i) => ({
-      panel: i % 4, y: 0.08 + Math.random() * 0.35, x: 0,
-      spd: 0.0012 + Math.random() * 0.001,
-      text: ["MATCH: 100%","PATTERN LOCKED","SCAN COMPLETE","VERIFIED","AUTH: OK","BIO-ID: CONFIRMED","SERIAL: "+Math.random().toString(36).slice(2,10).toUpperCase()][i],
-      hue: i % 2 === 0 ? 200 : 30, alpha: 0.4 + Math.random() * 0.3,
-    }));
+    function hexCenter(col: number, row: number, W: number, _H: number): [number, number] {
+      const x = col * HEX_SIZE * 1.732 + (row % 2 === 0 ? 0 : HEX_SIZE * 0.866);
+      const y = row * HEX_SIZE * 1.5;
+      return [x, y];
+    }
 
-    let glitchTimer = 0, glitching = false;
-    const TRACE: {x:number;y:number;t:number}[] = [];
-    let t = 0;
+    function drawHex(cx: number, cy: number, s: number) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        i === 0 ? ctx.moveTo(cx + s * Math.cos(a), cy + s * Math.sin(a))
+                : ctx.lineTo(cx + s * Math.cos(a), cy + s * Math.sin(a));
+      }
+      ctx.closePath();
+    }
 
-    const draw = () => {
+    function spawnSparks(x: number, y: number, n = 10) {
+      for (let i = 0; i < n; i++) {
+        const a = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+        const s = 1 + Math.random() * 3;
+        SPARKS.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+          life: 0, maxLife: 40 + Math.random() * 40, hue: 210 + Math.random() * 20 });
+      }
+    }
+
+    buildHexNodes(canvas.width, canvas.height);
+
+    function draw() {
       t += 0.016;
-      glitchTimer += 0.016;
       const W = canvas.width, H = canvas.height;
 
-      // 1. IMAGE
+      /* 1. Image background */
       if (imgLoaded) {
         const iAR = img.width / img.height, cAR = W / H;
         let iw: number, ih: number, ix: number, iy: number;
@@ -69,167 +106,172 @@ export default function CyberBackground() {
         else            { ih = H; iw = H * iAR; ix = (W - iw) / 2; iy = 0; }
         ctx.drawImage(img, ix, iy, iw, ih);
       } else {
-        ctx.fillStyle = "rgb(3,8,22)"; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgb(2,6,18)"; ctx.fillRect(0, 0, W, H);
       }
 
-      // 2. DARK OVERLAY
-      ctx.fillStyle = "rgba(2,6,18,0.38)"; ctx.fillRect(0, 0, W, H);
+      /* 2. Strong dark overlay so UI is readable */
+      ctx.fillStyle = "rgba(1,5,18,0.72)"; ctx.fillRect(0, 0, W, H);
 
-      // 3. PANEL SCAN SYSTEM
-      SCANLINES.forEach((panel, pi) => {
-        const px = panel.x * W, py = panel.y * H, pw = panel.w * W, ph = panel.h * H;
-        panel.scanY += panel.spd;
-        if (panel.scanY > 1) panel.scanY = 0;
-        const sy = py + panel.scanY * ph;
-        const md = M.x > 0 ? Math.min(Math.hypot(M.x-(px+pw/2), M.y-(py+ph/2))/(pw*0.7), 1) : 1;
-        const proximity = Math.max(0, 1 - md);
+      /* 3. Mouse proximity glow on hex cells */
+      HEX_NODES.forEach(nd => {
+        nd.pulse += nd.pulseSpd;
+        const [cx, cy] = hexCenter(nd.col, nd.row, W, H);
+        const md = M.x > 0 ? Math.hypot(cx - M.x, cy - M.y) : 9999;
+        const prx = Math.max(0, 1 - md / 200);
+        nd.lit = Math.max(0, Math.min(1, nd.lit + prx * 0.12 - 0.006));
+        const pulse = 0.4 + 0.6 * Math.sin(nd.pulse);
+        const glow = nd.lit * pulse;
 
-        const scanGrad = ctx.createLinearGradient(px, sy-12, px, sy+12);
-        scanGrad.addColorStop(0, "transparent");
-        scanGrad.addColorStop(0.5, `hsla(${panel.hue},100%,65%,${0.25+proximity*0.35})`);
-        scanGrad.addColorStop(1, "transparent");
-        ctx.fillStyle = scanGrad; ctx.fillRect(px, sy-12, pw, 24);
-        ctx.beginPath(); ctx.moveTo(px, sy); ctx.lineTo(px+pw, sy);
-        ctx.strokeStyle = `hsla(${panel.hue},100%,70%,${0.6+proximity*0.35})`;
-        ctx.lineWidth = 1.2; ctx.stroke();
+        if (glow > 0.02) {
+          /* Hex fill glow */
+          drawHex(cx, cy, HEX_SIZE - 2);
+          ctx.fillStyle = `rgba(30,120,255,${glow * 0.12})`;
+          ctx.fill();
 
-        const bLen = 18, bW = 1.8;
-        [[px,py,1,1],[px+pw,py,-1,1],[px,py+ph,1,-1],[px+pw,py+ph,-1,-1]].forEach(([bx,by,dx,dy]) => {
-          const glow = proximity > 0.3 ? 0.9 : 0.4 + proximity * 1.5;
-          ctx.save();
-          ctx.shadowBlur = proximity > 0.2 ? 12 : 0;
-          ctx.shadowColor = `hsla(${panel.hue},100%,65%,0.9)`;
-          ctx.strokeStyle = `hsla(${panel.hue},100%,68%,${glow})`;
-          ctx.lineWidth = bW;
-          ctx.beginPath(); ctx.moveTo(bx+dx*bLen, by); ctx.lineTo(bx,by); ctx.lineTo(bx,by+dy*bLen); ctx.stroke();
-          ctx.restore();
-        });
+          /* Hex border */
+          drawHex(cx, cy, HEX_SIZE - 2);
+          ctx.strokeStyle = `rgba(60,160,255,${0.15 + glow * 0.55})`;
+          ctx.lineWidth = 0.8 + glow * 1.2;
+          ctx.stroke();
 
-        ctx.font = `600 ${8+proximity*2}px 'Inter',sans-serif`;
-        ctx.fillStyle = `hsla(${panel.hue},100%,70%,${0.35+proximity*0.45})`;
-        ctx.letterSpacing = "0.2em";
-        ctx.fillText(panel.label, px+4, py-6);
-        ctx.letterSpacing = "0";
-
-        for (let b = 0; b < 3; b++) {
-          const barY = py + ph - 22 + b * 7;
-          const barW = (0.3 + 0.5 * Math.abs(Math.sin(t*0.5+pi*0.8+b*1.2))) * pw * 0.8;
-          ctx.fillStyle = `hsla(${panel.hue},100%,60%,${0.08+proximity*0.07})`;
-          ctx.fillRect(px+6, barY, pw*0.8, 3);
-          ctx.fillStyle = `hsla(${panel.hue===30?30:200},90%,60%,${0.35+proximity*0.25})`;
-          ctx.fillRect(px+6, barY, barW, 3);
+          /* Center dot on lit cells */
+          if (glow > 0.35) {
+            ctx.save();
+            ctx.shadowBlur = 12; ctx.shadowColor = `rgba(80,160,255,${glow})`;
+            ctx.beginPath(); ctx.arc(cx, cy, 2.5 * glow, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(120,200,255,${glow * 0.9})`; ctx.fill();
+            ctx.restore();
+          }
         }
       });
 
-      // 4. PARTICLES
-      PARTICLES.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x<0)p.x=1; if(p.x>1)p.x=0; if(p.y<0)p.y=1; if(p.y>1)p.y=0;
-        const px=p.x*W, py=p.y*H;
-        const md=M.x>0?Math.hypot(px-M.x,py-M.y):9999;
-        const prx=Math.max(0,1-md/180);
-        if(prx>0&&md>1){p.vx+=(px-M.x)/md*0.00008; p.vy+=(py-M.y)/md*0.00008;}
-        const spd=Math.hypot(p.vx,p.vy);
-        if(spd>0.0015){p.vx*=0.0015/spd; p.vy*=0.0015/spd;}
-        p.vx*=0.998; p.vy*=0.998;
-        const a=p.alpha+prx*0.5;
-        if(prx>0.05){
-          ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(M.x,M.y);
-          ctx.strokeStyle=`hsla(${p.hue},100%,65%,${prx*0.2})`;
-          ctx.lineWidth=prx*0.8; ctx.stroke();
+      /* 4. Data packets travelling along grid */
+      DATA_PKTS.forEach(pk => {
+        pk.prog += pk.spd;
+        if (pk.prog > 1) {
+          pk.prog = 0;
+          pk.hcol = Math.floor(Math.random() * Math.ceil(W / (HEX_SIZE * 1.73)));
+          pk.hrow = Math.floor(Math.random() * Math.ceil(H / (HEX_SIZE * 1.5)));
         }
-        ctx.beginPath(); ctx.arc(px,py,p.r+prx*3,0,Math.PI*2);
-        ctx.fillStyle=`hsla(${p.hue},100%,70%,${a})`;
-        if(prx>0.1){ctx.shadowBlur=8; ctx.shadowColor=`hsla(${p.hue},100%,65%,0.8)`;}
-        ctx.fill(); ctx.shadowBlur=0;
-      });
-
-      // 5. MOUSE TRACE
-      if(M.x>0&&M.px>0) TRACE.push({x:M.x,y:M.y,t});
-      while(TRACE.length>0&&t-TRACE[0].t>0.6) TRACE.shift();
-      if(TRACE.length>1){
-        for(let i=1;i<TRACE.length;i++){
-          const age=(t-TRACE[i].t)/0.6;
-          ctx.beginPath(); ctx.moveTo(TRACE[i-1].x,TRACE[i-1].y); ctx.lineTo(TRACE[i].x,TRACE[i].y);
-          ctx.strokeStyle=`rgba(0,220,255,${(1-age)*0.55})`; ctx.lineWidth=(1-age)*2.2; ctx.stroke();
-        }
-      }
-
-      // 6. MOUSE GLOW + RIPPLES
-      if(M.x>0){
-        const r=110+12*Math.sin(t*4);
-        const grd=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,r);
-        grd.addColorStop(0,`rgba(0,200,255,${0.12+0.05*Math.sin(t*3)})`);
-        grd.addColorStop(0.4,"rgba(0,140,220,0.04)"); grd.addColorStop(1,"transparent");
-        ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(M.x,M.y,r,0,Math.PI*2); ctx.fill();
-        if(M.click) RIPPLES.push({x:M.x,y:M.y,r:4,maxR:80+Math.random()*40,alpha:0.8,hue:Math.random()>0.5?200:30});
-      }
-
-      for(let i=RIPPLES.length-1;i>=0;i--){
-        const rp=RIPPLES[i]; rp.r+=2.8; rp.alpha*=0.93;
-        ctx.beginPath(); ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);
-        ctx.save(); ctx.shadowBlur=8; ctx.shadowColor=`hsla(${rp.hue},100%,65%,0.7)`;
-        ctx.strokeStyle=`hsla(${rp.hue},100%,68%,${rp.alpha})`; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
-        if(rp.r>=rp.maxR) RIPPLES.splice(i,1);
-      }
-
-      // 7. GLITCH
-      if(!glitching&&glitchTimer>4+Math.random()*6){glitching=true;glitchTimer=0;setTimeout(()=>{glitching=false;},80+Math.random()*120);}
-      if(glitching&&imgLoaded){
-        const slices=3+Math.floor(Math.random()*4);
-        for(let s=0;s<slices;s++){
-          const gy=Math.random()*H, gh=2+Math.random()*8, gx=(Math.random()-0.5)*18;
-          ctx.save(); ctx.drawImage(canvas,0,gy,W,gh,gx,gy,W,gh); ctx.restore();
-        }
-        ctx.save(); ctx.globalAlpha=0.15; ctx.globalCompositeOperation="screen";
-        const cy2=Math.random()*H;
-        ctx.fillStyle="rgba(255,0,80,0.6)"; ctx.fillRect(-4,cy2,W,3+Math.random()*6);
-        ctx.fillStyle="rgba(0,255,255,0.6)"; ctx.fillRect(4,cy2+2,W,3+Math.random()*6);
-        ctx.restore();
-      }
-
-      // 8. VIGNETTE
-      const vg=ctx.createRadialGradient(W/2,H/2,W*0.15,W/2,H/2,W*0.85);
-      vg.addColorStop(0,"transparent"); vg.addColorStop(1,"rgba(1,3,12,0.72)");
-      ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
-
-      // 9. CROSSHAIR
-      if(M.x>0){
-        const MX=M.x, MY=M.y, cl=M.click?8:12, gap=M.click?4:7, rr=M.click?7:10;
+        const targetCol = pk.hcol + Math.floor(Math.sin(t * 0.8 + pk.hrow) * 3);
+        const targetRow = pk.hrow + 1;
+        const [x1, y1] = hexCenter(pk.hcol, pk.hrow, W, H);
+        const [x2, y2] = hexCenter(targetCol, targetRow, W, H);
+        const px = x1 + (x2 - x1) * pk.prog;
+        const py = y1 + (y2 - y1) * pk.prog;
         ctx.save();
-        ctx.shadowBlur=12; ctx.shadowColor="rgba(0,230,255,0.95)";
-        ctx.strokeStyle="rgba(0,230,255,0.92)"; ctx.lineWidth=1.3;
-        ctx.beginPath(); ctx.moveTo(MX-gap-cl,MY); ctx.lineTo(MX-gap,MY); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(MX+gap,MY); ctx.lineTo(MX+gap+cl,MY); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(MX,MY-gap-cl); ctx.lineTo(MX,MY-gap); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(MX,MY+gap); ctx.lineTo(MX,MY+gap+cl); ctx.stroke();
-        ctx.beginPath(); ctx.arc(MX,MY,rr,0,Math.PI*2);
-        ctx.strokeStyle=`rgba(0,230,255,${M.click?0.9:0.5})`; ctx.lineWidth=0.9; ctx.stroke();
-        ctx.shadowBlur=16;
-        ctx.beginPath(); ctx.arc(MX,MY,M.click?1.5:2.2,0,Math.PI*2);
-        ctx.fillStyle="rgba(0,245,255,0.96)"; ctx.fill();
+        ctx.shadowBlur = 14; ctx.shadowColor = "rgba(80,180,255,0.9)";
+        ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(140,210,255,${0.8 + 0.2 * Math.sin(t * 8 + pk.hcol)})`; ctx.fill();
+        ctx.restore();
+        /* Tail */
+        const tailLen = 0.25;
+        const tx = px - (x2 - x1) * tailLen * 0.4;
+        const ty = py - (y2 - y1) * tailLen * 0.4;
+        const tailGrad = ctx.createLinearGradient(tx, ty, px, py);
+        tailGrad.addColorStop(0, "rgba(80,160,255,0)");
+        tailGrad.addColorStop(1, "rgba(120,200,255,0.5)");
+        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(px, py);
+        ctx.strokeStyle = tailGrad; ctx.lineWidth = 2; ctx.stroke();
+      });
+
+      /* 5. Mouse aura */
+      if (M.x > 0) {
+        const r = 160 + 18 * Math.sin(t * 3);
+        const aura = ctx.createRadialGradient(M.x, M.y, 0, M.x, M.y, r);
+        aura.addColorStop(0,   `rgba(40,120,255,${0.16 + 0.06 * Math.sin(t * 4)})`);
+        aura.addColorStop(0.5, "rgba(20,80,200,0.05)");
+        aura.addColorStop(1,   "transparent");
+        ctx.fillStyle = aura; ctx.beginPath(); ctx.arc(M.x, M.y, r, 0, Math.PI * 2); ctx.fill();
+        if (M.down) spawnSparks(M.x + (Math.random()-0.5)*20, M.y + (Math.random()-0.5)*20, 2);
+      }
+
+      /* 6. Trail */
+      if (M.x > 0) TRAIL.push({ x: M.x, y: M.y, t });
+      while (TRAIL.length > 0 && t - TRAIL[0].t > 0.5) TRAIL.shift();
+      for (let i = 1; i < TRAIL.length; i++) {
+        const age = (t - TRAIL[i].t) / 0.5;
+        ctx.beginPath(); ctx.moveTo(TRAIL[i-1].x, TRAIL[i-1].y); ctx.lineTo(TRAIL[i].x, TRAIL[i].y);
+        ctx.strokeStyle = `rgba(80,160,255,${(1-age)*0.45})`; ctx.lineWidth = (1-age)*2.5; ctx.stroke();
+      }
+
+      /* 7. Sparks */
+      for (let i = SPARKS.length - 1; i >= 0; i--) {
+        const sp = SPARKS[i];
+        sp.x += sp.vx; sp.y += sp.vy; sp.vx *= 0.94; sp.vy *= 0.94;
+        sp.life++;
+        if (sp.life >= sp.maxLife) { SPARKS.splice(i, 1); continue; }
+        const prog = sp.life / sp.maxLife;
+        const a = prog < 0.2 ? prog / 0.2 : 1 - (prog - 0.2) / 0.8;
+        ctx.save(); ctx.shadowBlur = 6; ctx.shadowColor = `hsl(${sp.hue},100%,70%,0.8)`;
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, 2 * (1 - prog), 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${sp.hue},100%,72%,${Math.max(0, a)})`; ctx.fill(); ctx.restore();
+      }
+
+      /* 8. Click ripples */
+      if (M.click && M.x > 0) {
+        RIPPLES.push({ x: M.x, y: M.y, r: 3, maxR: 120, a: 0.85, hue: 210 });
+        RIPPLES.push({ x: M.x, y: M.y, r: 3, maxR:  70, a: 0.65, hue: 230 });
+        spawnSparks(M.x, M.y, 14);
+      }
+      for (let i = RIPPLES.length - 1; i >= 0; i--) {
+        const rp = RIPPLES[i]; rp.r += 3.2; rp.a *= 0.91;
+        ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = `hsla(${rp.hue},100%,65%,0.7)`;
+        ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `hsla(${rp.hue},100%,70%,${rp.a})`; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.restore();
+        if (rp.r >= rp.maxR) RIPPLES.splice(i, 1);
+      }
+
+      /* 9. Vignette */
+      const vg = ctx.createRadialGradient(W/2, H/2, W*0.2, W/2, H/2, W*0.85);
+      vg.addColorStop(0, "transparent"); vg.addColorStop(1, "rgba(1,3,14,0.85)");
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+
+      /* 10. Crosshair */
+      if (M.x > 0) {
+        const MX = M.x, MY = M.y;
+        const s = M.click ? 0.85 : 1;
+        const ARM = 16*s, GAP = 6*s, RR = 10*s;
+        ctx.save();
+        ctx.shadowBlur = 16; ctx.shadowColor = "rgba(80,180,255,0.95)";
+        ctx.strokeStyle = "rgba(100,190,255,0.9)"; ctx.lineWidth = 1.3;
+        [[MX-GAP-ARM,MY,MX-GAP,MY],[MX+GAP,MY,MX+GAP+ARM,MY],
+         [MX,MY-GAP-ARM,MX,MY-GAP],[MX,MY+GAP,MX,MY+GAP+ARM]].forEach(([x1,y1,x2,y2]) => {
+          ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        });
+        ctx.beginPath(); ctx.arc(MX,MY,RR,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(100,190,255,${M.click?0.85:0.4})`; ctx.lineWidth=0.8; ctx.stroke();
+        ctx.setLineDash([3,9]); ctx.lineDashOffset=-(t*25%100);
+        ctx.beginPath(); ctx.arc(MX,MY,RR+9,0,Math.PI*2);
+        ctx.strokeStyle="rgba(80,160,255,0.2)"; ctx.lineWidth=0.65; ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.shadowBlur=20;
+        ctx.beginPath(); ctx.arc(MX,MY,M.click?1.6:2.2,0,Math.PI*2);
+        ctx.fillStyle="rgba(140,210,255,0.98)"; ctx.fill();
         ctx.restore();
       }
 
-      raf=requestAnimationFrame(draw);
-    };
+      raf = requestAnimationFrame(draw);
+    }
 
-    ctx.fillStyle="rgb(3,8,22)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-    raf=requestAnimationFrame(draw);
+    ctx.fillStyle="rgb(2,6,18)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+    raf = requestAnimationFrame(draw);
 
-    return ()=>{
+    return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize",resize);
-      window.removeEventListener("mousemove",onMove);
-      window.removeEventListener("mousedown",onDown);
-      window.removeEventListener("mouseup",onUp);
-      window.removeEventListener("mouseleave",onLeave);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onTouch);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup",   onUp);
+      window.removeEventListener("mouseleave", onLeave);
     };
-  },[]);
+  }, []);
 
-  return(
+  return (
     <div className="fixed inset-0 z-0" aria-hidden>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{cursor:"none"}}/>
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ cursor:"none" }}/>
     </div>
   );
 }

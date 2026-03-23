@@ -490,16 +490,6 @@ Respond ONLY with valid JSON (no markdown):
   return (
     <div style={{minHeight:"100vh",overflow:"hidden",background:"rgb(3,8,22)",position:"relative"}}>
       <CyberBackground/>
-
-      {/* ══ TOP CLASSIFIED BAR ══ */}
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:60,height:15,
-        background:"rgba(140,18,18,0.95)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <span style={{fontFamily:"'Inter',sans-serif",fontSize:7,fontWeight:800,letterSpacing:"0.4em",
-          color:"rgba(255,255,255,0.92)",textTransform:"uppercase" as const}}>
-          TOP SECRET // SCI // BIOMETRIC IDENTITY MANAGEMENT SYSTEM // BIMS v1.0
-        </span>
-      </div>
-
       {/* ══ SLIM NAVBAR ══ */}
       <div style={{position:"fixed",top:15,left:0,right:0,zIndex:40,height:44,
         display:"flex",alignItems:"center",padding:"0 14px",gap:8,
@@ -950,16 +940,7 @@ Respond ONLY with valid JSON (no markdown):
 
       {showSupport&&<TechSupportModal onClose={()=>setShowSupport(false)} allowManualReporter={false}/>}
       {showDM&&<DirectMessagePanel onClose={()=>setShowDM(false)}/>}
-
-      {/* ══ BOTTOM CLASSIFIED BAR ══ */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:60,height:15,
-        background:"rgba(140,18,18,0.95)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <span style={{fontFamily:"'Inter',sans-serif",fontSize:7,fontWeight:800,letterSpacing:"0.4em",
-          color:"rgba(255,255,255,0.9)",textTransform:"uppercase" as const}}>
-          BIMS v1.0 // © 2026 KUMI // TOP SECRET // BIOMETRIC INTELLIGENCE // ENCRYPTED CHANNEL
-        </span>
       </div>
-    </div>
   );
 };
 

@@ -67,14 +67,9 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
   const [showSupport, setShowSupport] = React.useState(false);
   return (
     <div style={{minHeight:"100vh",position:"relative",display:"flex",flexDirection:"column" as const,
-      alignItems:"center",justifyContent:"center",padding:"0 16px",
+      alignItems:"center",justifyContent:"center",padding:"24px 16px",
       background:"rgb(4,8,16)"}}>
       <CyberBackground/>
-
-      {/* TOP classified banner */}
-      <div className="nx-classified top">
-        TOP SECRET // CLASSIFIED // BIOMETRIC IDENTITY MANAGEMENT SYSTEM — BIMS v1.0
-      </div>
 
       {/* BIMS logo top-left */}
       <div style={{position:"fixed",top:25,left:18,zIndex:20,display:"flex",alignItems:"center",gap:9}}>
@@ -115,11 +110,6 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
           }}>
           {children}
         </motion.div>
-      </div>
-
-      {/* BOTTOM classified banner */}
-      <div className="nx-classified bottom">
-        TOP SECRET // CLASSIFIED // BIMS v1.0 // ENCRYPTED CHANNEL
       </div>
 
       <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)}
