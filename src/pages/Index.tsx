@@ -756,8 +756,20 @@ Respond ONLY with valid JSON (no markdown):
       </div>
 
       {/* ─── MODALS ─── */}
-      <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)} currentUser={currentUser}/>
-      <DirectMessagePanel open={showDM} onClose={()=>setShowDM(false)} currentUser={currentUser}/>
+      <TechSupportModal
+        open={showSupport}
+        onClose={()=>setShowSupport(false)}
+        reporterUsername={currentUser?.username}
+      />
+      <DirectMessagePanel
+        open={showDM}
+        onClose={()=>setShowDM(false)}
+        currentUsername={currentUser?.username || ""}
+        currentUserRole={currentUser?.role}
+        isAdmin={userIsAdmin}
+        allUsers={(() => { try { return JSON.parse(localStorage.getItem("bims_users") || "[]").map((u:any) => u.username); } catch { return []; } })()}
+        allUsersInfo={(() => { try { return JSON.parse(localStorage.getItem("bims_users") || "[]").map((u:any) => ({ username: u.username, fullName: u.fullName || u.username, role: u.role || "analyst" })); } catch { return []; } })()}
+      />
 
       {/* ─── NOTIFICATION PANEL ─── */}
       <AnimatePresence>
@@ -803,6 +815,67 @@ Respond ONLY with valid JSON (no markdown):
                   )}
                 </div>
               ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── DEEP SEARCH MODAL ─── */}
+      <AnimatePresence>
+        {showDeepSearch && (
+          <motion.div
+            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(1,3,14,0.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}
+            onClick={()=>setShowDeepSearch(false)}>
+            <motion.div
+              initial={{scale:0.92,y:20}} animate={{scale:1,y:0}} exit={{scale:0.92,y:20}}
+              transition={{type:"spring",stiffness:320,damping:28}}
+              onClick={e=>e.stopPropagation()}
+              style={{width:"100%",maxWidth:560,maxHeight:"80vh",overflowY:"auto",borderRadius:18,background:"linear-gradient(160deg,rgba(6,16,44,0.98),rgba(3,10,30,0.99))",border:"1px solid rgba(100,80,255,0.3)",borderTop:"2px solid rgba(120,100,255,0.55)",boxShadow:"0 32px 80px rgba(0,0,0,0.9)",padding:"20px 22px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                <div>
+                  <div style={{fontFamily:"'Syne',sans-serif",fontSize:16,fontWeight:800,color:"rgba(220,210,255,0.96)"}}>Deep Search</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"rgba(140,120,255,0.55)",marginTop:2,letterSpacing:"0.08em"}}>OSINT INTELLIGENCE QUERY</div>
+                </div>
+                <button onClick={()=>setShowDeepSearch(false)} style={{width:30,height:30,borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(200,190,255,0.6)"}}>
+                  <X style={{width:14,height:14}}/>
+                </button>
+              </div>
+              <div style={{display:"flex",gap:6,marginBottom:14}}>
+                {(["name","username","email","phone"] as const).map(t=>(
+                  <button key={t} onClick={()=>setDsType(t)}
+                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?"rgba(120,100,255,0.6)":"rgba(255,255,255,0.1)"}`,background:dsType===t?"rgba(100,80,255,0.18)":"rgba(255,255,255,0.04)",color:dsType===t?"rgba(200,185,255,0.95)":"rgba(140,130,200,0.5)",transition:"all .16s"}}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+              <div style={{display:"flex",gap:8,marginBottom:16}}>
+                <input
+                  value={dsInput} onChange={e=>setDsInput(e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter")handleDeepSearch();}}
+                  placeholder={dsType==="name"?"Full name…":dsType==="username"?"@username…":dsType==="email"?"email@domain.com":"Phone number…"}
+                  style={{flex:1,padding:"10px 14px",borderRadius:10,background:"rgba(255,255,255,0.07)",border:"1.5px solid rgba(100,80,255,0.28)",outline:"none",color:"rgba(220,215,255,0.95)",fontFamily:"'Outfit',sans-serif",fontSize:13}}
+                />
+                <button onClick={handleDeepSearch} disabled={dsLoading||!dsInput.trim()}
+                  style={{padding:"10px 18px",borderRadius:10,cursor:dsLoading||!dsInput.trim()?"not-allowed":"pointer",background:"linear-gradient(135deg,hsl(260,80%,55%),hsl(280,80%,65%))",border:"0",color:"white",fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,opacity:dsLoading||!dsInput.trim()?0.5:1}}>
+                  {dsLoading?"…":"Search"}
+                </button>
+              </div>
+              {dsResults && !dsResults.error && dsResults.platforms?.map((p:any)=>(
+                <div key={p.name} style={{marginBottom:12}}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:700,color:`hsla(${p.color},0.8)`,letterSpacing:"0.1em",marginBottom:6,textTransform:"uppercase" as const}}>{p.icon} {p.name}</div>
+                  <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
+                    {p.links.slice(0,4).map((lk:any)=>(
+                      <a key={lk.url} href={lk.url} target="_blank" rel="noopener noreferrer"
+                        style={{padding:"4px 10px",borderRadius:6,background:`hsla(${p.color},0.1)`,border:`1px solid hsla(${p.color},0.25)`,color:`hsla(${p.color},0.85)`,fontFamily:"'Outfit',sans-serif",fontSize:10.5,textDecoration:"none",cursor:"pointer"}}>
+                        {lk.variant}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {dsResults?.error && <div style={{textAlign:"center" as const,padding:"20px",color:"rgba(255,100,100,0.7)",fontFamily:"'DM Mono',monospace",fontSize:11}}>Search failed. Try again.</div>}
+              {!dsResults && !dsLoading && <div style={{textAlign:"center" as const,padding:"20px 0",color:"rgba(140,130,200,0.4)",fontFamily:"'DM Mono',monospace",fontSize:10}}>Enter a name, username, email or phone number to begin.</div>}
             </motion.div>
           </motion.div>
         )}
