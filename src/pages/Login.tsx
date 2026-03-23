@@ -52,7 +52,7 @@ export const doLogout = () => sessionStorage.removeItem(SESSION_KEY);
 export const ROLE_COLORS: Record<UserRole, string> = {
   owner:    "hsl(270,80%,72%)",
   admin:    "hsl(354,88%,68%)",
-  operator: "hsl(195,100%,62%)",
+  operator: "hsl(192,68%,62%)",
   analyst:  "hsl(158,80%,55%)",
 };
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -84,7 +84,7 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
         <div>
           <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:800,
             letterSpacing:"0.06em",color:"rgba(210,235,255,0.96)"}}>
-            Nexus<span style={{color:"hsl(195,100%,55%)",marginLeft:4}}>BIMS</span>
+            Nexus<span style={{color:"hsl(192,70%,55%)",marginLeft:4}}>BIMS</span>
           </div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
             color:"rgba(50,145,255,0.4)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
@@ -207,7 +207,7 @@ const LoginScreen = () => {
   /* Teal color system matching the background */
   const fpColor  = isError ? "hsl(0,85%,62%)" : isPreview ? "hsl(190,100%,55%)" : isActive ? "hsl(218,100%,62%)" : "hsl(218,80%,52%)";
   const glowCol  = isError ? "rgba(220,60,60,0.6)" : isActive||isPreview ? "rgba(0,225,210,0.55)" : "rgba(0,175,250,0.3)";
-  const borderCol= isError ? "rgba(220,60,60,0.5)"  : isActive ? "rgba(0,225,210,0.7)"  : isPreview ? "rgba(0,210,255,0.65)" : "rgba(0,175,250,0.22)";
+  const borderCol= isError ? "rgba(220,60,60,0.5)"  : isActive ? "rgba(0,225,210,0.7)"  : isPreview ? "rgba(55,195,222,0.65)" : "rgba(0,175,250,0.22)";
 
   const stateLabel = {
     idle:      "PLACE FINGER ON SCANNER",
@@ -410,7 +410,7 @@ const LoginScreen = () => {
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <motion.div animate={{opacity:[1,0.3,1]}} transition={{duration:1,repeat:Infinity}}
                       style={{width:7,height:7,borderRadius:"50%",
-                        background:"hsl(210,100%,62%)",boxShadow:"0 0 8px rgba(70,175,255,0.85)"}}/>
+                        background:"hsl(200,72%,62%)",boxShadow:"0 0 8px rgba(70,175,255,0.85)"}}/>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,
                       letterSpacing:"0.16em",color:"rgba(80,185,255,0.9)",textTransform:"uppercase" as const}}>
                       Identity Confirmed — Access In {countdown}s
@@ -455,7 +455,7 @@ const LoginScreen = () => {
                         style={{background:"none",border:"none",cursor:"pointer",
                           fontFamily:"'JetBrains Mono',monospace",fontSize:8,letterSpacing:"0.14em",
                           color:"rgba(50,140,255,0.35)",transition:"color .15s"}}
-                        onMouseEnter={e=>e.currentTarget.style.color="rgba(0,210,255,0.72)"}
+                        onMouseEnter={e=>e.currentTarget.style.color="rgba(55,195,222,0.72)"}
                         onMouseLeave={e=>e.currentTarget.style.color="rgba(50,140,255,0.35)"}>
                         NOT ME — CANCEL
                       </button>
@@ -475,7 +475,7 @@ const LoginScreen = () => {
             background:"none",border:"none",padding:0,
             fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:500,
             letterSpacing:"0.04em",color:"rgba(50,140,255,0.38)",transition:"color .15s"}}
-          onMouseEnter={e=>(e.currentTarget.style.color="rgba(0,210,255,0.7)")}
+          onMouseEnter={e=>(e.currentTarget.style.color="rgba(55,195,222,0.7)")}
           onMouseLeave={e=>(e.currentTarget.style.color="rgba(50,140,255,0.38)")}>
           {showManual?<ChevronUp style={{width:12,height:12}}/>:<ChevronDown style={{width:12,height:12}}/>}
           Manual login (admin / owner)
@@ -522,7 +522,7 @@ const LoginScreen = () => {
                   <div>
                     <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,
                       letterSpacing:"0.12em",textTransform:"uppercase" as const,
-                      color:"rgba(0,180,255,0.45)",display:"block",marginBottom:6}}>Username</label>
+                      color:"rgba(40,175,210,0.45)",display:"block",marginBottom:6}}>Username</label>
                     <input value={manualUser} onChange={e=>{setManualUser(e.target.value);setManualErr("");}}
                       onKeyDown={e=>e.key==="Enter"&&handleManual()}
                       placeholder="Enter username" className="input-cyber" autoComplete="username"/>
@@ -530,7 +530,7 @@ const LoginScreen = () => {
                   <div>
                     <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,
                       letterSpacing:"0.12em",textTransform:"uppercase" as const,
-                      color:"rgba(0,180,255,0.45)",display:"block",marginBottom:6}}>Password</label>
+                      color:"rgba(40,175,210,0.45)",display:"block",marginBottom:6}}>Password</label>
                     <input type="password" value={manualPass} onChange={e=>{setManualPass(e.target.value);setManualErr("");}}
                       onKeyDown={e=>e.key==="Enter"&&handleManual()}
                       placeholder="Enter password" className="input-cyber" autoComplete="current-password"/>

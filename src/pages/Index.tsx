@@ -463,14 +463,14 @@ Respond ONLY with valid JSON (no markdown):
 
   const RC: Record<string,string> = {
     owner:"hsl(270,80%,72%)", admin:"hsl(354,88%,68%)",
-    operator:"hsl(195,100%,62%)", analyst:"hsl(158,80%,55%)",
+    operator:"hsl(192,68%,62%)", analyst:"hsl(158,80%,55%)",
   };
   const RU = currentUser?.role || "analyst";
 
   // Security-themed command definitions
   const CMDS = [
     { label:"Register",    sub:"Enroll Biometric Subject", Icon:UserPlus,  path:"/register", hue:200, color:"hsl(200,100%,68%)", shape:"hexagon" },
-    { label:"Database",    sub:"Access Records Vault",     Icon:Database,  path:"/database", hue:195, color:"hsl(195,100%,62%)", shape:"shield"  },
+    { label:"Database",    sub:"Access Records Vault",     Icon:Database,  path:"/database", hue:195, color:"hsl(192,68%,62%)", shape:"shield"  },
     { label:"Deep Search", sub:"OSINT Intelligence Query", Icon:Search,    path:null,         hue:270, color:"hsl(270,80%,70%)",  shape:"target",  osint:true },
     ...(userIsAdmin ? [
       { label:"Users",   sub:"Access Control",          Icon:Users,    path:"/users",    hue:36,  color:"hsl(36,100%,62%)",  shape:"badge"   },
@@ -482,7 +482,7 @@ Respond ONLY with valid JSON (no markdown):
   ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean }[];
 
   const scanColor = isMatch?"hsl(158,80%,55%)":isNoMatch?"hsl(354,85%,62%)":isScanning?"hsl(36,100%,58%)":"hsl(200,100%,65%)";
-  const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(0,180,255,0.6)";
+  const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(40,175,210,0.6)";
 
   // Security shape SVG paths for each command button
   const ShapeIcon = ({ shape, hue, size=18 }:{ shape:string; hue:number; size?:number }) => {
@@ -511,21 +511,21 @@ Respond ONLY with valid JSON (no markdown):
   };
 
   return (
-    <div style={{minHeight:"100vh",overflow:"hidden",background:"hsl(205,80%,4%)",position:"relative",fontFamily:"'Exo 2',-apple-system,sans-serif"}}>
+    <div style={{minHeight:"100vh",overflow:"hidden",background:"hsl(205,55%,5%)",position:"relative",fontFamily:"'Exo 2',-apple-system,sans-serif"}}>
       <CyberBackground/>
 
       {/* ─── NAV ─── */}
       <div className="fixed top-0 left-0 right-0 w-full z-[9999] h-[54px] flex items-center justify-between px-5 border-b"
-        style={{background:"rgba(1,4,16,0.96)",borderColor:"rgba(0,190,255,0.2)",backdropFilter:"blur(40px)"}}>
+        style={{background:"rgba(4,12,22,0.96)",borderColor:"rgba(45,185,215,0.2)",backdropFilter:"blur(40px)"}}>
 
         {/* BIMS — LEFT */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{background:"radial-gradient(circle at 35% 35%,rgba(0,140,255,0.3),rgba(0,40,160,0.2))",border:"1.5px solid rgba(0,200,255,0.5)",boxShadow:"0 0 16px rgba(0,190,255,0.35)"}}>
-            <Shield style={{width:15,height:15,color:"hsl(195,100%,70%)"}}/>
+            style={{background:"radial-gradient(circle at 35% 35%,rgba(25,150,192,0.3),rgba(0,40,160,0.2))",border:"1.5px solid rgba(50,190,218,0.5)",boxShadow:"0 0 16px rgba(45,185,215,0.35)"}}>
+            <Shield style={{width:15,height:15,color:"hsl(192,68%,70%)"}}/>
           </div>
           <div>
-            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:900,letterSpacing:"0.12em",color:"rgba(200,245,255,0.98)",lineHeight:1,textShadow:"0 0 20px rgba(0,200,255,0.5)"}}>BIMS</div>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:900,letterSpacing:"0.12em",color:"rgba(200,245,255,0.98)",lineHeight:1,textShadow:"0 0 20px rgba(50,190,218,0.5)"}}>BIMS</div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:"rgba(0,185,230,0.4)",letterSpacing:"0.1em",textTransform:"uppercase" as const,marginTop:2}}>Biometric Identity Management System</div>
           </div>
         </div>
@@ -536,7 +536,7 @@ Respond ONLY with valid JSON (no markdown):
           <button onClick={()=>setShowSupport(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
             style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,200,255,0.75)",fontFamily:"'Exo 2',sans-serif",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.18)";}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Headphones style={{width:12,height:12}}/><span>Support</span>
           </button>
@@ -544,7 +544,7 @@ Respond ONLY with valid JSON (no markdown):
           <button onClick={()=>setShowNotif(v=>!v)}
             className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all"
             style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,190,255,0.7)",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.18)";}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Bell style={{width:13,height:13}}/>
             {notifCount>0&&<span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{background:"hsl(218,100%,68%)"}}/>}
@@ -553,7 +553,7 @@ Respond ONLY with valid JSON (no markdown):
           <button onClick={()=>setShowDM(v=>!v)}
             className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all"
             style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,190,255,0.7)",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.18)";}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <MessageSquare style={{width:13,height:13}}/>
             {dmUnread>0&&<span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{background:"hsl(270,80%,70%)"}}/>}
@@ -564,7 +564,7 @@ Respond ONLY with valid JSON (no markdown):
           <button onClick={()=>setShowUserMenu(v=>!v)}
             className="flex items-center gap-1.5 pl-1 pr-3 py-1 rounded-full transition-all"
             style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.18)";}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black"
               style={{background:RC[RU]+"33",border:"2px solid "+RC[RU]+"88",color:RC[RU],fontFamily:"'Orbitron',sans-serif"}}>
@@ -589,8 +589,8 @@ Respond ONLY with valid JSON (no markdown):
           {showUserMenu&&(
             <motion.div initial={{opacity:0,y:-8,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.15}}
               className="fixed top-[58px] right-4 min-w-[176px] z-[60] py-2 rounded-2xl"
-              style={{background:"rgba(2,8,24,0.97)",border:"1px solid rgba(0,180,255,0.2)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(30px)"}}>
-              <div className="px-3.5 pb-1.5 mb-1 border-b" style={{borderColor:"rgba(0,180,255,0.1)"}}>
+              style={{background:"rgba(2,8,24,0.97)",border:"1px solid rgba(40,175,210,0.2)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(30px)"}}>
+              <div className="px-3.5 pb-1.5 mb-1 border-b" style={{borderColor:"rgba(40,175,210,0.1)"}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,color:"rgba(200,245,255,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,170,220,0.45)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
@@ -598,7 +598,7 @@ Respond ONLY with valid JSON (no markdown):
                 <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}}
                   className="w-full text-left px-3.5 py-1.5 text-[12.5px] transition-all block"
                   style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'Exo 2',sans-serif",color:"rgba(100,185,245,0.65)"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,150,255,0.1)";e.currentTarget.style.color="rgba(180,230,255,0.95)";}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(30,155,195,0.1)";e.currentTarget.style.color="rgba(180,230,255,0.95)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(100,185,245,0.65)";}}>
                   {label}
                 </button>
@@ -616,16 +616,16 @@ Respond ONLY with valid JSON (no markdown):
           <div style={{textAlign:"center" as const}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:8}}>
               <motion.div
-                animate={{boxShadow:["0 0 20px rgba(0,200,255,0.3)","0 0 40px rgba(0,200,255,0.6)","0 0 20px rgba(0,200,255,0.3)"]}}
+                animate={{boxShadow:["0 0 20px rgba(50,190,218,0.3)","0 0 40px rgba(50,190,218,0.6)","0 0 20px rgba(50,190,218,0.3)"]}}
                 transition={{duration:2.8,repeat:Infinity,ease:"easeInOut"}}
                 style={{width:48,height:48,borderRadius:14,
                   background:"linear-gradient(135deg,rgba(0,160,255,0.2),rgba(0,80,200,0.15))",
-                  border:"1.5px solid rgba(0,200,255,0.4)",
+                  border:"1.5px solid rgba(50,190,218,0.4)",
                   display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(0,200,255,0.8))"}}/>
+                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
               </motion.div>
               <div style={{textAlign:"left" as const}}>
-                <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(0,200,255,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
+                <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(50,190,218,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
                   BIMS
                 </h1>
                 <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"clamp(6px,0.85vw,8.5px)",letterSpacing:"0.18em",color:"rgba(0,195,235,0.48)",margin:"4px 0 0",textTransform:"uppercase" as const}}>
@@ -856,21 +856,21 @@ Respond ONLY with valid JSON (no markdown):
               style={{position:"absolute",top:52,right:0,bottom:0,width:340,borderRadius:0,overflow:"auto",padding:"14px 12px"}}
               onClick={e=>e.stopPropagation()}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,paddingBottom:9,borderBottom:"1px solid rgba(0,145,220,0.14)"}}>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"rgba(0,215,255,0.75)"}}>NOTIFICATIONS</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"rgba(56,196,223,0.75)"}}>NOTIFICATIONS</span>
                 <button onClick={()=>setShowNotif(false)} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,160,220,0.42)"}}><X style={{width:13,height:13}}/></button>
               </div>
               {tickets.length===0 && (
                 <div style={{textAlign:"center" as const,padding:"28px 0",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"rgba(0,135,185,0.35)"}}>No notifications</div>
               )}
               {tickets.map((t:any)=>(
-                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,120,255,0.15)"}}>
+                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,170,200,0.15)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(0,215,255,0.75)"}}>{t.issue||t.issueCode}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(56,196,223,0.75)"}}>{t.issue||t.issueCode}</span>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,color:"rgba(0,145,200,0.42)"}}>{t.id}</span>
                   </div>
                   <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.description}</p>
                   {t.adminResponse && (
-                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,120,255,0.08)",border:"1px solid rgba(40,120,255,0.15)"}}>
+                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,170,200,0.08)",border:"1px solid rgba(40,170,200,0.15)"}}>
                       <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,fontWeight:600,color:"rgba(255,140,0,0.55)",letterSpacing:"0.1em",marginBottom:2,textTransform:"uppercase" as const}}>Response</div>
                       <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.adminResponse}</p>
                     </div>
@@ -962,7 +962,7 @@ export default Index;      {/* ─── NAV ─── */}
         display:"flex",flexDirection:"row",alignItems:"center",
         padding:"0 20px 0 20px",
         background:"rgba(0,4,16,0.92)",
-        borderBottom:"1px solid rgba(0,170,255,0.15)",
+        borderBottom:"1px solid rgba(38,170,205,0.15)",
         backdropFilter:"blur(40px)",
         WebkitBackdropFilter:"blur(40px)",
       }}>
@@ -971,19 +971,19 @@ export default Index;      {/* ─── NAV ─── */}
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{
             width:34,height:34,borderRadius:"50%",
-            background:"linear-gradient(135deg,rgba(0,140,255,0.25),rgba(0,60,180,0.18))",
-            border:"1.5px solid rgba(0,200,255,0.55)",
+            background:"linear-gradient(135deg,rgba(25,150,192,0.25),rgba(0,60,180,0.18))",
+            border:"1.5px solid rgba(50,190,218,0.55)",
             display:"flex",alignItems:"center",justifyContent:"center",
             boxShadow:"0 0 18px rgba(0,185,255,0.4)",
             flexShrink:0,
           }}>
-            <Shield style={{width:16,height:16,color:"hsl(195,100%,72%)"}}/>
+            <Shield style={{width:16,height:16,color:"hsl(192,68%,72%)"}}/>
           </div>
           <div>
             <div style={{
               fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:900,
               letterSpacing:"0.12em",color:"rgba(210,245,255,0.98)",lineHeight:1.1,
-              textShadow:"0 0 18px rgba(0,200,255,0.55)",
+              textShadow:"0 0 18px rgba(50,190,218,0.55)",
             }}>BIMS</div>
             <div style={{
               fontFamily:"'JetBrains Mono',monospace",fontSize:7,
@@ -1007,7 +1007,7 @@ export default Index;      {/* ─── NAV ─── */}
             fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:500,
             color:"rgba(160,210,255,0.75)",transition:"all .18s",
           }}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.16)";e.currentTarget.style.color="rgba(200,235,255,0.95)";}}
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.16)";e.currentTarget.style.color="rgba(200,235,255,0.95)";}}
           onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(160,210,255,0.75)";}}>
             <Headphones style={{width:13,height:13}}/>
             <span>Support</span>
@@ -1020,7 +1020,7 @@ export default Index;      {/* ─── NAV ─── */}
             display:"flex",alignItems:"center",justifyContent:"center",
             color:"rgba(160,210,255,0.7)",transition:"all .18s",
           }}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.16)";}}
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.16)";}}
           onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Bell style={{width:15,height:15}}/>
             {notifCount>0&&<span style={{position:"absolute",top:5,right:5,width:7,height:7,borderRadius:"50%",background:"hsl(215,100%,65%)",border:"1.5px solid hsl(220,80%,4%)"}}/>}
@@ -1033,7 +1033,7 @@ export default Index;      {/* ─── NAV ─── */}
             display:"flex",alignItems:"center",justifyContent:"center",
             color:"rgba(160,210,255,0.7)",transition:"all .18s",
           }}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.16)";}}
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.16)";}}
           onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <MessageSquare style={{width:15,height:15}}/>
             {dmUnread>0&&<span style={{position:"absolute",top:5,right:5,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,68%)",border:"1.5px solid hsl(220,80%,4%)"}}/>}
@@ -1046,25 +1046,25 @@ export default Index;      {/* ─── NAV ─── */}
           <button onClick={()=>setShowUserMenu(v=>!v)} style={{
             display:"flex",alignItems:"center",gap:7,
             padding:"4px 11px 4px 4px",borderRadius:99,cursor:"pointer",
-            background:"rgba(0,180,255,0.1)",
-            border:"1px solid rgba(0,200,255,0.28)",
+            background:"rgba(40,175,210,0.1)",
+            border:"1px solid rgba(50,190,218,0.28)",
             transition:"all .18s",
           }}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,180,255,0.2)";e.currentTarget.style.borderColor="rgba(0,220,255,0.45)";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,180,255,0.1)";e.currentTarget.style.borderColor="rgba(0,200,255,0.28)";}}>
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,175,210,0.2)";e.currentTarget.style.borderColor="rgba(58,198,224,0.45)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(40,175,210,0.1)";e.currentTarget.style.borderColor="rgba(50,190,218,0.28)";}}>
             <div style={{
               width:28,height:28,borderRadius:"50%",
-              background:"rgba(0,190,255,0.22)",
-              border:"2px solid rgba(0,210,255,0.55)",
+              background:"rgba(45,185,215,0.22)",
+              border:"2px solid rgba(55,195,222,0.55)",
               display:"flex",alignItems:"center",justifyContent:"center",
               fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:900,
-              color:"hsl(195,100%,72%)",
+              color:"hsl(192,68%,72%)",
             }}>
               {(currentUser?.role||"analyst")[0].toUpperCase()}
             </div>
             <span style={{
               fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,
-              color:"hsl(195,100%,72%)",letterSpacing:"0.1em",
+              color:"hsl(192,68%,72%)",letterSpacing:"0.1em",
             }}>
               {(currentUser?.role||"analyst").toUpperCase()}
             </span>
@@ -1098,11 +1098,11 @@ export default Index;      {/* ─── NAV ─── */}
                 minWidth:180,zIndex:60,
                 padding:"8px 0",borderRadius:14,
                 background:"rgba(2,8,22,0.97)",
-                border:"1px solid rgba(0,170,255,0.22)",
+                border:"1px solid rgba(38,170,205,0.22)",
                 boxShadow:"0 24px 64px rgba(0,0,0,0.92)",
                 backdropFilter:"blur(32px)",
               }}>
-              <div style={{padding:"9px 15px 8px",borderBottom:"1px solid rgba(0,170,255,0.12)",marginBottom:4}}>
+              <div style={{padding:"9px 15px 8px",borderBottom:"1px solid rgba(38,170,205,0.12)",marginBottom:4}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,color:"rgba(200,245,255,0.96)"}}>{currentUser?.fullName||currentUser?.username}</div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,170,220,0.45)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
@@ -1110,7 +1110,7 @@ export default Index;      {/* ─── NAV ─── */}
                 <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}}
                   style={{width:"100%",textAlign:"left" as const,padding:"7px 15px",background:"none",border:"none",cursor:"pointer",
                     fontFamily:"'Exo 2',sans-serif",fontSize:12.5,color:"rgba(110,185,245,0.65)",transition:"all .14s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,140,255,0.12)";e.currentTarget.style.color="rgba(190,235,255,0.98)";}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.12)";e.currentTarget.style.color="rgba(190,235,255,0.98)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(110,185,245,0.65)";}}>
                   {label}
                 </button>
@@ -1128,16 +1128,16 @@ export default Index;      {/* ─── NAV ─── */}
           <div style={{textAlign:"center" as const}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:8}}>
               <motion.div
-                animate={{boxShadow:["0 0 20px rgba(0,200,255,0.3)","0 0 40px rgba(0,200,255,0.6)","0 0 20px rgba(0,200,255,0.3)"]}}
+                animate={{boxShadow:["0 0 20px rgba(50,190,218,0.3)","0 0 40px rgba(50,190,218,0.6)","0 0 20px rgba(50,190,218,0.3)"]}}
                 transition={{duration:2.8,repeat:Infinity,ease:"easeInOut"}}
                 style={{width:48,height:48,borderRadius:14,
                   background:"linear-gradient(135deg,rgba(0,160,255,0.2),rgba(0,80,200,0.15))",
-                  border:"1.5px solid rgba(0,200,255,0.4)",
+                  border:"1.5px solid rgba(50,190,218,0.4)",
                   display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(0,200,255,0.8))"}}/>
+                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
               </motion.div>
               <div style={{textAlign:"left" as const}}>
-                <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(0,200,255,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
+                <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(50,190,218,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
                   BIMS
                 </h1>
                 <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"clamp(6px,0.85vw,8.5px)",letterSpacing:"0.18em",color:"rgba(0,195,235,0.48)",margin:"4px 0 0",textTransform:"uppercase" as const}}>
@@ -1368,21 +1368,21 @@ export default Index;      {/* ─── NAV ─── */}
               style={{position:"absolute",top:52,right:0,bottom:0,width:340,borderRadius:0,overflow:"auto",padding:"14px 12px"}}
               onClick={e=>e.stopPropagation()}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,paddingBottom:9,borderBottom:"1px solid rgba(0,145,220,0.14)"}}>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"rgba(0,215,255,0.75)"}}>NOTIFICATIONS</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"rgba(56,196,223,0.75)"}}>NOTIFICATIONS</span>
                 <button onClick={()=>setShowNotif(false)} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,160,220,0.42)"}}><X style={{width:13,height:13}}/></button>
               </div>
               {tickets.length===0 && (
                 <div style={{textAlign:"center" as const,padding:"28px 0",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"rgba(0,135,185,0.35)"}}>No notifications</div>
               )}
               {tickets.map((t:any)=>(
-                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,120,255,0.15)"}}>
+                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,170,200,0.15)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(0,215,255,0.75)"}}>{t.issue||t.issueCode}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(56,196,223,0.75)"}}>{t.issue||t.issueCode}</span>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,color:"rgba(0,145,200,0.42)"}}>{t.id}</span>
                   </div>
                   <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.description}</p>
                   {t.adminResponse && (
-                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,120,255,0.08)",border:"1px solid rgba(40,120,255,0.15)"}}>
+                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,170,200,0.08)",border:"1px solid rgba(40,170,200,0.15)"}}>
                       <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,fontWeight:600,color:"rgba(255,140,0,0.55)",letterSpacing:"0.1em",marginBottom:2,textTransform:"uppercase" as const}}>Response</div>
                       <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.adminResponse}</p>
                     </div>
