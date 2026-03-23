@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,8 +8,23 @@ import Registration from "./pages/Registration.tsx";
 import DatabasePage from "./pages/Database.tsx";
 import ResultPage from "./pages/Result.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Login, { isLoggedIn } from "./pages/Login.tsx";
+import UserManagement from "./pages/UserManagement.tsx";
+import Reports from "./pages/Reports.tsx";
+import Create from "./pages/Create.tsx";
+import Settings from "./pages/Settings.tsx";
+import Profile from "./pages/Profile.tsx";
 
 const queryClient = new QueryClient();
+
+/* ── Auth guard: redirects to /login if not authenticated ── */
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  if (!isLoggedIn()) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -18,10 +33,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/register" element={<Registration />} />
-          <Route path="/database" element={<DatabasePage />} />
-          <Route path="/result/:id" element={<ResultPage />} />
+          {/* Public */}
+          <Route path="/login" element={<Login />} />
+          {/* Protected */}
+          <Route path="/"         element={<RequireAuth><Index /></RequireAuth>} />
+          <Route path="/register" element={<RequireAuth><Registration /></RequireAuth>} />
+          <Route path="/database" element={<RequireAuth><DatabasePage /></RequireAuth>} />
+          <Route path="/result/:id" element={<RequireAuth><ResultPage /></RequireAuth>} />
+          <Route path="/users"     element={<RequireAuth><UserManagement /></RequireAuth>} />
+          <Route path="/reports"   element={<RequireAuth><Reports /></RequireAuth>} />
+          <Route path="/create"    element={<RequireAuth><Create /></RequireAuth>} />
+          <Route path="/settings"  element={<RequireAuth><Settings /></RequireAuth>} />
+          <Route path="/profile"   element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

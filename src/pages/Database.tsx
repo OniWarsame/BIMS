@@ -1,18 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, ArrowLeft, Search, Fingerprint, Users, User,
-  ChevronRight, X, Eye, Lock, ClipboardList, LogOut, Paperclip, FileText, ImageIcon, Download,
-  HardDrive, Trash2, DatabaseZap, Pencil, Save, RotateCcw
+  ChevronRight, X, Eye, Lock, CheckCircle, ClipboardList, LogOut, Paperclip, FileText, ImageIcon, Download,
+  HardDrive, Trash2, DatabaseZap, Pencil, Save, RotateCcw, Camera
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CyberBackground from "@/components/CyberBackground";
+import PageHeader from "@/components/PageHeader";
 import {
   getRecords, searchRecords, isDatabaseUnlocked, unlockDatabase,
   lockDatabase, getAccessLogs, clearLogs, exportDatabase,
   getStorageInfo, deleteRecord, updateRecord, type BiometricRecord
 } from "@/lib/biometric-store";
+import { getCurrentUser } from "@/pages/Login";
 
 /* ── Attachment viewer ── */
 const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:boolean;onClose:()=>void}) => (
@@ -50,167 +52,199 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
   </motion.div>
 );
 
-/* ── PIN Lock Screen ── */
+/* ── Password-Only Lock Screen ── */
 const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => void }) => {
-  const [mode,  setMode]  = useState<"pin"|"forgot"|"forgot-sent">("pin");
-  const [pin,   setPin]   = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [pin,      setPin]      = useState("");
+  const [error,    setError]    = useState("");
+  const [checking, setChecking] = useState(false);
+  const [granted,  setGranted]  = useState(false);
+  const currentUser = getCurrentUser();
 
   const tryPin = () => {
-    if (unlockDatabase(pin)) { onUnlock(); }
-    else {
-      setError("INCORRECT PIN — ACCESS DENIED");
-      setPin("");
-      // Flash the error text — no box movement at all
-    }
+    if (!pin.trim()) return;
+    setChecking(true); setError("");
+    setTimeout(() => {
+      const ok = currentUser
+        ? (() => { try { const us = JSON.parse(localStorage.getItem("bims_users")||"[]"); const u = us.find((u:any)=>u.username===currentUser.username); return u && pin === u.password; } catch { return false; } })()
+        : unlockDatabase(pin, "UNKNOWN");
+      if (ok) {
+        if (currentUser) unlockDatabase(pin, currentUser.username);
+        setGranted(true);
+        setTimeout(() => onUnlock(), 1100);
+      } else { setError("INCORRECT PASSWORD — ACCESS DENIED"); setPin(""); setChecking(false); }
+    }, 680);
   };
 
-  const sendResetEmail = () => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("ENTER A VALID EMAIL ADDRESS"); return;
-    }
-    setError(""); setMode("forgot-sent");
-  };
+  const sideLeft = [
+    {icon:"🔒", label:"VAULT LOCK",  val:"AES-256"},
+    {icon:"⚡", label:"SESSION",     val:"ACTIVE"},
+    {icon:"🛡️", label:"CLEARANCE",  val:"L3 RESTRICTED"},
+    {icon:"🔐", label:"PROTOCOL",   val:"TLS 1.3"},
+    {icon:"◉",  label:"STATUS",     val:"STANDBY"},
+  ];
+  const sideRight = ["ACCESS","ENCRYPT","VAULT"];
+  const sideRightPct = [87,100,64];
 
-  /* Shared page shell — fully static, zero motion, zero layout shift */
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen relative flex flex-col items-center justify-center">
+  return (
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
       <CyberBackground />
-      <div className="cyber-header fixed top-0 left-0 right-0 z-10 flex items-center px-4 py-3">
+
+      {/* BACK NAV */}
+      <div className="fixed top-0 left-0 right-0 z-20 flex items-center px-4 py-3 cyber-header">
         <button onClick={onBack}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-150"
-          style={{ color: "hsl(38,90%,68%)" }}
-          onMouseEnter={e => e.currentTarget.style.background = "hsla(38,80%,50%,0.12)"}
-          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-          <ArrowLeft className="w-4 h-4" />
-          <span className="font-display text-sm font-bold tracking-wider">DATABASE ACCESS</span>
+          className="flex items-center gap-2 rounded-lg px-3 py-2 transition-all font-hud text-sm font-bold tracking-[0.16em]"
+          style={{fontFamily:"'Orbitron',monospace",fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:"hsl(192,100%,72%)",textShadow:"0 0 12px hsla(192,100%,58%,0.8)"}}
+          onMouseEnter={e=>e.currentTarget.style.background="hsla(192,100%,52%,0.08)"}
+          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+          <ArrowLeft className="w-4 h-4"/>DATABASE ACCESS
         </button>
       </div>
-      <div
-        className="card-surface rounded-2xl p-10 relative z-[1] w-full max-w-md text-center mt-14"
-        style={{ border: "1.5px solid hsla(38,80%,50%,0.35)", boxShadow: "0 0 60px hsla(38,80%,50%,0.12)" }}>
-        {children}
-      </div>
-    </div>
-  );
 
-  /* ── PIN entry — stable, no animation on the input ── */
-  if (mode === "pin") return (
-    <Shell>
-      <div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center"
-        style={{ background: "hsla(185,100%,50%,0.1)", border: "2px solid hsla(185,100%,50%,0.35)" }}>
-        <Lock className="w-7 h-7 text-primary" />
-      </div>
-      <h1 className="font-display text-2xl font-bold mb-1 glow-text">DATABASE ACCESS</h1>
-      <p className="font-mono text-xs mb-6 tracking-widest" style={{ color: "hsla(185,80%,65%,0.5)" }}>
-        RESTRICTED — AUTHORISED PERSONNEL ONLY
-      </p>
-
-      {/* PIN input — plain div, zero motion, zero layout shift */}
-      <div className="mb-3">
-        <input
-          type="password"
-          value={pin}
-          onChange={e => { setPin(e.target.value); setError(""); }}
-          onKeyDown={e => { if (e.key === "Enter") tryPin(); }}
-          placeholder="• • • • • •"
-          maxLength={8}
-          autoFocus
-          className="input-cyber text-center font-bold w-full"
-          style={{
-            fontSize: "1.4rem",
-            letterSpacing: "0.5em",
-            borderColor: error ? "hsl(0,90%,58%)" : undefined,
-          }}
-        />
+      {/* LEFT SIDEBAR */}
+      <div className="fixed left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2.5 pointer-events-none">
+        {sideLeft.map((item,i)=>(
+          <motion.div key={i}
+            initial={{opacity:0,x:-24}} animate={{opacity:1,x:0}} transition={{delay:i*0.12,duration:0.4}}
+            style={{background:"hsla(215,55%,5%,0.82)",border:"1px solid hsla(192,100%,52%,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
+            <motion.div animate={{opacity:[0.35,0.7,0.35]}} transition={{duration:2.5+i*0.4,repeat:Infinity,delay:i*0.3}}>
+              <div className="flex items-center gap-2">
+                <span style={{fontSize:12}}>{item.icon}</span>
+                <div>
+                  <div className="font-hud" style={{fontSize:7,letterSpacing:"0.22em",color:"hsla(192,80%,55%,0.42)"}}>{item.label}</div>
+                  <div className="font-hud font-bold" style={{fontSize:9,color:"hsl(192,100%,65%)"}}>{item.val}</div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        ))}
+        {/* vertical glow line */}
+        <motion.div className="absolute -right-1 top-0 bottom-0 w-px pointer-events-none"
+          style={{background:"linear-gradient(180deg,transparent,hsla(192,100%,55%,0.4),transparent)"}}
+          animate={{opacity:[0.3,0.7,0.3]}} transition={{duration:2.2,repeat:Infinity}}/>
+        {/* scan sweep */}
+        <motion.div className="absolute left-0 right-0 h-px pointer-events-none"
+          style={{background:"linear-gradient(90deg,transparent,hsla(192,100%,55%,0.6),transparent)"}}
+          animate={{top:["0%","100%","0%"]}} transition={{duration:3.5,repeat:Infinity,ease:"easeInOut"}}/>
       </div>
 
-      {/* Fixed-height error slot — always present, never shifts layout */}
-      <div className="h-7 flex items-center justify-center mb-3">
-        {error && (
-          <p className="font-mono text-xs tracking-wider" style={{ color: "hsl(0,90%,65%)" }}>
-            {error}
-          </p>
+      {/* RIGHT SIDEBAR */}
+      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3 pointer-events-none" style={{width:140}}>
+        {/* binary rain */}
+        {Array.from({length:6},(_,i)=>(
+          <motion.div key={i} className="font-mono text-right"
+            style={{fontSize:8,letterSpacing:"0.22em",color:`hsla(192,100%,${52+i*4}%,${0.06+i*0.025})`}}
+            animate={{opacity:[0.04,0.2,0.04]}} transition={{duration:1.4+i*0.25,delay:i*0.18,repeat:Infinity}}>
+            {Array.from({length:8},()=>Math.round(Math.random())).join(" ")}
+          </motion.div>
+        ))}
+        {/* progress bars */}
+        <div className="flex flex-col gap-2 mt-2">
+          {sideRight.map((label,i)=>(
+            <motion.div key={i} initial={{opacity:0,x:24}} animate={{opacity:1,x:0}} transition={{delay:0.4+i*0.2}}>
+              <div className="flex justify-between mb-0.5">
+                <span className="font-hud" style={{fontSize:7,letterSpacing:"0.18em",color:"hsla(192,80%,55%,0.38)"}}>{label}</span>
+                <span className="font-hud font-bold" style={{fontSize:7,color:"hsl(192,100%,62%)"}}>{sideRightPct[i]}%</span>
+              </div>
+              <div className="rounded-full" style={{height:2,background:"hsla(192,60%,20%,0.35)"}}>
+                <motion.div className="h-full rounded-full"
+                  style={{background:`linear-gradient(90deg,hsl(192,100%,52%),hsl(${210+i*20},100%,60%))`}}
+                  initial={{width:0}} animate={{width:`${sideRightPct[i]}%`}}
+                  transition={{duration:1.4,delay:0.6+i*0.3,ease:"easeOut"}}/>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        {/* vertical glow */}
+        <motion.div className="absolute -left-1 top-0 bottom-0 w-px pointer-events-none"
+          style={{background:"linear-gradient(180deg,transparent,hsla(192,100%,55%,0.35),transparent)"}}
+          animate={{opacity:[0.3,0.7,0.3]}} transition={{duration:2.5,repeat:Infinity}}/>
+      </div>
+
+      {/* MAIN CARD */}
+      <motion.div
+        initial={{opacity:0,y:28,scale:0.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:0.35,ease:"easeOut"}}
+        className="relative z-[1] w-full max-w-sm mt-14 card-surface rounded-2xl p-8 text-center"
+        style={{border:"1px solid hsla(192,100%,52%,0.38)",borderTop:"1px solid hsla(192,100%,65%,0.45)",
+          boxShadow:"0 0 80px hsla(192,100%,52%,0.14),0 0 0 1px hsla(192,100%,52%,0.06),0 24px 64px rgba(0,0,0,.88)",
+          background:"hsla(215,55%,5%,0.9)"}}>
+
+        {/* corner brackets */}
+        {["top-2 left-2 border-t border-l","top-2 right-2 border-t border-r","bottom-2 left-2 border-b border-l","bottom-2 right-2 border-b border-r"].map((cls,i)=>(
+          <motion.div key={i} className={`absolute w-4 h-4 ${cls}`}
+            style={{borderColor:"hsla(192,100%,52%,0.38)"}}
+            animate={{opacity:[0.4,0.9,0.4]}} transition={{duration:2,delay:i*0.4,repeat:Infinity}}/>
+        ))}
+
+        {/* icon */}
+        <motion.div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+          style={{background:"hsla(192,100%,52%,0.08)",border:"1px solid hsla(192,100%,58%,0.45)",
+            boxShadow:"0 0 32px hsla(192,100%,52%,0.18),inset 0 1px 0 hsla(192,100%,65%,0.1)"}}
+          animate={{boxShadow:["0 0 32px hsla(192,100%,52%,0.18)","0 0 52px hsla(192,100%,52%,0.32)","0 0 32px hsla(192,100%,52%,0.18)"]}}
+          transition={{duration:3,repeat:Infinity,ease:"easeInOut"}}>
+          {granted
+            ? <motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:"spring",stiffness:300}}>
+                <CheckCircle className="w-8 h-8" style={{color:"hsl(192,100%,68%)",filter:"drop-shadow(0 0 10px hsla(192,100%,55%,0.9))"}}/>
+              </motion.div>
+            : <Lock className="w-8 h-8" style={{color:"hsl(192,100%,68%)",filter:"drop-shadow(0 0 10px hsla(192,100%,55%,0.9))"}}/>}
+        </motion.div>
+
+        <h1 className="font-hud text-xl font-black tracking-[0.22em] mb-1"
+          style={{color:"hsl(192,100%,72%)",textShadow:"0 0 20px hsla(192,100%,58%,0.8),0 0 40px hsla(192,100%,52%,0.3)"}}>
+          DATABASE ACCESS
+        </h1>
+        <p className="font-hud text-[9px] tracking-[0.28em] mb-5" style={{color:"hsla(192,80%,55%,0.45)"}}>
+          RESTRICTED — AUTHORISED PERSONNEL ONLY
+        </p>
+
+        {currentUser && !granted && (
+          <div className="flex items-center justify-center gap-2 mb-4 px-3 py-1.5 rounded-lg mx-auto"
+            style={{background:"hsla(192,100%,52%,0.06)",border:"1px solid hsla(192,100%,52%,0.18)",width:"fit-content"}}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{background:"hsl(192,100%,60%)",boxShadow:"0 0 6px hsla(192,100%,55%,0.7)"}}/>
+            <span className="font-hud text-[9px] tracking-[0.18em]" style={{color:"hsla(192,80%,62%,0.65)"}}>
+              SIGNED IN AS <span style={{color:"hsl(192,100%,72%)"}}>{currentUser.username.toUpperCase()}</span>
+            </span>
+          </div>
         )}
-      </div>
 
-      <button onClick={tryPin}
-        className="w-full h-11 rounded-lg font-mono font-bold tracking-widest text-sm mb-4 transition-all"
-        style={{ background: "hsla(185,100%,50%,0.18)", border: "1.5px solid hsla(185,100%,50%,0.5)", color: "hsl(185,100%,78%)" }}
-        onMouseEnter={e => e.currentTarget.style.background = "hsla(185,100%,50%,0.28)"}
-        onMouseLeave={e => e.currentTarget.style.background = "hsla(185,100%,50%,0.18)"}>
-        UNLOCK DATABASE
-      </button>
-
-      <button onClick={() => { setMode("forgot"); setError(""); setEmail(""); }}
-        className="font-mono text-xs tracking-wider underline underline-offset-4"
-        style={{ color: "hsla(185,100%,62%,0.6)" }}>
-        Forgot PIN?
-      </button>
-    </Shell>
-  );
-
-  /* ── Forgot PIN — email entry ── */
-  if (mode === "forgot") return (
-    <Shell>
-      <div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center"
-        style={{ background: "hsla(185,100%,50%,0.1)", border: "2px solid hsla(185,100%,50%,0.35)" }}>
-        <Lock className="w-7 h-7 text-primary" />
-      </div>
-      <h1 className="font-display text-xl font-bold mb-1 glow-text">FORGOT PIN</h1>
-      <p className="font-mono text-xs mb-2 tracking-widest" style={{ color: "hsla(185,80%,65%,0.5)" }}>
-        ENTER YOUR REGISTERED EMAIL ADDRESS
-      </p>
-      <p className="font-mono text-xs mb-5" style={{ color: "hsla(185,70%,60%,0.4)" }}>
-        A reset link will be sent to your inbox.
-      </p>
-      <div className="mb-2">
-        <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }}
-          onKeyDown={e => { if (e.key === "Enter") sendResetEmail(); }}
-          placeholder="your@email.com" autoFocus
-          className="input-cyber text-center w-full" style={{ letterSpacing: "0.05em" }}/>
-      </div>
-      <div className="h-7 flex items-center justify-center mb-3">
-        {error && <p className="font-mono text-xs tracking-wider" style={{ color: "hsl(0,90%,65%)" }}>{error}</p>}
-      </div>
-      <button onClick={sendResetEmail}
-        className="w-full h-11 rounded-lg font-mono font-bold tracking-widest text-sm mb-4 transition-all"
-        style={{ background: "hsla(185,100%,50%,0.18)", border: "1.5px solid hsla(185,100%,50%,0.5)", color: "hsl(185,100%,78%)" }}
-        onMouseEnter={e => e.currentTarget.style.background = "hsla(185,100%,50%,0.28)"}
-        onMouseLeave={e => e.currentTarget.style.background = "hsla(185,100%,50%,0.18)"}>
-        SEND RESET LINK
-      </button>
-      <button onClick={() => { setMode("pin"); setError(""); }}
-        className="font-mono text-xs tracking-wider" style={{ color: "hsla(185,80%,60%,0.5)" }}>
-        ← Back to PIN
-      </button>
-    </Shell>
-  );
-
-  /* ── Reset email sent ── */
-  return (
-    <Shell>
-      <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center"
-        style={{ background: "hsla(140,80%,45%,0.12)", border: "2px solid hsla(140,80%,45%,0.4)" }}>
-        <span className="text-2xl">✉️</span>
-      </div>
-      <h1 className="font-display text-xl font-bold mb-2" style={{ color: "hsl(140,90%,68%)", textShadow: "0 0 14px hsla(140,80%,50%,0.4)" }}>
-        RESET LINK SENT
-      </h1>
-      <p className="font-mono text-sm mb-1 font-semibold" style={{ color: "hsl(185,60%,82%)" }}>Check your inbox at:</p>
-      <p className="font-mono text-sm font-bold mb-5" style={{ color: "hsl(185,100%,70%)" }}>{email}</p>
-      <p className="font-mono text-xs mb-6" style={{ color: "hsla(185,70%,60%,0.5)" }}>
-        The reset link expires in 30 minutes.
-      </p>
-      <button onClick={() => { setMode("pin"); setEmail(""); }}
-        className="w-full h-11 rounded-lg font-mono font-bold tracking-widest text-sm transition-all"
-        style={{ background: "hsla(185,100%,50%,0.14)", border: "1.5px solid hsla(185,100%,50%,0.4)", color: "hsl(185,100%,75%)" }}
-        onMouseEnter={e => e.currentTarget.style.background = "hsla(185,100%,50%,0.24)"}
-        onMouseLeave={e => e.currentTarget.style.background = "hsla(185,100%,50%,0.14)"}>
-        BACK TO LOGIN
-      </button>
-    </Shell>
+        {granted ? (
+          <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} className="py-4">
+            <motion.div animate={{opacity:[0.6,1,0.6]}} transition={{duration:0.9,repeat:Infinity}}
+              className="font-hud text-sm tracking-[0.24em] mb-3" style={{color:"hsl(192,100%,68%)"}}>
+              ✓ &nbsp; ACCESS GRANTED
+            </motion.div>
+            <div className="h-px rounded-full overflow-hidden mx-6" style={{background:"hsla(192,60%,20%,0.4)"}}>
+              <motion.div className="h-full" style={{background:"linear-gradient(90deg,hsl(192,100%,55%),hsl(210,100%,62%))"}}
+                initial={{width:"0%"}} animate={{width:"100%"}} transition={{duration:1,ease:"easeInOut"}}/>
+            </div>
+          </motion.div>
+        ) : (
+          <>
+            <div className="mb-2 text-left">
+              <label className="text-label">ENTER PASSWORD</label>
+              <input type="password" value={pin}
+                onChange={e=>{setPin(e.target.value);setError("");}}
+                onKeyDown={e=>e.key==="Enter"&&tryPin()}
+                placeholder="••••••••" maxLength={32} autoFocus
+                className="input-cyber text-center font-bold"
+                style={{fontSize:"1.3rem",letterSpacing:"0.5em",borderColor:error?"hsl(0,90%,58%)":undefined}}/>
+            </div>
+            <div className="h-6 flex items-center justify-center mb-3">
+              {error && <motion.p initial={{opacity:0,y:-4}} animate={{opacity:1,y:0}}
+                className="font-hud text-[9px] tracking-[0.16em]" style={{color:"hsl(0,90%,65%)"}}>{error}</motion.p>}
+            </div>
+            <button onClick={tryPin} disabled={checking||!pin.trim()}
+              className="btn-cyan w-full h-11 rounded-lg flex items-center justify-center gap-2 text-[11px] mb-3 disabled:opacity-40"
+              onMouseEnter={e=>{if(!checking&&pin.trim())e.currentTarget.style.background="hsla(192,100%,52%,0.22)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="hsla(192,100%,52%,0.1)";}}>
+              {checking
+                ? <><div className="w-4 h-4 border-2 rounded-full animate-spin"
+                    style={{borderColor:"hsla(192,100%,55%,0.3)",borderTopColor:"hsl(192,100%,68%)"}}/>VERIFYING...</>
+                : <><Lock className="w-4 h-4"/>UNLOCK DATABASE</>}
+            </button>
+          </>
+        )}
+      </motion.div>
+    </div>
   );
 };
 
@@ -372,17 +406,92 @@ const EditModal = ({record, onSave, onClose}:{record:BiometricRecord;onSave:(upd
 };
 
 /* ════════════════════════════════════════════════ */
+/* ── All Attachments Panel ── */
+const AttachPanel = ({preview, onView}:{preview:any; onView:(title:string,src:string,isImg:boolean)=>void}) => {
+  const isImg = (s:string) => /\.(jpg|jpeg|png|gif|webp)/i.test(s);
+  const attachments = [
+    preview.photo && {label:"PROFILE PHOTO", src:preview.photo, isImg:true},
+    !preview.noPassport && preview.passportFile && {label:"PASSPORT SCAN", src:preview.passportFile, isImg:isImg(preview.passportFile)},
+    !preview.noLicense && preview.drivingLicenseFile && {label:"DRIVING LICENSE", src:preview.drivingLicenseFile, isImg:isImg(preview.drivingLicenseFile)},
+    preview.crimeRecordFile && {label:"CRIME RECORD DOC", src:preview.crimeRecordFile, isImg:isImg(preview.crimeRecordFile)},
+    preview.insuranceFile && {label:"INSURANCE DOC", src:preview.insuranceFile, isImg:isImg(preview.insuranceFile)},
+  ].filter(Boolean) as {label:string;src:string;isImg:boolean}[];
+
+  return (
+    <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} transition={{duration:0.2}}
+      className="overflow-hidden border-b" style={{borderColor:"hsla(185,55%,22%,0.35)",background:"hsla(185,80%,4%,0.6)"}}>
+      <div className="px-6 py-4">
+        <p className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase mb-3" style={{color:"hsl(33,100%,62%)"}}>
+          ALL ATTACHMENTS — {attachments.length} FILE{attachments.length!==1?"S":""} FOUND
+        </p>
+        {attachments.length===0
+          ? <p className="font-mono text-xs" style={{color:"hsla(185,80%,60%,0.35)"}}>No attachments found for this record.</p>
+          : <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {attachments.map((a,i)=>(
+                <button key={i} onClick={()=>onView(a.label,a.src,a.isImg)}
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg transition-all"
+                  style={{border:"1px solid hsla(33,100%,52%,0.28)",background:"hsla(33,50%,6%,0.7)"}}>
+                  <div className="w-full h-16 rounded flex items-center justify-center overflow-hidden"
+                    style={{background:"hsla(185,80%,5%,0.8)",border:"1px solid hsla(185,50%,20%,0.3)"}}>
+                    {a.isImg
+                      ? <img src={a.src} alt={a.label} className="w-full h-full object-cover rounded"/>
+                      : <FileText className="w-7 h-7" style={{color:"hsla(33,100%,52%,0.4)"}}/>}
+                  </div>
+                  <span className="font-mono text-[9px] font-bold tracking-wider text-center leading-tight" style={{color:"hsl(33,100%,65%)"}}>{a.label}</span>
+                  <span className="font-mono text-[8px] tracking-wider" style={{color:"hsla(185,80%,60%,0.4)"}}>CLICK TO VIEW</span>
+                </button>
+              ))}
+            </div>}
+      </div>
+    </motion.div>
+  );
+};
+
 const DatabasePage = () => {
+  const currentUserRole = getCurrentUser()?.role;
+  const canExport = currentUserRole === "admin" || currentUserRole === "analyst";
   const navigate   = useNavigate();
-  const [unlocked, setUnlocked] = useState(isDatabaseUnlocked());
+  // Always require PIN on every visit — lock immediately on mount
+  const [unlocked, setUnlocked] = useState(false);
+  useEffect(() => { lockDatabase(); setUnlocked(false); }, []);
   const [query,    setQuery]    = useState("");
   const [results,  setResults]  = useState<BiometricRecord[]>([]);
   const [preview,  setPreview]  = useState<BiometricRecord|null>(null);
   const [modal,    setModal]    = useState<{title:string;src:string;isImg:boolean}|null>(null);
   const [editRecord, setEditRecord] = useState<BiometricRecord|null>(null);
   const [showLogs, setShowLogs] = useState(false);
+  const [showAllAttach, setShowAllAttach] = useState(false);
+  const [showPreviewDeepSearch, setShowPreviewDeepSearch] = useState(false);
   const [logs,     setLogs]     = useState(getAccessLogs());
   const [storageInfo, setStorageInfo] = useState(getStorageInfo());
+  const [photoSearchMode, setPhotoSearchMode] = useState(false);
+  const [photoSearchImg, setPhotoSearchImg] = useState<string|null>(null);
+  const [photoSearching, setPhotoSearching] = useState(false);
+  const [photoMatch, setPhotoMatch] = useState<BiometricRecord|null|"none">(null);
+  const photoSearchRef = useRef<HTMLInputElement>(null);
+
+  /* PIN gate for edit / delete */
+  type PinGate = { mode:"edit"|"delete"; record:BiometricRecord; pin:string; error:string };
+  const [pinGate, setPinGate] = useState<PinGate|null>(null);
+
+  const openPinGate = (mode:"edit"|"delete", record:BiometricRecord) =>
+    setPinGate({mode, record, pin:"", error:""});
+
+  const confirmPinGate = () => {
+    if(!pinGate) return;
+    if(!unlockDatabase(pinGate.pin)) {
+      setPinGate(p=>p?{...p, pin:"", error:"INCORRECT PIN — ACCESS DENIED"}:null);
+      return;
+    }
+    if(pinGate.mode==="edit") {
+      setEditRecord(pinGate.record);
+    } else {
+      deleteRecord(pinGate.record.id);
+      if(preview?.id===pinGate.record.id) setPreview(null);
+      refreshAll();
+    }
+    setPinGate(null);
+  };
 
   const refreshAll = () => {
     const recs = getRecords();
@@ -398,13 +507,76 @@ const DatabasePage = () => {
     setResults(v.trim()?searchRecords(v):getRecords());
   };
 
+  const handlePhotoSearch = async (imgData: string) => {
+    setPhotoSearching(true);
+    setPhotoMatch(null);
+
+    const records = getRecords().filter(r => r.photo);
+    if (records.length === 0) { setPhotoSearching(false); setPhotoMatch("none"); return; }
+
+    /* detect media type from data URI */
+    const getMediaType = (dataUrl: string): "image/jpeg"|"image/png"|"image/gif"|"image/webp" => {
+      if (dataUrl.startsWith("data:image/png"))  return "image/png";
+      if (dataUrl.startsWith("data:image/gif"))  return "image/gif";
+      if (dataUrl.startsWith("data:image/webp")) return "image/webp";
+      return "image/jpeg";
+    };
+
+    const strip = (d: string) => d.replace(/^data:image\/\w+;base64,/, "");
+    const queryMime = getMediaType(imgData);
+
+    try {
+      /* Send query image + all db photos in one call with per-record labels */
+      const content: any[] = [
+        {
+          type: "text",
+          text: `You are an expert biometric facial recognition system. Your task is to find which database record (if any) shows the SAME PERSON as the query photo.
+
+QUERY PHOTO: the first image below is the face to search for.
+DATABASE RECORDS: the subsequent images are labelled with their index (0-based).
+
+Compare facial features carefully: face shape, eyes, eyebrows, nose, lips, chin, ears, skin tone, and overall structure. Ignore lighting, angle, and photo quality differences.
+
+Respond ONLY with valid JSON — no markdown:
+{"match_index": <0-based index of best matching record, or -1 if no match>, "confidence": <0-100>, "reason": "<one sentence explanation>"}`
+        },
+        { type: "image", source: { type: "base64", media_type: queryMime, data: strip(imgData) } },
+        ...records.flatMap((r, i) => [
+          { type: "text" as const, text: `Database record index ${i} — ${r.name} ${r.surname} (ID: ${r.id}):` },
+          { type: "image" as const, source: { type: "base64" as const, media_type: getMediaType(r.photo as string), data: strip(r.photo as string) } }
+        ]),
+      ];
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 300,
+          messages: [{ role: "user", content }],
+        }),
+      });
+
+      const data = await response.json();
+      const text = data.content?.map((b: any) => b.text || "").join("") || "";
+      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+
+      if (parsed.match_index >= 0 && parsed.confidence >= 40 && records[parsed.match_index]) {
+        setPhotoMatch(records[parsed.match_index]);
+      } else {
+        setPhotoMatch("none");
+      }
+    } catch (e) {
+      console.error("Face search error:", e);
+      setPhotoMatch("none");
+    }
+    setPhotoSearching(false);
+  };
+
   const handleLock = () => { lockDatabase(); setUnlocked(false); setResults([]); setPreview(null); };
 
-  const handleDelete = (id: string) => {
-    if(!confirm(`Delete record ${id}? This cannot be undone.`)) return;
-    deleteRecord(id);
-    if(preview?.id === id) setPreview(null);
-    refreshAll();
+  const handleDelete = (record: BiometricRecord) => {
+    openPinGate("delete", record);
   };
 
   const handleExport = () => {
@@ -417,7 +589,6 @@ const DatabasePage = () => {
   };
 
   const handleClearLogs = () => {
-    if(!confirm("Clear all access logs? This cannot be undone.")) return;
     clearLogs(); setLogs(getAccessLogs()); setStorageInfo(getStorageInfo());
   };
 
@@ -441,8 +612,76 @@ const DatabasePage = () => {
       <AnimatePresence>{modal&&<AttachModal {...modal} onClose={()=>setModal(null)}/>}</AnimatePresence>
       <AnimatePresence>{editRecord&&<EditModal record={editRecord} onSave={handleSaveEdit} onClose={()=>setEditRecord(null)}/>}</AnimatePresence>
 
+      {/* ── PIN Gate Modal ── */}
+      <AnimatePresence>
+        {pinGate&&(
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{background:"hsla(210,80%,4%,0.88)",backdropFilter:"blur(16px)"}}>
+            <motion.div initial={{scale:0.92,y:20}} animate={{scale:1,y:0}} exit={{scale:0.92,y:20}}
+              className="card-surface rounded-2xl p-8 w-full max-w-sm text-center"
+              style={{border:`1.5px solid ${pinGate.mode==="delete"?"hsla(0,90%,55%,0.45)":"hsla(33,100%,52%,0.45)"}`,boxShadow:`0 0 60px ${pinGate.mode==="delete"?"hsla(0,90%,55%,0.12)":"hsla(33,100%,52%,0.12)"}`}}>
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+                style={{background:pinGate.mode==="delete"?"hsla(0,90%,55%,0.12)":"hsla(33,100%,52%,0.12)",border:`2px solid ${pinGate.mode==="delete"?"hsla(0,90%,55%,0.4)":"hsla(33,100%,52%,0.4)"}`}}>
+                {pinGate.mode==="delete"
+                  ? <Trash2 className="w-6 h-6" style={{color:"hsl(0,90%,65%)"}}/>
+                  : <Pencil className="w-6 h-6" style={{color:"hsl(33,100%,65%)"}}/> }
+              </div>
+              {/* Title */}
+              <h3 className="font-display text-lg font-bold mb-1"
+                style={{color:pinGate.mode==="delete"?"hsl(0,90%,72%)":"hsl(33,100%,72%)"}}>
+                {pinGate.mode==="delete"?"CONFIRM DELETION":"CONFIRM EDIT"}
+              </h3>
+              <p className="font-mono text-xs mb-1 tracking-wider" style={{color:"hsla(185,70%,65%,0.6)"}}>
+                {pinGate.mode==="delete"
+                  ? `DELETE: ${pinGate.record.surname}, ${pinGate.record.name}`
+                  : `EDIT: ${pinGate.record.surname}, ${pinGate.record.name}`}
+              </p>
+              {pinGate.mode==="delete"&&(
+                <p className="font-mono text-[11px] mb-4 tracking-wider" style={{color:"hsla(0,90%,65%,0.55)"}}>
+                  This action cannot be undone.
+                </p>
+              )}
+              <p className="font-mono text-xs mb-4 tracking-widest" style={{color:"hsla(185,80%,65%,0.5)"}}>
+                ENTER PIN TO CONTINUE
+              </p>
+              {/* PIN input */}
+              <div className="mb-2">
+                <input type="password" value={pinGate.pin} autoFocus maxLength={8}
+                  onChange={e=>setPinGate(p=>p?{...p,pin:e.target.value,error:""}:null)}
+                  onKeyDown={e=>{if(e.key==="Enter")confirmPinGate();if(e.key==="Escape")setPinGate(null);}}
+                  placeholder="• • • • • •"
+                  className="input-cyber text-center font-bold w-full"
+                  style={{fontSize:"1.3rem",letterSpacing:"0.45em",borderColor:pinGate.error?"hsl(0,90%,58%)":"hsla(185,80%,50%,0.38)"}}/>
+              </div>
+              <div className="h-6 flex items-center justify-center mb-4">
+                {pinGate.error&&<p className="font-mono text-xs tracking-wider" style={{color:"hsl(0,90%,65%)"}}>{pinGate.error}</p>}
+              </div>
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <button onClick={()=>setPinGate(null)}
+                  className="flex-1 h-10 rounded-lg font-mono font-bold tracking-widest text-xs transition-all"
+                  style={{border:"1.5px solid hsla(185,60%,35%,0.38)",color:"hsla(185,70%,65%,0.6)"}}>
+                  CANCEL
+                </button>
+                <button onClick={confirmPinGate}
+                  className="flex-1 h-10 rounded-lg font-mono font-bold tracking-widest text-xs transition-all"
+                  style={{
+                    background:pinGate.mode==="delete"?"hsla(0,90%,50%,0.2)":"hsla(33,100%,50%,0.2)",
+                    border:`1.5px solid ${pinGate.mode==="delete"?"hsla(0,90%,55%,0.55)":"hsla(33,100%,52%,0.55)"}`,
+                    color:pinGate.mode==="delete"?"hsl(0,90%,72%)":"hsl(33,100%,72%)",
+                  }}>
+                  {pinGate.mode==="delete"?"DELETE":"EDIT"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
-      <div className="cyber-header flex items-center justify-between px-8 py-3 sticky top-0 z-20">
+      <div className="flex items-center justify-between px-8 py-3 sticky top-0 z-20" style={{background:"transparent",borderBottom:"1px solid hsla(38,60%,35%,0.2)"}}>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={()=>navigate("/")}><ArrowLeft className="w-4 h-4"/></Button>
           <div className="w-9 h-9 rounded border border-primary/30 flex items-center justify-center" style={{background:"hsla(185,100%,50%,0.08)"}}>
@@ -462,11 +701,13 @@ const DatabasePage = () => {
             <span style={{color:"hsla(185,60%,55%,0.4)"}}>·</span>
             <span style={{color:"hsla(185,80%,60%,0.6)"}}>{storageInfo.sizeKB} KB</span>
           </div>
-          <button onClick={handleExport}
+          {canExport && (
+              <button onClick={handleExport}
             className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded transition-all"
             style={{border:"1px solid hsla(140,80%,45%,0.35)",background:"hsla(140,80%,45%,0.07)",color:"hsl(140,80%,62%)"}}>
             <Download className="w-3.5 h-3.5"/> EXPORT
           </button>
+            )}
           <button onClick={()=>{setShowLogs(!showLogs);setLogs(getAccessLogs());}}
             className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded transition-all"
             style={{border:"1px solid hsla(185,80%,45%,0.35)",background:"hsla(185,100%,50%,0.07)",color:"hsl(185,100%,65%)"}}>
@@ -517,13 +758,172 @@ const DatabasePage = () => {
         </AnimatePresence>
 
         {/* Search */}
-        <div className="card-surface rounded-lg px-5 py-3 mb-5 flex items-center gap-4">
-          <Search className="w-5 h-5 flex-shrink-0" style={{color:"hsla(185,100%,60%,0.55)"}}/>
-          <input value={query} onChange={e=>handleSearch(e.target.value)}
-            placeholder="Search by name, ID, nationality, passport or national ID…"
-            className="flex-1 bg-transparent font-mono text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
-            style={{letterSpacing:"0.02em"}}/>
-          {query&&<button onClick={()=>handleSearch("")} className="text-muted-foreground/50 hover:text-foreground transition-colors"><X className="w-4 h-4"/></button>}
+        <div className="mb-5 space-y-3">
+          {/* Mode toggle */}
+          <div className="flex gap-2">
+            <button onClick={()=>{setPhotoSearchMode(false);setPhotoSearchImg(null);setPhotoMatch(null);}}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-[11px] font-bold tracking-wider uppercase transition-all"
+              style={{background:!photoSearchMode?"hsla(185,100%,50%,0.14)":"transparent",border:!photoSearchMode?"1.5px solid hsla(185,100%,50%,0.5)":"1px solid hsla(185,55%,25%,0.35)",color:!photoSearchMode?"hsl(185,100%,68%)":"hsla(185,60%,55%,0.5)"}}>
+              <Search className="w-3.5 h-3.5"/> TEXT SEARCH
+            </button>
+            <button onClick={()=>{setPhotoSearchMode(true);setQuery("");setResults(getRecords());}}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-[11px] font-bold tracking-wider uppercase transition-all"
+              style={{background:photoSearchMode?"hsla(270,80%,55%,0.16)":"transparent",border:photoSearchMode?"1.5px solid hsla(270,80%,62%,0.55)":"1px solid hsla(185,55%,25%,0.35)",color:photoSearchMode?"hsl(270,80%,78%)":"hsla(185,60%,55%,0.5)"}}>
+              <Camera className="w-3.5 h-3.5"/> FACE RECOGNITION
+            </button>
+          </div>
+
+          {/* Text search */}
+          {!photoSearchMode && (
+            <div className="card-surface rounded-lg px-5 py-3 flex items-center gap-4">
+              <Search className="w-5 h-5 flex-shrink-0" style={{color:"hsla(185,100%,60%,0.55)"}}/>
+              <input value={query} onChange={e=>handleSearch(e.target.value)}
+                placeholder="e.g. John Smith — search by name, ID, nationality…"
+                className="flex-1 bg-transparent font-mono text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+                style={{letterSpacing:"0.02em"}}/>
+              {query&&<button onClick={()=>handleSearch("")} className="text-muted-foreground/50 hover:text-foreground transition-colors"><X className="w-4 h-4"/></button>}
+            </div>
+          )}
+
+          {/* Face recognition search */}
+          {photoSearchMode && (
+            <div className="card-surface rounded-xl overflow-hidden" style={{border:"1.5px solid hsla(270,70%,50%,0.35)"}}>
+              <input ref={photoSearchRef} type="file" accept="image/*" className="hidden" onChange={e=>{
+                const file=e.target.files?.[0]; if(!file) return;
+                const reader=new FileReader();
+                reader.onloadend=()=>{
+                  const imgData=reader.result as string;
+                  setPhotoSearchImg(imgData);
+                  setPhotoMatch(null);
+                  handlePhotoSearch(imgData);
+                };
+                reader.readAsDataURL(file);
+                e.target.value="";
+              }}/>
+
+              {!photoSearchImg ? (
+                // Upload prompt
+                <div onClick={()=>photoSearchRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-3 py-7 px-6 cursor-pointer group transition-all"
+                  style={{background:"hsla(270,50%,6%,0.8)"}}>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-105"
+                    style={{background:"hsla(270,80%,45%,0.14)",border:"1.5px solid hsla(270,80%,58%,0.4)",boxShadow:"0 0 24px hsla(270,80%,55%,0.15)"}}>
+                    <Camera className="w-7 h-7" style={{color:"hsl(270,80%,75%)"}}/>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-display font-bold tracking-wider mb-0.5" style={{color:"hsl(270,80%,80%)",fontSize:"0.9rem"}}>FACE RECOGNITION SEARCH</p>
+                    <p className="font-mono text-[10px] tracking-wider" style={{color:"hsla(270,60%,60%,0.5)"}}>Upload a photo · AI matches face against all database records</p>
+                  </div>
+                  <div className="flex items-center gap-4 font-mono text-[9px] tracking-wider" style={{color:"hsla(270,50%,55%,0.4)"}}>
+                    {["FACIAL ANALYSIS" ,"BIOMETRIC MATCH" ,"VERIFIED"].map((l,i)=>(
+                      <span key={i} className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{background:"hsla(270,80%,60%,0.4)"}}/>
+                        {l}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                // Image uploaded — show preview + result
+                <div className="flex gap-0" style={{background:"hsla(270,50%,5%,0.9)"}}>
+                  {/* Left: uploaded photo + controls */}
+                  <div className="flex-shrink-0 p-4 flex flex-col items-center gap-3" style={{borderRight:"1px solid hsla(270,50%,20%,0.35)"}}>
+                    <div className="relative">
+                      <img src={photoSearchImg} alt="Query" className="w-28 h-28 object-cover rounded-xl"
+                        style={{border:"2px solid hsla(270,80%,55%,0.45)",boxShadow:"0 0 20px hsla(270,80%,50%,0.2)"}}/>
+                      {/* Corner scan brackets */}
+                      {["top-0 left-0 border-t-2 border-l-2","top-0 right-0 border-t-2 border-r-2",
+                        "bottom-0 left-0 border-b-2 border-l-2","bottom-0 right-0 border-b-2 border-r-2"].map((cls,i)=>(
+                        <div key={i} className={`absolute ${cls} w-4 h-4 rounded-sm`}
+                          style={{borderColor:"hsl(270,80%,75%)",filter:"drop-shadow(0 0 4px hsla(270,80%,60%,0.8))"}}/>
+                      ))}
+                      {photoSearching && (
+                        <div className="absolute inset-0 rounded-xl flex items-center justify-center"
+                          style={{background:"hsla(270,60%,5%,0.65)",backdropFilter:"blur(2px)"}}>
+                          <div className="w-8 h-8 border-2 rounded-full animate-spin"
+                            style={{borderColor:"hsla(270,80%,60%,0.3)",borderTopColor:"hsl(270,80%,72%)"}}/>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <p className="font-mono text-[9px] tracking-wider mb-1" style={{color:"hsla(270,70%,60%,0.5)"}}>QUERY IMAGE</p>
+                      <button onClick={()=>{setPhotoSearchImg(null);setPhotoMatch(null);}} className="font-mono text-[9px] font-bold tracking-wider px-2.5 py-1 rounded-lg transition-all"
+                        style={{border:"1px solid hsla(0,70%,50%,0.4)",background:"hsla(0,70%,45%,0.1)",color:"hsl(0,80%,68%)"}}>
+                        CLEAR
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right: status + match result */}
+                  <div className="flex-1 p-5 flex flex-col justify-center">
+                    {photoSearching && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 border-2 rounded-full animate-spin flex-shrink-0"
+                            style={{borderColor:"hsla(270,80%,60%,0.2)",borderTopColor:"hsl(270,80%,72%)"}}/>
+                          <div>
+                            <p className="font-display font-bold tracking-wider text-sm" style={{color:"hsl(270,80%,80%)"}}>FACIAL ANALYSIS IN PROGRESS</p>
+                            <p className="font-mono text-[10px] tracking-wider mt-0.5" style={{color:"hsla(270,60%,60%,0.5)"}}>AI scanning {getRecords().filter(r=>r.photo).length} database photo(s)…</p>
+                          </div>
+                        </div>
+                        {["Extracting facial features","Comparing biometric points","Cross-referencing database","Running identity match"].map((step,i)=>(
+                          <motion.div key={step} initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} transition={{delay:i*0.4}}
+                            className="flex items-center gap-2">
+                            <motion.div animate={{opacity:[0.3,1,0.3]}} transition={{duration:1.2,repeat:Infinity,delay:i*0.3}}
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{background:"hsl(270,80%,65%)"}}/>
+                            <span className="font-mono text-[10px] tracking-wider" style={{color:"hsla(270,60%,65%,0.6)"}}>{step}</span>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+
+                    {!photoSearching && photoMatch && photoMatch!=="none" && (
+                      <motion.div initial={{opacity:0,scale:0.96}} animate={{opacity:1,scale:1}} className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-bold" style={{color:"hsl(140,100%,68%)",textShadow:"0 0 12px hsla(140,100%,55%,0.6)"}}>✓ FACE MATCH FOUND</span>
+                        </div>
+                        <div className="flex items-center gap-3 p-3 rounded-xl" style={{background:"hsla(140,80%,5%,0.8)",border:"1px solid hsla(140,80%,45%,0.4)"}}>
+                          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border" style={{borderColor:"hsla(140,80%,45%,0.4)"}}>
+                            {photoMatch.photo
+                              ?<img src={photoMatch.photo} alt="" className="w-full h-full object-cover"/>
+                              :<User className="w-6 h-6 m-auto mt-2" style={{color:"hsla(140,60%,50%,0.4)"}}/>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display font-bold tracking-wider truncate" style={{color:"hsl(140,90%,75%)"}}>{photoMatch.surname}, {photoMatch.name}</p>
+                            <p className="font-mono text-[10px] tracking-wider" style={{color:"hsla(140,70%,60%,0.55)"}}>{photoMatch.id} · {photoMatch.nationality||"—"}</p>
+                          </div>
+                          <button onClick={()=>{setPreview(photoMatch as BiometricRecord);setPhotoSearchMode(false);}}
+                            className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-3 py-2 rounded-lg flex-shrink-0 transition-all"
+                            style={{border:"1.5px solid hsla(140,80%,45%,0.55)",background:"hsla(140,80%,45%,0.14)",color:"hsl(140,90%,72%)"}}>
+                            VIEW
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {!photoSearching && photoMatch==="none" && (
+                      <motion.div initial={{opacity:0}} animate={{opacity:1}} className="space-y-2">
+                        <p className="font-mono text-sm font-bold tracking-wider" style={{color:"hsl(0,90%,68%)",textShadow:"0 0 12px hsla(0,90%,55%,0.5)"}}>✗ NO FACE MATCH</p>
+                        <p className="font-mono text-[10px] tracking-wider" style={{color:"hsla(0,70%,60%,0.55)"}}>Face not found in database. Try a clearer photo or different angle.</p>
+                        <button onClick={()=>photoSearchRef.current?.click()}
+                          className="font-mono text-[10px] font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all mt-2"
+                          style={{border:"1px solid hsla(270,80%,58%,0.4)",background:"hsla(270,70%,45%,0.12)",color:"hsl(270,80%,75%)"}}>
+                          TRY ANOTHER PHOTO
+                        </button>
+                      </motion.div>
+                    )}
+
+                    {!photoSearching && !photoMatch && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full animate-pulse" style={{background:"hsla(270,80%,60%,0.6)"}}/>
+                        <p className="font-mono text-[11px] tracking-wider" style={{color:"hsla(270,60%,60%,0.5)"}}>Preparing facial analysis…</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -542,7 +942,7 @@ const DatabasePage = () => {
                   style={{gridTemplateColumns:"110px 1fr 100px 120px 110px 110px 130px",borderColor:"hsla(185,50%,18%,0.25)",background:preview?.id===rec.id?"hsla(185,100%,50%,0.05)":"transparent"}}
                   onMouseEnter={e=>e.currentTarget.style.background="hsla(185,100%,50%,0.04)"}
                   onMouseLeave={e=>e.currentTarget.style.background=preview?.id===rec.id?"hsla(185,100%,50%,0.05)":"transparent"}
-                  onClick={()=>setPreview(preview?.id===rec.id?null:rec)}>
+                  onClick={()=>{setPreview(preview?.id===rec.id?null:rec);setShowAllAttach(false);setShowPreviewDeepSearch(false);}}>
                   <div className="px-4 py-4 flex items-center"><span className="font-mono text-xs font-bold" style={{color:"hsl(185,100%,60%)"}}>{rec.id}</span></div>
                   <div className="px-4 py-4 flex items-center gap-3">
                     <div className="w-8 h-8 rounded-md flex-shrink-0 overflow-hidden border" style={{borderColor:"hsla(185,55%,30%,0.35)",background:"hsla(185,80%,8%,0.8)"}}>
@@ -562,10 +962,12 @@ const DatabasePage = () => {
                       style={{border:"1px solid hsla(185,100%,50%,0.35)",background:"hsla(185,100%,50%,0.07)",color:"hsl(185,100%,65%)"}}>
                       VIEW <ChevronRight className="w-3 h-3"/>
                     </button>
-                    <button onClick={e=>{e.stopPropagation();handleDelete(rec.id);}} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider uppercase px-2 py-1.5 rounded transition-all"
-                      style={{border:"1px solid hsla(0,80%,55%,0.3)",background:"hsla(0,80%,55%,0.06)",color:"hsl(0,80%,65%)"}}>
-                      <Trash2 className="w-3 h-3"/>
-                    </button>
+                    {getCurrentUser()?.role === "admin" && (
+                      <button onClick={e=>{e.stopPropagation();handleDelete(rec);}} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider uppercase px-2 py-1.5 rounded transition-all"
+                        style={{border:"1px solid hsla(0,80%,55%,0.3)",background:"hsla(0,80%,55%,0.06)",color:"hsl(0,80%,65%)"}}>
+                        <Trash2 className="w-3 h-3"/>
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))
@@ -606,83 +1008,252 @@ const DatabasePage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* Attachment buttons */}
-                  <div className="flex flex-col gap-1.5">
-                    {preview.photo&&<button onClick={()=>openAttach("PROFILE PHOTO",preview.photo!)} className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-2.5 py-1.5 rounded transition-all" style={{border:"1px solid hsla(33,100%,52%,0.4)",background:"hsla(33,100%,52%,0.09)",color:"hsl(33,100%,65%)"}}>
-                      <Paperclip className="w-3 h-3"/> PHOTO
-                    </button>}
-                    {!preview.noPassport&&preview.passportFile&&<button onClick={()=>openAttach("PASSPORT",preview.passportFile!)} className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-2.5 py-1.5 rounded transition-all" style={{border:"1px solid hsla(33,100%,52%,0.4)",background:"hsla(33,100%,52%,0.09)",color:"hsl(33,100%,65%)"}}>
-                      <Paperclip className="w-3 h-3"/> PASSPORT
-                    </button>}
-                    {!preview.noLicense&&preview.drivingLicenseFile&&<button onClick={()=>openAttach("DRIVING LICENSE",preview.drivingLicenseFile!)} className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-2.5 py-1.5 rounded transition-all" style={{border:"1px solid hsla(33,100%,52%,0.4)",background:"hsla(33,100%,52%,0.09)",color:"hsl(33,100%,65%)"}}>
-                      <Paperclip className="w-3 h-3"/> LICENSE
-                    </button>}
-                  </div>
+                  {/* Single "VIEW ALL ATTACHMENTS" button */}
+                  <button onClick={()=>setShowAllAttach(v=>!v)}
+                    className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded transition-all"
+                    style={{border:`1px solid ${showAllAttach?"hsla(33,100%,52%,0.7)":"hsla(33,100%,52%,0.35)"}`,background:showAllAttach?"hsla(33,100%,52%,0.18)":"hsla(33,100%,52%,0.07)",color:"hsl(33,100%,68%)"}}>
+                    <Paperclip className="w-3 h-3"/> ATTACHMENTS
+                  </button>
+                  {/* Deep Search button — opens selector */}
+                  <button
+                    onClick={()=>setShowPreviewDeepSearch(v=>!v)}
+                    className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded transition-all"
+                    style={{border:`1px solid ${showPreviewDeepSearch?"hsla(270,80%,65%,0.7)":"hsla(270,80%,65%,0.45)"}`,background:showPreviewDeepSearch?"hsla(270,80%,55%,0.22)":"hsla(270,80%,55%,0.1)",color:"hsl(270,80%,75%)"}}>
+                    <svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    DEEP SEARCH
+                  </button>
                   <Button onClick={()=>navigate(`/result/${preview.id}`)} className="font-mono text-xs font-bold tracking-wider" style={{background:"hsla(185,100%,50%,0.15)",border:"1px solid hsla(185,100%,50%,0.4)",color:"hsl(185,100%,65%)"}}>
                     FULL PROFILE <ChevronRight className="w-3.5 h-3.5 ml-1"/>
                   </Button>
-                  <button onClick={()=>setEditRecord(preview)}
-                    className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-all"
-                    style={{border:"1.5px solid hsla(33,100%,52%,0.55)",background:"hsla(33,100%,52%,0.14)",color:"hsl(33,100%,70%)"}}>
-                    <Pencil className="w-3.5 h-3.5"/> EDIT
-                  </button>
-                  <button onClick={()=>setPreview(null)} className="w-8 h-8 flex items-center justify-center rounded transition-colors" style={{color:"hsla(185,80%,60%,0.5)"}}>
+                  <button onClick={()=>{setPreview(null);setShowAllAttach(false);}} className="w-8 h-8 flex items-center justify-center rounded transition-colors" style={{color:"hsla(185,80%,60%,0.5)"}}>
                     <X className="w-4 h-4"/>
                   </button>
+                  {getCurrentUser()?.role === "admin" && (
+                    <button onClick={()=>openPinGate("edit", preview)}
+                      className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-all"
+                      style={{border:"1.5px solid hsla(33,100%,52%,0.55)",background:"hsla(33,100%,52%,0.14)",color:"hsl(33,100%,70%)"}}>
+                      <Pencil className="w-3.5 h-3.5"/> EDIT
+                    </button>
+                  )}
                 </div>
               </div>
 
+              {/* ── ALL ATTACHMENTS PANEL ── */}
+              <AnimatePresence>
+                {showAllAttach&&<AttachPanel preview={preview} onView={(t,s,i)=>setModal({title:t,src:s,isImg:i})}/>}
+              </AnimatePresence>
+
+              {/* ── DEEP SEARCH SELECTOR PANEL ── */}
+              <AnimatePresence>
+                {showPreviewDeepSearch&&(()=>{
+                  const enc = encodeURIComponent;
+                  const fullName = `${preview.name} ${preview.surname}`.trim();
+                  const username = preview.name.toLowerCase();
+                  const options = [
+                    { key:"name",    label:"FULL NAME",  value:fullName,        icon:"👤", color:"38,85%,62%",
+                      platforms:[
+                        {n:"Google",       url:`https://www.google.com/search?q="${enc(fullName)}"`},
+                        {n:"Facebook",     url:`https://www.facebook.com/search/people/?q=${enc(fullName)}`},
+                        {n:"LinkedIn",     url:`https://www.linkedin.com/search/results/people/?keywords=${enc(fullName)}`},
+                        {n:"X/Twitter",    url:`https://x.com/search?q=${enc(fullName)}&f=user`},
+                        {n:"Instagram",    url:`https://www.google.com/search?q=site:instagram.com+"${enc(fullName)}"`},
+                        {n:"TikTok",       url:`https://www.tiktok.com/search/user?q=${enc(fullName)}`},
+                        {n:"Pipl",         url:`https://pipl.com/search/?q=${enc(fullName)}`},
+                        {n:"Spokeo",       url:`https://www.spokeo.com/search?q=${enc(fullName)}`},
+                      ]},
+                    { key:"username", label:"USERNAME",  value:username,        icon:"@",  color:"270,80%,72%",
+                      platforms:[
+                        {n:"Instagram",    url:`https://www.instagram.com/${enc(username)}/`},
+                        {n:"X/Twitter",    url:`https://x.com/${enc(username)}`},
+                        {n:"TikTok",       url:`https://www.tiktok.com/@${enc(username)}`},
+                        {n:"GitHub",       url:`https://github.com/${enc(username)}`},
+                        {n:"Snapchat",     url:`https://www.snapchat.com/add/${enc(username)}`},
+                        {n:"Reddit",       url:`https://www.reddit.com/user/${enc(username)}`},
+                        {n:"Telegram",     url:`https://t.me/${enc(username)}`},
+                        {n:"Threads",      url:`https://www.threads.net/@${enc(username)}`},
+                      ]},
+                    { key:"email",   label:"EMAIL",      value:preview.email||"", icon:"✉", color:"185,100%,62%",
+                      platforms: preview.email ? [
+                        {n:"HaveIBeenPwned", url:`https://haveibeenpwned.com/account/${enc(preview.email)}`},
+                        {n:"Google",         url:`https://www.google.com/search?q="${enc(preview.email)}"`},
+                        {n:"Facebook",       url:`https://www.facebook.com/search/people/?q=${enc(preview.email)}`},
+                        {n:"LinkedIn",       url:`https://www.google.com/search?q=site:linkedin.com+"${enc(preview.email)}"`},
+                        {n:"Spokeo",         url:`https://www.spokeo.com/email-search/results/${enc(preview.email)}`},
+                        {n:"Hunter.io",      url:`https://hunter.io/email-verifier/${enc(preview.email)}`},
+                      ] : []},
+                    { key:"phone",   label:"PHONE NO.",  value:preview.phoneNo||"", icon:"📞", color:"140,80%,65%",
+                      platforms: preview.phoneNo ? [
+                        {n:"Google",         url:`https://www.google.com/search?q="${enc(preview.phoneNo)}"`},
+                        {n:"Truecaller",     url:`https://www.truecaller.com/search/${preview.phoneNo.replace(/\D/g,"")}`},
+                        {n:"WhatsApp",       url:`https://wa.me/${preview.phoneNo.replace(/\D/g,"")}`},
+                        {n:"Facebook",       url:`https://www.facebook.com/search/people/?q=${enc(preview.phoneNo)}`},
+                      ] : []},
+                  ];
+                  return(
+                    <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} transition={{duration:0.2}}
+                      className="overflow-hidden border-b" style={{borderColor:"hsla(270,55%,22%,0.35)",background:"hsla(270,50%,4%,0.85)"}}>
+                      <div className="px-6 py-4">
+                        <p className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase mb-4" style={{color:"hsl(270,80%,72%)"}}>
+                          DEEP SEARCH — CHOOSE WHAT TO SEARCH FOR {preview.surname.toUpperCase()}, {preview.name.toUpperCase()}
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {options.map(opt=>(
+                            <div key={opt.key} className="rounded-xl overflow-hidden"
+                              style={{border:`1px solid hsla(${opt.color},0.3)`,background:`hsla(${opt.color},0.07)`}}>
+                              {/* Option header */}
+                              <div className="flex items-center gap-2 px-3 py-2.5 border-b"
+                                style={{borderColor:`hsla(${opt.color},0.22)`,background:`hsla(${opt.color},0.12)`}}>
+                                <span className="w-6 h-6 rounded-md flex items-center justify-center font-mono text-sm"
+                                  style={{background:`hsla(${opt.color},0.2)`,border:`1px solid hsla(${opt.color},0.4)`}}>
+                                  {opt.icon}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="font-mono text-[9px] font-bold tracking-wider" style={{color:`hsl(${opt.color})`}}>{opt.label}</p>
+                                  <p className="font-mono text-[9px] truncate" style={{color:`hsla(${opt.color},0.65)`}}>{opt.value||"—"}</p>
+                                </div>
+                              </div>
+                              {/* Platform links */}
+                              <div className="p-2 space-y-1 max-h-36 overflow-y-auto">
+                                {opt.platforms.length===0
+                                  ?<p className="font-mono text-[9px] p-2 text-center" style={{color:`hsla(${opt.color},0.4)`}}>No data available</p>
+                                  :opt.platforms.map((p,i)=>(
+                                    <a key={i} href={p.url} target="_blank" rel="noopener noreferrer"
+                                      className="flex items-center justify-between px-2 py-1.5 rounded-lg transition-all"
+                                      style={{border:`1px solid hsla(${opt.color},0.15)`,background:`hsla(${opt.color},0.05)`,display:"flex"}}
+                                      onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.background=`hsla(${opt.color},0.2)`;(e.currentTarget as HTMLAnchorElement).style.borderColor=`hsla(${opt.color},0.45)`;}}
+                                      onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.background=`hsla(${opt.color},0.05)`;(e.currentTarget as HTMLAnchorElement).style.borderColor=`hsla(${opt.color},0.15)`;}}>
+                                      <span className="font-mono text-[9px] font-bold" style={{color:`hsl(${opt.color})`}}>{p.n}</span>
+                                      <svg viewBox="0 0 24 24" fill="none" width="10" height="10" stroke={`hsl(${opt.color})`} strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    </a>
+                                  ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+              </AnimatePresence>
+
               {/* Preview body */}
               <div className="p-6 space-y-6">
+
                 <Section title="PERSONAL INFORMATION">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+                    <PF label="FULL NAME"      value={`${preview.surname}, ${preview.name}`}/>
+                    <PF label="GENDER"         value={preview.gender}/>
                     <PF label="DATE OF BIRTH"  value={preview.dateOfBirth}/>
                     <PF label="PLACE OF BIRTH" value={preview.placeOfBirth}/>
                     <PF label="NATIONALITY"    value={preview.nationality}/>
-                    <PF label="NATIONAL ID"    value={preview.nationalId}/>
+                    <PF label="NATIONAL ID"    value={preview.noNationalId?"NO NATIONAL ID":preview.nationalId}/>
                     <PF label="BLOOD TYPE"     value={preview.bloodType}/>
                     <PF label="MARITAL STATUS" value={preview.maritalStatus}/>
                     <PF label="OCCUPATION"     value={preview.occupation}/>
                     <PF label="EMAIL"          value={preview.email}/>
-                    <PF label="PHONE"          value={preview.phoneNo}/>
-                    {preview.address&&<div className="col-span-2"><PF label="ADDRESS" value={preview.address}/></div>}
-                    {preview.languages&&preview.languages.length>0&&
-                      <div className="col-span-2"><PF label="LANGUAGES SPOKEN" value={preview.languages.join(", ")}/></div>}
+                    <PF label="PHONE NUMBER"   value={preview.phoneNo}/>
+                    <PF label="WHATSAPP"       value={(preview as any).whatsapp}/>
+                    <div className="col-span-2 md:col-span-4"><PF label="ADDRESS" value={preview.address}/></div>
                   </div>
                 </Section>
 
-                {(preview.isStudent||preview.isAlumni)&&(
-                  <Section title="EDUCATION">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                      {preview.isStudent&&<><PF label="STATUS" value="CURRENTLY ENROLLED"/><PF label="INSTITUTION TYPE" value={preview.institutionType}/>{preview.uniLevel&&<PF label="LEVEL" value={preview.uniLevel.toUpperCase()}/>}{preview.institutionName&&<PF label="INSTITUTION" value={preview.institutionName}/>}{preview.department&&<PF label="DEPARTMENT" value={preview.department}/>}{preview.studyYear&&<PF label="YEAR" value={preview.studyYear}/>}</>}
-                      {preview.isAlumni&&preview.alumniRecord&&<><PF label="ALUMNI LEVEL" value={preview.alumniRecord.level.toUpperCase()}/><PF label="UNIVERSITY" value={preview.alumniRecord.universityName}/><PF label="DEPARTMENT" value={preview.alumniRecord.department}/><PF label="START DATE" value={preview.alumniRecord.startDate}/><PF label="END DATE" value={preview.alumniRecord.endDate}/><PF label="GPA / GRADE" value={preview.alumniRecord.gpa} mono/></>}
-                    </div>
-                  </Section>
-                )}
-
-                <Section title="DOCUMENTS">
+                <Section title="SOCIAL MEDIA ACCOUNTS">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                    {preview.noPassport?<PF label="PASSPORT" value="NO PASSPORT ON RECORD" warn/>
-                      :<><PF label="PASSPORT NO." value={preview.passportNo}/><PF label="PLACE OF ISSUE" value={preview.passportPlaceOfIssue}/><PF label="ISSUE DATE" value={preview.passportIssueDate}/><PF label="EXPIRY DATE" value={preview.passportExpiryDate}/></>}
-                    {preview.noLicense?<PF label="DRIVING LICENSE" value="NO LICENSE ON RECORD" warn/>:<PF label="DRIVING LICENSE FILE" value={preview.drivingLicenseFile||"—"}/>}
+                    <PF label="FACEBOOK"   value={(preview as any).facebook}/>
+                    <PF label="INSTAGRAM"  value={(preview as any).instagram}/>
+                    <PF label="X / TWITTER" value={(preview as any).twitter}/>
+                    <PF label="LINKEDIN"   value={(preview as any).linkedin}/>
                   </div>
                 </Section>
 
-                <Section title="FAMILY">
+                <Section title="DOCUMENTS & CREDENTIALS">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                    <div><PF label="FATHER'S NAME" value={preview.fatherName}/>{preview.fatherPhone&&<PF label="FATHER'S PHONE" value={preview.fatherPhone}/>}{preview.fatherDeceased&&<span className="font-mono text-[9px] font-bold tracking-wider" style={{color:"hsl(0,80%,65%)"}}>DECEASED</span>}</div>
-                    <div><PF label="MOTHER'S NAME" value={preview.motherName}/>{preview.motherPhone&&<PF label="MOTHER'S PHONE" value={preview.motherPhone}/>}{preview.motherDeceased&&<span className="font-mono text-[9px] font-bold tracking-wider" style={{color:"hsl(0,80%,65%)"}}>DECEASED</span>}</div>
+                    {preview.noPassport
+                      ? <PF label="PASSPORT" value="NO PASSPORT ON RECORD" warn/>
+                      : <><PF label="PASSPORT NO." value={preview.passportNo}/>
+                          <PF label="PLACE OF ISSUE" value={preview.passportPlaceOfIssue}/>
+                          <PF label="ISSUE DATE" value={preview.passportIssueDate}/>
+                          <PF label="EXPIRY DATE" value={preview.passportExpiryDate}/></>}
+                    {preview.noLicense
+                      ? <PF label="DRIVING LICENSE" value="NO LICENSE ON RECORD" warn/>
+                      : <PF label="DRIVING LICENSE FILE" value={preview.drivingLicenseFile||"—"}/>}
+                  </div>
+                </Section>
+
+                <Section title="FAMILY INFORMATION">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+                    <PF label="FATHER'S NAME"  value={preview.fatherName}/>
+                    <PF label="FATHER'S PHONE" value={preview.fatherPhone}/>
+                    <PF label="FATHER STATUS"  value={preview.fatherDeceased?"DECEASED":"—"}/>
+                    <div/>
+                    <PF label="MOTHER'S NAME"  value={preview.motherName}/>
+                    <PF label="MOTHER'S PHONE" value={preview.motherPhone}/>
+                    <PF label="MOTHER STATUS"  value={preview.motherDeceased?"DECEASED":"—"}/>
+                    <div/>
+                    {preview.kin1&&<>
+                      <PF label="NEXT OF KIN NAME"     value={`${preview.kin1.name} ${preview.kin1.surname}`}/>
+                      <PF label="NEXT OF KIN PHONE"    value={preview.kin1.phone}/>
+                      <PF label="NEXT OF KIN RELATION" value={preview.kin1.relation}/>
+                      <PF label="NEXT OF KIN ADDRESS"  value={preview.kin1.address}/>
+                    </>}
                   </div>
                 </Section>
 
                 {(preview.emergencyContact1?.name||preview.emergencyContact2?.name)&&(
                   <Section title="EMERGENCY CONTACTS">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                      {preview.emergencyContact1?.name&&<><PF label="EMERGENCY CONTACT NAME" value={preview.emergencyContact1.name}/><PF label="EMERGENCY CONTACT PHONE" value={preview.emergencyContact1.phone}/></>}
-                      {preview.emergencyContact2?.name&&<><PF label="SECONDARY CONTACT NAME" value={preview.emergencyContact2.name}/><PF label="SECONDARY CONTACT PHONE" value={preview.emergencyContact2.phone}/></>}
+                      <PF label="CONTACT 1 NAME"  value={preview.emergencyContact1?.name}/>
+                      <PF label="CONTACT 1 PHONE" value={preview.emergencyContact1?.phone}/>
+                      <PF label="CONTACT 2 NAME"  value={preview.emergencyContact2?.name}/>
+                      <PF label="CONTACT 2 PHONE" value={preview.emergencyContact2?.phone}/>
                     </div>
                   </Section>
                 )}
+
+                <Section title="EDUCATIONAL RECORD">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+                    <PF label="STUDENT STATUS" value={preview.isStudent?"CURRENTLY ENROLLED":"NOT ENROLLED"}/>
+                    {preview.isStudent&&<>
+                      <PF label="INSTITUTION TYPE" value={preview.institutionType}/>
+                      {preview.uniLevel&&<PF label="LEVEL" value={preview.uniLevel?.toUpperCase()}/>}
+                      <PF label="INSTITUTION NAME" value={preview.institutionName}/>
+                      <PF label="DEPARTMENT"       value={preview.department}/>
+                      <PF label="YEAR OF STUDY"    value={preview.studyYear}/>
+                    </>}
+                    <PF label="ALUMNI STATUS" value={preview.isAlumni?"GRADUATED":"—"}/>
+                    {preview.isAlumni&&preview.alumniRecord&&<>
+                      <PF label="GRADUATION LEVEL"    value={preview.alumniRecord.level?.toUpperCase()}/>
+                      <PF label="UNIVERSITY"          value={preview.alumniRecord.universityName}/>
+                      <PF label="ALUMNI DEPARTMENT"   value={preview.alumniRecord.department}/>
+                      <PF label="START DATE"          value={preview.alumniRecord.startDate}/>
+                      <PF label="END DATE"            value={preview.alumniRecord.endDate}/>
+                      <PF label="GPA / GRADE"         value={preview.alumniRecord.gpa} mono/>
+                    </>}
+                    {preview.educationRecord&&<div className="col-span-2 md:col-span-4"><PF label="PREVIOUS EDUCATION HISTORY" value={preview.educationRecord}/></div>}
+                  </div>
+                </Section>
+
+                <Section title="WORK EXPERIENCE">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+                    <PF label="CURRENTLY WORKING" value={preview.isCurrentlyWorking?"YES":"NO"}/>
+                    {preview.isCurrentlyWorking&&preview.currentWorkInfo&&<>
+                      <PF label="COMPANY"    value={preview.currentWorkInfo.company}/>
+                      <PF label="EMPLOYER"   value={preview.currentWorkInfo.employer}/>
+                      <PF label="DEPARTMENT" value={preview.currentWorkInfo.department}/>
+                    </>}
+                    {preview.workExperience&&<div className="col-span-2 md:col-span-4"><PF label="PREVIOUS WORK EXPERIENCE" value={preview.workExperience}/></div>}
+                  </div>
+                </Section>
+
+                <Section title="HEALTH & RECORDS">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <PF label="HEALTH RECORD"                 value={preview.healthRecord}/>
+                    <PF label="HISTORY OF PRESENT ILLNESS"    value={(preview as any).historyOfPresentIllness}/>
+                    <PF label="CRIME RECORD"                  value={preview.crimeRecord}/>
+                  </div>
+                </Section>
 
                 <Section title="BIOMETRIC HASHES">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
@@ -693,14 +1264,19 @@ const DatabasePage = () => {
                     }
                   </div>
                 </Section>
+
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      <div className="relative z-[1] py-4 text-center border-t" style={{borderColor:"hsla(185,60%,20%,0.3)"}}>
-        <span className="font-mono text-[11px] tracking-widest" style={{color:"hsla(185,100%,60%,0.3)"}}>© 2026 KUMI — BIOMETRIC IDENTITY MANAGEMENT SYSTEM — ALL RIGHTS RESERVED</span>
+      <div className="fixed bottom-0 left-0 right-0 z-10 flex items-center justify-center px-8 py-2.5"
+        style={{ background:"hsla(25,15%,5%,0.88)", backdropFilter:"blur(20px)", borderTop:"1px solid hsla(35,65%,38%,0.25)" }}>
+        <div className="flex items-center gap-4 font-mono text-[11px] font-semibold">
+          <span style={{ color:"hsla(38,70%,62%,0.75)" }}>BIMS v1.0 · © 2026 <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{ color:"hsl(38,90%,72%)", textDecoration:"underline", textUnderlineOffset:"3px", textShadow:"0 0 8px hsla(38,90%,62%,0.45)" }}>KUMI</a></span>
+          <span className="w-1 h-1 rounded-full" style={{ background:"hsla(38,80%,55%,0.4)" }}/>
+          <span style={{ color:"hsla(38,65%,58%,0.6)" }}>ENCRYPTED CHANNEL</span>
+        </div>
       </div>
     </div>
   );

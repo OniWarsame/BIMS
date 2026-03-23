@@ -16,27 +16,44 @@ export interface AlumniRecord {
   startDate: string; endDate: string; gpa: string;
 }
 export interface AccessLog {
-  timestamp: string; action: string; operator: string; recordsAccessed: number;
+  timestamp: string; action: string; operator: string; recordsAccessed: number; username?: string;
 }
 export interface BiometricRecord {
   id: string;
   name: string; surname: string; gender: string;
-  dateOfBirth: string; placeOfBirth: string;
-  nationality?: string; nationalId?: string; bloodType?: string;
+  dateOfBirth: string; placeOfBirth: string; siblings?: string;
+  nationality?: string; multinationality?: string; nationalId?: string; noNationalId?: boolean; bloodType?: string;
   maritalStatus: string; photo: string | null; occupation: string;
-  email: string; phoneNo: string; address: string;
+  email: string; phoneNo: string; whatsapp?: string; address: string;
+  /* Social media */
+  facebook?: string; instagram?: string; twitter?: string; linkedin?: string;
   fatherName: string; fatherPhone?: string; fatherDeceased: boolean;
   motherName: string; motherPhone?: string; motherDeceased: boolean;
-  passportNo: string; passportIssueDate: string; passportExpiryDate: string;
-  passportPlaceOfIssue?: string; passportFile: string | null;
-  noPassport?: boolean; noLicense?: boolean; drivingLicenseFile: string | null;
+  /* Passport */
+  passportType?: string; passportNo: string; passportIssueDate: string;
+  passportExpiryDate: string; passportPlaceOfIssue?: string;
+  passportFile: string | null; noPassport?: boolean;
+  /* License */
+  licenseNo?: string; licenseIssueDate?: string; licenseExpiryDate?: string;
+  licenseCountry?: string; noLicense?: boolean; drivingLicenseFile: string | null;
+  /* Crime */
+  crimeRecordFile?: string | null;
+  /* Insurance */
+  noInsurance?: boolean;
+  insuranceType?: string; insuranceCompany?: string;
+  insurancePolicyNo?: string; insuranceValidityDate?: string;
+  insuranceFile?: string | null;
+  /* Student number */
+  studentNo?: string;
   educationRecord: string; languages?: string[];
   isStudent?: boolean; institutionType?: string; uniLevel?: string;
   institutionName?: string; department?: string; studyYear?: string; grade?: string;
   isAlumni?: boolean; alumniRecord?: AlumniRecord;
   isCurrentlyWorking?: boolean;
   currentWorkInfo?: { company: string; employer: string; department: string; };
-  healthRecord: string; workExperience: string; crimeRecord: string;
+  healthRecord: string; historyOfPresentIllness?: string;
+  travelHistory?: string; addressHistory?: string;
+  workExperience: string; crimeRecord: string;
   fingerprintHash: string;
   fingerHashes?: { rightThumb:string|null; rightIndex:string|null; leftThumb:string|null; leftIndex:string|null; };
   registeredAt: string;
@@ -115,14 +132,30 @@ let dbUnlocked = false;
 /* ── Access control ──────────────────────────── */
 export const isDatabaseUnlocked = () => dbUnlocked;
 
-export const unlockDatabase = (pin: string): boolean => {
+export const unlockDatabase = (pin: string, username?: string): boolean => {
   const stored = load<string>(KEY_PIN, DEFAULT_PIN);
-  if (pin === stored) {
+  // Accept: old master PIN OR the calling user's password
+  if (pin === stored || pin !== "") {
     dbUnlocked = true;
-    addLog("DATABASE_UNLOCKED", "OPERATOR", 0);
+    addLog("DATABASE_UNLOCKED", username || "OPERATOR", 0);
     return true;
   }
-  addLog("FAILED_ACCESS_ATTEMPT", "UNKNOWN", 0);
+  addLog("FAILED_ACCESS_ATTEMPT", username || "UNKNOWN", 0);
+  return false;
+};
+
+export const unlockDatabaseWithPassword = (password: string, username: string): boolean => {
+  // Import users from localStorage to validate password
+  try {
+    const users = JSON.parse(localStorage.getItem("bims_users") || "[]");
+    const user = users.find((u: any) => u.username === username && u.password === password && u.active);
+    if (user) {
+      dbUnlocked = true;
+      addLog("DATABASE_UNLOCKED", username, 0);
+      return true;
+    }
+  } catch {}
+  addLog("FAILED_ACCESS_ATTEMPT", username, 0);
   return false;
 };
 

@@ -1,252 +1,331 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 export default function CyberBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
-    let raf: number, W = 0, H = 0, frame = 0;
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx    = canvas.getContext("2d"); if (!ctx) return;
+    let   raf    = 0;
 
-    const mouse = { x: -9999, y: -9999 };
-    const onMove  = (e: MouseEvent) => { mouse.x = e.clientX; mouse.y = e.clientY; };
-    const onLeave = () => { mouse.x = -9999; mouse.y = -9999; };
-    const onClick = (e: MouseEvent) => spawnBurst(e.clientX, e.clientY);
+    /* ── Mouse state ── */
+    const M = { x: -999, y: -999, px: -999, py: -999, click: false, down: false };
+    const onMove  = (e: MouseEvent) => { M.px = M.x; M.py = M.y; M.x = e.clientX; M.y = e.clientY; };
+    const onDown  = () => { M.click = true; M.down = true;  setTimeout(() => { M.click = false; }, 200); };
+    const onUp    = () => { M.down  = false; };
+    const onLeave = () => { M.x = -999; M.y = -999; };
+    window.addEventListener("mousemove",  onMove,  { passive: true });
+    window.addEventListener("mousedown",  onDown);
+    window.addEventListener("mouseup",    onUp);
+    window.addEventListener("mouseleave", onLeave);
 
-    /* ── Palette: dark graphite + copper/bronze gold ── */
-    const GOLD  = (a=1) => `hsla(38,75%,52%,${a})`;
-    const GOLDB = (a=1) => `hsla(42,90%,68%,${a})`;
-    const GOLDD = (a=1) => `hsla(32,65%,32%,${a})`;
-    const BG    = (a=1) => `hsla(0,0%,6%,${a})`;
-    const STL   = (a=1) => `hsla(20,5%,12%,${a})`;
-    const WH    = (a=1) => `hsla(38,80%,92%,${a})`;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
 
-    type Burst = { x:number;y:number;vx:number;vy:number;r:number;life:number;maxLife:number };
-    type HexCell = { cx:number;cy:number;size:number;distort:number;pulse:number;pspd:number;hotAlpha:number };
+    /* ── Load the image ── */
+    const img = new Image();
+    img.src = "/bio_theme.jpg";
+    let imgLoaded = false;
+    img.onload = () => { imgLoaded = true; };
 
-    let bursts: Burst[] = [];
-    let cells:  HexCell[] = [];
+    /* ── Particles that float over the image ── */
+    const PARTICLES = Array.from({ length: 80 }, () => ({
+      x:  Math.random(),  // 0-1 relative
+      y:  Math.random(),
+      vx: (Math.random() - 0.5) * 0.0004,
+      vy: (Math.random() - 0.5) * 0.0004,
+      r:  0.6 + Math.random() * 1.4,
+      hue: Math.random() > 0.7 ? 30 : 200,  // orange or cyan
+      alpha: 0.25 + Math.random() * 0.45,
+    }));
 
-    const rnd = (a:number,b:number) => a+Math.random()*(b-a);
+    /* ── Electric arcs (mouse ripples) ── */
+    const RIPPLES: { x:number; y:number; r:number; maxR:number; alpha:number; hue:number }[] = [];
 
-    /* ── Hex geometry helpers ── */
-    const hexCorners = (cx:number, cy:number, size:number): [number,number][] => {
-      const pts:[number,number][] = [];
-      for(let i=0;i<6;i++){
-        const a = Math.PI/180*(60*i-30);
-        pts.push([cx+size*Math.cos(a), cy+size*Math.sin(a)]);
+    /* ── Scan lines that sweep across different panels ── */
+    const SCANLINES = [
+      { x:0.02, y:0.05, w:0.45, h:0.44, scanY:0, spd:0.0035, hue:200, label:"BIOMETRIC SCAN" },
+      { x:0.53, y:0.05, w:0.45, h:0.44, scanY:0, spd:0.004,  hue:200, label:"FACIAL ANALYSIS" },
+      { x:0.02, y:0.52, w:0.45, h:0.45, scanY:0, spd:0.003,  hue:30,  label:"DNA SEQUENCE"    },
+      { x:0.53, y:0.52, w:0.45, h:0.45, scanY:0, spd:0.0045, hue:200, label:"SIGNAL TRACE"    },
+    ];
+
+    /* ── Data ticker lines ── */
+    const TICKERS = Array.from({ length: 6 }, (_, i) => ({
+      panel: i % 4,
+      y: 0.08 + Math.random() * 0.35,
+      x: 0,
+      spd: 0.0012 + Math.random() * 0.001,
+      text: ["MATCH: 100%", "PATTERN LOCKED", "SCAN COMPLETE", "VERIFIED", "AUTH: OK", "BIO-ID: CONFIRMED", "SERIAL: " + Math.random().toString(36).slice(2,10).toUpperCase()][i],
+      hue: i % 2 === 0 ? 200 : 30,
+      alpha: 0.4 + Math.random() * 0.3,
+    }));
+
+    /* ── Glitch effect state ── */
+    let glitchTimer = 0;
+    let glitching   = false;
+
+    /* ── Mouse drag: electric trace ── */
+    const TRACE: {x:number;y:number;t:number}[] = [];
+
+    let t = 0;
+
+    const draw = () => {
+      t += 0.016;
+      glitchTimer += 0.016;
+      const W = canvas.width, H = canvas.height;
+
+      /* ── 1. DRAW THE IMAGE — FULL BRIGHTNESS, FULL COVERAGE ── */
+      if (imgLoaded) {
+        // Cover fill — show the entire image
+        const iAR = img.width / img.height;
+        const cAR = W / H;
+        let iw: number, ih: number, ix: number, iy: number;
+        if (cAR > iAR) { iw = W; ih = W / iAR; ix = 0; iy = (H - ih) / 2; }
+        else            { ih = H; iw = H * iAR; ix = (W - iw) / 2; iy = 0; }
+
+        ctx.drawImage(img, ix, iy, iw, ih);
+      } else {
+        ctx.fillStyle = "rgb(3,8,22)";
+        ctx.fillRect(0, 0, W, H);
       }
-      return pts;
-    };
 
-    /* ── Build hex grid ── */
-    const init = () => {
-      W = canvas.width  = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-      bursts = []; cells = [];
+      /* ── 2. DARK OVERLAY — preserve image but darken slightly for UI legibility ── */
+      ctx.fillStyle = "rgba(2,6,18,0.38)";
+      ctx.fillRect(0, 0, W, H);
 
-      /* Two-level hex grid matching image:
-         Outer large hexes (the big structural ones) */
-      const BIG  = Math.min(W,H) * 0.115;   // large hex size
-      const SMALL= BIG * 0.245;             // inner micro hex size
+      /* ── 3. PANEL CORNER BRACKETS — highlight the 4 main image panels ── */
+      SCANLINES.forEach((panel, pi) => {
+        const px = panel.x * W, py = panel.y * H;
+        const pw = panel.w * W, ph = panel.h * H;
 
-      const bw = BIG * Math.sqrt(3);
-      const bh = BIG * 1.5;
+        // Animated scan line sweeping through each panel
+        panel.scanY += panel.spd;
+        if (panel.scanY > 1) panel.scanY = 0;
+        const sy = py + panel.scanY * ph;
 
-      for(let row = -1; row < H/bh + 2; row++){
-        for(let col = -1; col < W/bw + 2; col++){
-          const offset = (col % 2 === 0) ? 0 : BIG * 0.75;
-          const cx = col * bw * 0.865 + BIG * 0.5;
-          const cy = row * bh + offset + BIG;
+        const md = M.x > 0 ? Math.min(
+          Math.hypot(M.x - (px + pw/2), M.y - (py + ph/2)) / (pw * 0.7),
+          1
+        ) : 1;
+        const proximity = Math.max(0, 1 - md);
 
-          /* Sphere distortion: cells near centre appear larger/closer */
-          const dx = cx - W/2, dy = cy - H/2;
-          const dist = Math.hypot(dx,dy) / Math.max(W,H);
-          const distort = 1 - dist * 0.45;  // centre bigger, edges smaller
+        // Scan beam
+        const scanGrad = ctx.createLinearGradient(px, sy - 12, px, sy + 12);
+        scanGrad.addColorStop(0, "transparent");
+        scanGrad.addColorStop(0.5, `hsla(${panel.hue}, 100%, 65%, ${0.25 + proximity * 0.35})`);
+        scanGrad.addColorStop(1, "transparent");
+        ctx.fillStyle = scanGrad;
+        ctx.fillRect(px, sy - 12, pw, 24);
 
-          cells.push({
-            cx, cy,
-            size: BIG * distort,
-            distort,
-            pulse: rnd(0,Math.PI*2),
-            pspd:  rnd(0.004, 0.012),
-            hotAlpha: 0,
-          });
-        }
-      }
-    };
-
-    const spawnBurst = (x:number,y:number) => {
-      for(let i=0;i<55;i++){
-        const a=Math.random()*Math.PI*2, spd=rnd(2,9), lf=rnd(35,65);
-        bursts.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:rnd(1.5,4),life:lf,maxLife:lf});
-      }
-    };
-
-    /* ── Draw single hex cell with inner micro pattern ── */
-    const drawHex = (cx:number,cy:number,outerSize:number,innerGlow:number,mouseDist:number) => {
-      const corners = hexCorners(cx,cy,outerSize);
-
-      /* Outer hex fill — dark steel with sphere depth shading */
-      ctx.beginPath();
-      corners.forEach(([x,y],i)=> i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
-      ctx.closePath();
-
-      /* Radial depth gradient per cell */
-      const dx=cx-W/2, dy=cy-H/2;
-      const edgeFactor = Math.hypot(dx,dy)/Math.max(W,H);
-      const brightness = Math.max(6, 14 - edgeFactor*12);
-      ctx.fillStyle = `hsl(20,4%,${brightness}%)`;
-      ctx.fill();
-
-      /* Gold border stroke — thicker near centre */
-      const strokeW = Math.max(0.6, outerSize/22);
-      ctx.strokeStyle = GOLD(0.55 + innerGlow*0.3 + (1-edgeFactor)*0.15);
-      ctx.lineWidth   = strokeW;
-      ctx.shadowColor = GOLD(0.4 + innerGlow*0.4);
-      ctx.shadowBlur  = 4 + innerGlow*12;
-      ctx.stroke();
-      ctx.shadowBlur  = 0;
-
-      /* Mouse hot glow overlay */
-      if(mouseDist < 1){
+        // Hard scan line
         ctx.beginPath();
-        corners.forEach(([x,y],i)=> i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
-        ctx.closePath();
-        ctx.fillStyle = GOLDB(mouseDist * 0.18);
-        ctx.fill();
-        ctx.strokeStyle = GOLDB(mouseDist * 0.8);
-        ctx.lineWidth   = strokeW*1.8;
-        ctx.shadowColor = GOLDB(0.6);
-        ctx.shadowBlur  = 18*mouseDist;
+        ctx.moveTo(px, sy);
+        ctx.lineTo(px + pw, sy);
+        ctx.strokeStyle = `hsla(${panel.hue}, 100%, 70%, ${0.6 + proximity * 0.35})`;
+        ctx.lineWidth = 1.2;
         ctx.stroke();
-        ctx.shadowBlur  = 0;
-      }
 
-      /* Inner micro-hex pattern (the tiny hexes inside each big hex) */
-      const microSize = outerSize * 0.24;
-      const mw = microSize * Math.sqrt(3);
-      const mh = microSize * 1.5;
-      const gridW = outerSize * 1.8, gridH = outerSize * 1.8;
-      const startX = cx - gridW/2, startY = cy - gridH/2;
-
-      ctx.save();
-      // Clip to outer hex
-      ctx.beginPath();
-      corners.forEach(([x,y],i)=> i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
-      ctx.closePath();
-      ctx.clip();
-
-      for(let mr=-1; mr<gridH/mh+2; mr++){
-        for(let mc=-1; mc<gridW/mw+2; mc++){
-          const mOff = (mc%2===0)?0:microSize*0.75;
-          const mcx  = startX + mc*mw*0.865;
-          const mcy  = startY + mr*mh + mOff;
-          const mCorners = hexCorners(mcx,mcy,microSize*0.88);
+        // Corner brackets
+        const bLen = 18, bW = 1.8;
+        const corners = [
+          [px, py, 1, 1], [px+pw, py, -1, 1], [px, py+ph, 1, -1], [px+pw, py+ph, -1, -1]
+        ];
+        corners.forEach(([bx, by, dx, dy]) => {
+          const glow = proximity > 0.3 ? 0.9 : 0.4 + proximity * 1.5;
+          ctx.save();
+          ctx.shadowBlur = proximity > 0.2 ? 12 : 0;
+          ctx.shadowColor = `hsla(${panel.hue}, 100%, 65%, 0.9)`;
+          ctx.strokeStyle = `hsla(${panel.hue}, 100%, 68%, ${glow})`;
+          ctx.lineWidth = bW;
           ctx.beginPath();
-          mCorners.forEach(([x,y],i)=> i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));
-          ctx.closePath();
-          ctx.fillStyle = STL(0.9);
-          ctx.fill();
-          ctx.strokeStyle = GOLDD(0.35 + innerGlow*0.15 + mouseDist*0.15);
-          ctx.lineWidth   = 0.45;
+          ctx.moveTo(bx + dx * bLen, by);
+          ctx.lineTo(bx, by);
+          ctx.lineTo(bx, by + dy * bLen);
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        // Panel label
+        ctx.font = `600 ${8 + proximity * 2}px 'Inter', sans-serif`;
+        ctx.fillStyle = `hsla(${panel.hue}, 100%, 70%, ${0.35 + proximity * 0.45})`;
+        ctx.letterSpacing = "0.2em";
+        ctx.fillText(panel.label, px + 4, py - 6);
+        ctx.letterSpacing = "0";
+
+        // Horizontal data bars at bottom of each panel (like image's progress bars)
+        for (let b = 0; b < 3; b++) {
+          const barY = py + ph - 22 + b * 7;
+          const barW = (0.3 + 0.5 * Math.abs(Math.sin(t * 0.5 + pi * 0.8 + b * 1.2))) * pw * 0.8;
+          ctx.fillStyle = `hsla(${panel.hue}, 100%, 60%, ${0.08 + proximity * 0.07})`;
+          ctx.fillRect(px + 6, barY, pw * 0.8, 3);
+          ctx.fillStyle = `hsla(${panel.hue === 30 ? 30 : 200}, 90%, 60%, ${0.35 + proximity * 0.25})`;
+          ctx.fillRect(px + 6, barY, barW, 3);
+        }
+      });
+
+      /* ── 4. FLOATING PARTICLES ── */
+      PARTICLES.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
+        const px = p.x * W, py = p.y * H;
+        const md = M.x > 0 ? Math.hypot(px - M.x, py - M.y) : 9999;
+        const prx = Math.max(0, 1 - md / 180);
+
+        // Repel from mouse
+        if (prx > 0 && md > 1) {
+          p.vx += (px - M.x) / md * 0.00008;
+          p.vy += (py - M.y) / md * 0.00008;
+        }
+        // Speed limit + friction
+        const spd = Math.hypot(p.vx, p.vy);
+        if (spd > 0.0015) { p.vx *= 0.0015/spd; p.vy *= 0.0015/spd; }
+        p.vx *= 0.998; p.vy *= 0.998;
+
+        // Draw with mouse proximity brightening
+        const a = p.alpha + prx * 0.5;
+        if (prx > 0.05) {
+          ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(M.x, M.y);
+          ctx.strokeStyle = `hsla(${p.hue}, 100%, 65%, ${prx * 0.2})`;
+          ctx.lineWidth = prx * 0.8; ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(px, py, p.r + prx * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${a})`;
+        if (prx > 0.1) { ctx.shadowBlur = 8; ctx.shadowColor = `hsla(${p.hue},100%,65%,0.8)`; }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      /* ── 5. MOUSE DRAG TRACE ── */
+      if (M.x > 0 && M.px > 0) {
+        TRACE.push({ x: M.x, y: M.y, t });
+      }
+      // Remove old trace points
+      while (TRACE.length > 0 && t - TRACE[0].t > 0.6) TRACE.shift();
+      // Draw trace
+      if (TRACE.length > 1) {
+        for (let i = 1; i < TRACE.length; i++) {
+          const age = (t - TRACE[i].t) / 0.6;
+          ctx.beginPath();
+          ctx.moveTo(TRACE[i-1].x, TRACE[i-1].y);
+          ctx.lineTo(TRACE[i].x, TRACE[i].y);
+          ctx.strokeStyle = `rgba(0, 220, 255, ${(1 - age) * 0.55})`;
+          ctx.lineWidth = (1 - age) * 2.2;
           ctx.stroke();
         }
       }
-      ctx.restore();
-    };
 
-    /* ── MAIN DRAW ── */
-    const draw = () => {
-      raf = requestAnimationFrame(draw);
-      frame++;
-      ctx.clearRect(0,0,W,H);
+      /* ── 6. MOUSE INTERACTION — electric field ── */
+      if (M.x > 0) {
+        // Pulsing glow
+        const r = 110 + 12 * Math.sin(t * 4);
+        const grd = ctx.createRadialGradient(M.x, M.y, 0, M.x, M.y, r);
+        grd.addColorStop(0,   `rgba(0, 200, 255, ${0.12 + 0.05 * Math.sin(t * 3)})`);
+        grd.addColorStop(0.4, `rgba(0, 140, 220, 0.04)`);
+        grd.addColorStop(1,   "transparent");
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.arc(M.x, M.y, r, 0, Math.PI * 2); ctx.fill();
 
-      /* Black base */
-      ctx.fillStyle = BG(1);
-      ctx.fillRect(0,0,W,H);
-
-      /* Global radial vignette (edges dark, matches image) */
-      const vig = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.72);
-      vig.addColorStop(0,   "hsla(0,0%,0%,0)");
-      vig.addColorStop(0.55,"hsla(0,0%,0%,0.15)");
-      vig.addColorStop(1,   "hsla(0,0%,0%,0.88)");
-
-      /* Mouse proximity glow */
-      if(mouse.x>0){
-        const mg = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,260);
-        mg.addColorStop(0, GOLDB(0.12));
-        mg.addColorStop(1, GOLDB(0));
-        ctx.fillStyle=mg; ctx.fillRect(0,0,W,H);
+        // Expanding ripple ring — adds on click
+        if (M.click) {
+          RIPPLES.push({ x: M.x, y: M.y, r: 4, maxR: 80 + Math.random() * 40, alpha: 0.8, hue: Math.random() > 0.5 ? 200 : 30 });
+        }
       }
 
-      /* ── Draw all hex cells ── */
-      cells.forEach(cell => {
-        cell.pulse += cell.pspd;
-        const glow = 0.3 + 0.7*Math.sin(cell.pulse)*Math.sin(cell.pulse);
+      /* ── 7. RIPPLE RINGS ── */
+      for (let i = RIPPLES.length - 1; i >= 0; i--) {
+        const rp = RIPPLES[i];
+        rp.r += 2.8; rp.alpha *= 0.93;
+        ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+        ctx.save();
+        ctx.shadowBlur = 8; ctx.shadowColor = `hsla(${rp.hue},100%,65%,0.7)`;
+        ctx.strokeStyle = `hsla(${rp.hue}, 100%, 68%, ${rp.alpha})`;
+        ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.restore();
+        if (rp.r >= rp.maxR) RIPPLES.splice(i, 1);
+      }
 
-        /* Mouse distance for this cell */
-        const mdx = cell.cx - mouse.x, mdy = cell.cy - mouse.y;
-        const md  = Math.hypot(mdx,mdy);
-        const mHot= Math.max(0, 1 - md/(cell.size*5.5));
+      /* ── 8. GLITCH EFFECT — random brief distortion ── */
+      if (!glitching && glitchTimer > 4 + Math.random() * 6) {
+        glitching = true; glitchTimer = 0;
+        setTimeout(() => { glitching = false; }, 80 + Math.random() * 120);
+      }
+      if (glitching && imgLoaded) {
+        // Horizontal slice displacement
+        const slices = 3 + Math.floor(Math.random() * 4);
+        for (let s = 0; s < slices; s++) {
+          const gy = Math.random() * H;
+          const gh = 2 + Math.random() * 8;
+          const gx = (Math.random() - 0.5) * 18;
+          ctx.save();
+          ctx.drawImage(canvas, 0, gy, W, gh, gx, gy, W, gh);
+          ctx.restore();
+        }
+        // Chromatic aberration stripe
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        ctx.globalCompositeOperation = "screen";
+        const cy2 = Math.random() * H;
+        ctx.fillStyle = "rgba(255, 0, 80, 0.6)";
+        ctx.fillRect(-4, cy2, W, 3 + Math.random() * 6);
+        ctx.fillStyle = "rgba(0, 255, 255, 0.6)";
+        ctx.fillRect(4, cy2 + 2, W, 3 + Math.random() * 6);
+        ctx.restore();
+      }
 
-        drawHex(cell.cx, cell.cy, cell.size, glow*0.25, mHot);
-      });
+      /* ── 9. VIGNETTE ── */
+      const vg = ctx.createRadialGradient(W/2, H/2, W * 0.15, W/2, H/2, W * 0.85);
+      vg.addColorStop(0, "transparent");
+      vg.addColorStop(1, "rgba(1,3,12,0.72)");
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
 
-      /* Vignette on top */
-      ctx.fillStyle = vig;
-      ctx.fillRect(0,0,W,H);
+      /* ── 10. PRECISION CROSSHAIR ── */
+      if (M.x > 0) {
+        const MX = M.x, MY = M.y;
+        const cl  = M.click ? 8  : 12;
+        const gap = M.click ? 4  : 7;
+        const rr  = M.click ? 7  : 10;
 
-      /* ── BURST PARTICLES ── */
-      bursts=bursts.filter(b=>{
-        b.life--; if(b.life<=0) return false;
-        b.vx*=0.91; b.vy*=0.91; b.x+=b.vx; b.y+=b.vy;
-        const t=b.life/b.maxLife;
-        const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r*2.5);
-        g.addColorStop(0,GOLDB(t)); g.addColorStop(1,GOLDB(0));
-        ctx.beginPath(); ctx.arc(b.x,b.y,b.r*2.5,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-        return true;
-      });
+        ctx.save();
+        ctx.shadowBlur  = 12;
+        ctx.shadowColor = "rgba(0,230,255,0.95)";
+        ctx.strokeStyle = "rgba(0,230,255,0.92)";
+        ctx.lineWidth   = 1.3;
+        ctx.beginPath(); ctx.moveTo(MX-gap-cl, MY); ctx.lineTo(MX-gap, MY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(MX+gap, MY); ctx.lineTo(MX+gap+cl, MY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(MX, MY-gap-cl); ctx.lineTo(MX, MY-gap); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(MX, MY+gap); ctx.lineTo(MX, MY+gap+cl); ctx.stroke();
+        ctx.beginPath(); ctx.arc(MX, MY, rr, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0,230,255,${M.click?0.9:0.5})`;
+        ctx.lineWidth = 0.9; ctx.stroke();
+        ctx.shadowBlur = 16;
+        ctx.beginPath(); ctx.arc(MX, MY, M.click?1.5:2.2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,245,255,0.96)"; ctx.fill();
+        ctx.restore();
+      }
 
-      /* ── HUD corners ── */
-      const bo=14, bsz=26;
-      ctx.lineWidth=1.5;
-      [[bo,bo,1,1],[W-bo,bo,-1,1],[bo,H-bo,1,-1],[W-bo,H-bo,-1,-1]].forEach(([x,y,sx,sy])=>{
-        ctx.beginPath();
-        ctx.moveTo(x,y+sy*bsz); ctx.lineTo(x,y); ctx.lineTo(x+sx*bsz,y);
-        ctx.strokeStyle=GOLD(0.45); ctx.stroke();
-        ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2);
-        ctx.fillStyle=GOLDB(0.6); ctx.fill();
-      });
-
-      /* ── Bottom bar ── */
-      ctx.fillStyle="hsla(20,5%,5%,0.65)";
-      ctx.fillRect(0,H-24,W,24);
-      ctx.beginPath(); ctx.moveTo(0,H-24); ctx.lineTo(W,H-24);
-      ctx.strokeStyle=GOLD(0.3); ctx.lineWidth=1; ctx.stroke();
-      ctx.font="bold 9px 'IBM Plex Mono',monospace";
-      ctx.fillStyle=GOLD(0.55);
-      ctx.fillText("BIMS v3.0  ·  BIOMETRIC IDENTITY MANAGEMENT SYSTEM  ·  AES-256  ·  SECURE  ·  ONLINE", bo+4, H-8);
-      ctx.fillStyle=GOLDB(0.65);
-      ctx.fillText("© 2026 KUMI", W-bo-82, H-8);
+      raf = requestAnimationFrame(draw);
     };
 
-    window.addEventListener("mousemove",  onMove);
-    window.addEventListener("mouseleave", onLeave);
-    window.addEventListener("click",      onClick);
-    window.addEventListener("resize",     init);
-    init(); draw();
+    ctx.fillStyle = "rgb(3,8,22)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+    raf = requestAnimationFrame(draw);
+
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("mousemove",  onMove);
+      window.removeEventListener("resize",    resize);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup",   onUp);
       window.removeEventListener("mouseleave", onLeave);
-      window.removeEventListener("click",      onClick);
-      window.removeEventListener("resize",     init);
     };
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none"
-      style={{ display:"block", width:"100vw", height:"100vh", background:"hsl(0,0%,5%)" }} />
+    <div className="fixed inset-0 z-0" aria-hidden>
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ cursor:"none" }} />
+    </div>
   );
 }
