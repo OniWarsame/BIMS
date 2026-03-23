@@ -857,9 +857,6 @@ Respond ONLY with valid JSON (no markdown):
       {/* Modals */}
       <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)} currentUser={currentUser}/>
       <DirectMessagePanel open={showDM} onClose={()=>setShowDM(false)} currentUser={currentUser}/>
-    </div>
-    </div>
-    </div>
 
       {/* ══ NOTIFICATION PANEL ══ */}
       <AnimatePresence>
@@ -900,6 +897,9 @@ Respond ONLY with valid JSON (no markdown):
         )}
       </AnimatePresence>
 
+    </div>
+    </div>
+    </div>
     </div>
   );
 };
