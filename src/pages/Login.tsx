@@ -410,7 +410,7 @@ const LoginScreen = () => {
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <motion.div animate={{opacity:[1,0.3,1]}} transition={{duration:1,repeat:Infinity}}
                       style={{width:7,height:7,borderRadius:"50%",
-                        background:"hsl(200,72%,62%)",boxShadow:"0 0 8px rgba(70,175,255,0.85)"}}/>
+                        background:"hsl(200,68%,62%)",boxShadow:"0 0 8px rgba(70,175,255,0.85)"}}/>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,
                       letterSpacing:"0.16em",color:"rgba(80,185,255,0.9)",textTransform:"uppercase" as const}}>
                       Identity Confirmed — Access In {countdown}s
@@ -522,7 +522,7 @@ const LoginScreen = () => {
                   <div>
                     <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,
                       letterSpacing:"0.12em",textTransform:"uppercase" as const,
-                      color:"rgba(40,175,210,0.45)",display:"block",marginBottom:6}}>Username</label>
+                      color:"rgba(44,178,212,0.45)",display:"block",marginBottom:6}}>Username</label>
                     <input value={manualUser} onChange={e=>{setManualUser(e.target.value);setManualErr("");}}
                       onKeyDown={e=>e.key==="Enter"&&handleManual()}
                       placeholder="Enter username" className="input-cyber" autoComplete="username"/>
@@ -530,7 +530,7 @@ const LoginScreen = () => {
                   <div>
                     <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,
                       letterSpacing:"0.12em",textTransform:"uppercase" as const,
-                      color:"rgba(40,175,210,0.45)",display:"block",marginBottom:6}}>Password</label>
+                      color:"rgba(44,178,212,0.45)",display:"block",marginBottom:6}}>Password</label>
                     <input type="password" value={manualPass} onChange={e=>{setManualPass(e.target.value);setManualErr("");}}
                       onKeyDown={e=>e.key==="Enter"&&handleManual()}
                       placeholder="Enter password" className="input-cyber" autoComplete="current-password"/>

@@ -62,7 +62,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
         padding:"5px 12px", borderRadius:6, cursor:"pointer",
         border:`1px solid ${isEdit?"hsla(192,100%,52%,0.4)":"hsla(142,80%,50%,0.55)"}`,
         background:isEdit?"hsla(192,100%,52%,0.08)":"hsla(142,80%,45%,0.1)",
-        color:isEdit?"hsl(192,100%,72%)":"hsl(142,80%,68%)",
+        color:isEdit?"hsl(192,68%,72%)":"hsl(142,80%,68%)",
         transition:"all .15s"
       } as React.CSSProperties}
       onMouseEnter={e=>{e.currentTarget.style.background=isEdit?"hsla(192,100%,52%,0.2)":"hsla(142,80%,45%,0.22)"; e.currentTarget.style.boxShadow=isEdit?"0 0 12px hsla(192,100%,52%,0.3)":"0 0 12px hsla(142,80%,50%,0.3)";}}
@@ -116,7 +116,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
               : sending
                 ? "hsla(192,100%,52%,0.06)"
                 : "hsla(192,100%,52%,0.14)",
-            color: done ? "hsl(142,90%,70%)" : "hsl(192,100%,76%)",
+            color: done ? "hsl(142,90%,70%)" : "hsl(192,68%,76%)",
             boxShadow: done ? "0 0 14px hsla(142,90%,52%,0.2)" : "0 0 18px hsla(192,100%,52%,0.25)",
             opacity: (!text.trim() && !done) ? 0.4 : 1,
             transition:"all .18s"
@@ -127,7 +127,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
           {done ? (
             <>✓ SENT & DELIVERED</>
           ) : sending ? (
-            <><div style={{width:10,height:10,borderRadius:"50%",border:"2px solid hsla(192,100%,55%,0.3)",borderTopColor:"hsl(192,100%,72%)",animation:"spin 0.8s linear infinite"}}/> SENDING...</>
+            <><div style={{width:10,height:10,borderRadius:"50%",border:"2px solid hsla(192,100%,55%,0.3)",borderTopColor:"hsl(192,68%,72%)",animation:"spin 0.8s linear infinite"}}/> SENDING...</>
           ) : (
             <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> SEND RESPONSE</>
           )}
@@ -482,7 +482,7 @@ Respond ONLY with valid JSON (no markdown):
   ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean }[];
 
   const scanColor = isMatch?"hsl(158,80%,55%)":isNoMatch?"hsl(354,85%,62%)":isScanning?"hsl(36,100%,58%)":"hsl(200,100%,65%)";
-  const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(40,175,210,0.6)";
+  const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(44,178,212,0.6)";
 
   // Security shape SVG paths for each command button
   const ShapeIcon = ({ shape, hue, size=18 }:{ shape:string; hue:number; size?:number }) => {
@@ -511,17 +511,17 @@ Respond ONLY with valid JSON (no markdown):
   };
 
   return (
-    <div style={{minHeight:"100vh",overflow:"hidden",background:"hsl(205,55%,5%)",position:"relative",fontFamily:"'Exo 2',-apple-system,sans-serif"}}>
+    <div style={{minHeight:"100vh",overflow:"hidden",background:"transparent",position:"relative",fontFamily:"'Exo 2',-apple-system,sans-serif"}}>
       <CyberBackground/>
 
       {/* ─── NAV ─── */}
       <div className="fixed top-0 left-0 right-0 w-full z-[9999] h-[54px] flex items-center justify-between px-5 border-b"
-        style={{background:"rgba(4,12,22,0.96)",borderColor:"rgba(45,185,215,0.2)",backdropFilter:"blur(40px)"}}>
+        style={{background:"rgba(4,12,22,0.96)",borderColor:"rgba(48,186,216,0.2)",backdropFilter:"blur(40px)"}}>
 
         {/* BIMS — LEFT */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{background:"radial-gradient(circle at 35% 35%,rgba(25,150,192,0.3),rgba(0,40,160,0.2))",border:"1.5px solid rgba(50,190,218,0.5)",boxShadow:"0 0 16px rgba(45,185,215,0.35)"}}>
+            style={{background:"radial-gradient(circle at 35% 35%,rgba(25,150,192,0.3),rgba(0,40,160,0.2))",border:"1.5px solid rgba(50,190,218,0.5)",boxShadow:"0 0 16px rgba(48,186,216,0.35)"}}>
             <Shield style={{width:15,height:15,color:"hsl(192,68%,70%)"}}/>
           </div>
           <div>
@@ -589,8 +589,8 @@ Respond ONLY with valid JSON (no markdown):
           {showUserMenu&&(
             <motion.div initial={{opacity:0,y:-8,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.15}}
               className="fixed top-[58px] right-4 min-w-[176px] z-[60] py-2 rounded-2xl"
-              style={{background:"rgba(2,8,24,0.97)",border:"1px solid rgba(40,175,210,0.2)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(30px)"}}>
-              <div className="px-3.5 pb-1.5 mb-1 border-b" style={{borderColor:"rgba(40,175,210,0.1)"}}>
+              style={{background:"rgba(4,14,24,0.97)",border:"1px solid rgba(44,178,212,0.2)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(30px)"}}>
+              <div className="px-3.5 pb-1.5 mb-1 border-b" style={{borderColor:"rgba(44,178,212,0.1)"}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,color:"rgba(200,245,255,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,170,220,0.45)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
@@ -622,7 +622,7 @@ Respond ONLY with valid JSON (no markdown):
                   background:"linear-gradient(135deg,rgba(0,160,255,0.2),rgba(0,80,200,0.15))",
                   border:"1.5px solid rgba(50,190,218,0.4)",
                   display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
+                <Fingerprint style={{width:24,height:24,color:"hsl(192,68%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
               </motion.div>
               <div style={{textAlign:"left" as const}}>
                 <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(50,190,218,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
@@ -863,14 +863,14 @@ Respond ONLY with valid JSON (no markdown):
                 <div style={{textAlign:"center" as const,padding:"28px 0",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"rgba(0,135,185,0.35)"}}>No notifications</div>
               )}
               {tickets.map((t:any)=>(
-                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,170,200,0.15)"}}>
+                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(44,178,212,0.15)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(56,196,223,0.75)"}}>{t.issue||t.issueCode}</span>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,color:"rgba(0,145,200,0.42)"}}>{t.id}</span>
                   </div>
                   <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.description}</p>
                   {t.adminResponse && (
-                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,170,200,0.08)",border:"1px solid rgba(40,170,200,0.15)"}}>
+                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(44,178,212,0.08)",border:"1px solid rgba(44,178,212,0.15)"}}>
                       <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,fontWeight:600,color:"rgba(255,140,0,0.55)",letterSpacing:"0.1em",marginBottom:2,textTransform:"uppercase" as const}}>Response</div>
                       <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.adminResponse}</p>
                     </div>
@@ -1046,15 +1046,15 @@ export default Index;      {/* ─── NAV ─── */}
           <button onClick={()=>setShowUserMenu(v=>!v)} style={{
             display:"flex",alignItems:"center",gap:7,
             padding:"4px 11px 4px 4px",borderRadius:99,cursor:"pointer",
-            background:"rgba(40,175,210,0.1)",
+            background:"rgba(44,178,212,0.1)",
             border:"1px solid rgba(50,190,218,0.28)",
             transition:"all .18s",
           }}
-          onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,175,210,0.2)";e.currentTarget.style.borderColor="rgba(58,198,224,0.45)";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="rgba(40,175,210,0.1)";e.currentTarget.style.borderColor="rgba(50,190,218,0.28)";}}>
+          onMouseEnter={e=>{e.currentTarget.style.background="rgba(44,178,212,0.2)";e.currentTarget.style.borderColor="rgba(58,198,224,0.45)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="rgba(44,178,212,0.1)";e.currentTarget.style.borderColor="rgba(50,190,218,0.28)";}}>
             <div style={{
               width:28,height:28,borderRadius:"50%",
-              background:"rgba(45,185,215,0.22)",
+              background:"rgba(48,186,216,0.22)",
               border:"2px solid rgba(55,195,222,0.55)",
               display:"flex",alignItems:"center",justifyContent:"center",
               fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:900,
@@ -1134,7 +1134,7 @@ export default Index;      {/* ─── NAV ─── */}
                   background:"linear-gradient(135deg,rgba(0,160,255,0.2),rgba(0,80,200,0.15))",
                   border:"1.5px solid rgba(50,190,218,0.4)",
                   display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <Fingerprint style={{width:24,height:24,color:"hsl(195,100%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
+                <Fingerprint style={{width:24,height:24,color:"hsl(192,68%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
               </motion.div>
               <div style={{textAlign:"left" as const}}>
                 <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(50,190,218,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
@@ -1375,14 +1375,14 @@ export default Index;      {/* ─── NAV ─── */}
                 <div style={{textAlign:"center" as const,padding:"28px 0",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"rgba(0,135,185,0.35)"}}>No notifications</div>
               )}
               {tickets.map((t:any)=>(
-                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,170,200,0.15)"}}>
+                <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(44,178,212,0.15)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(56,196,223,0.75)"}}>{t.issue||t.issueCode}</span>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,color:"rgba(0,145,200,0.42)"}}>{t.id}</span>
                   </div>
                   <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.description}</p>
                   {t.adminResponse && (
-                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,170,200,0.08)",border:"1px solid rgba(40,170,200,0.15)"}}>
+                    <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(44,178,212,0.08)",border:"1px solid rgba(44,178,212,0.15)"}}>
                       <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,fontWeight:600,color:"rgba(255,140,0,0.55)",letterSpacing:"0.1em",marginBottom:2,textTransform:"uppercase" as const}}>Response</div>
                       <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.adminResponse}</p>
                     </div>

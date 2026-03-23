@@ -128,7 +128,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
               <div className="flex items-center gap-2">
                 <span style={{fontSize:12}}>{item.icon}</span>
                 <div>
-                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:7,letterSpacing:"0.22em",color:"rgba(40,175,210,0.42)"}}>{item.label}</div>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:7,letterSpacing:"0.22em",color:"rgba(44,178,212,0.42)"}}>{item.label}</div>
                   <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,color:"hsl(192,68%,65%)"}}>{item.val}</div>
                 </div>
               </div>
@@ -157,7 +157,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
           DATABASE ACCESS
         </h1>
         <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.22em",
-          color:"rgba(40,175,210,0.45)",marginBottom:20,textTransform:"uppercase" as const}}>
+          color:"rgba(44,178,212,0.45)",marginBottom:20,textTransform:"uppercase" as const}}>
           BIOMETRIC VERIFICATION REQUIRED
         </p>
 
@@ -175,7 +175,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
               animate={{rotate:[360,0]}} transition={{duration:7,repeat:Infinity,ease:"linear"}}/>
           </svg>
           <div className={scanState==="scanning"?"scanner-pulse":""} style={{width:220,height:220,borderRadius:"50%",
-            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(0,18,42,0.97),rgba(4,14,24,0.99))",
+            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(4,18,32,0.97),rgba(4,14,24,0.99))",
             border:`2px solid ${fpColor}55`,
             boxShadow:`0 0 60px ${glowCol}20,inset 0 0 60px rgba(0,0,0,0.5)`,
             display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:10,
@@ -219,7 +219,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
                 <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,color:"hsl(192,68%,65%)"}}>{countdown}</span>
               </div>
               <div style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12}}>
-                <div style={{width:44,height:44,borderRadius:10,background:"rgba(40,175,210,0.12)",border:"1px solid rgba(50,190,218,0.3)",
+                <div style={{width:44,height:44,borderRadius:10,background:"rgba(44,178,212,0.12)",border:"1px solid rgba(50,190,218,0.3)",
                   display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"hsl(192,68%,65%)",flexShrink:0}}>
                   {matchUser.fullName?.charAt(0).toUpperCase()||"?"}
                 </div>
@@ -230,15 +230,15 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
                   </div>
                 </div>
               </div>
-              <div style={{height:3,margin:"0 14px 12px",borderRadius:2,background:"rgba(40,175,210,0.12)",overflow:"hidden"}}>
-                <motion.div style={{height:"100%",background:"linear-gradient(90deg,hsl(192,70%,48%),hsl(200,72%,60%))",originX:0}}
+              <div style={{height:3,margin:"0 14px 12px",borderRadius:2,background:"rgba(44,178,212,0.12)",overflow:"hidden"}}>
+                <motion.div style={{height:"100%",background:"linear-gradient(90deg,hsl(192,70%,48%),hsl(200,68%,60%))",originX:0}}
                   animate={{width:`${((2-countdown)/2)*100}%`}} transition={{duration:1,ease:"linear"}}/>
               </div>
               <div style={{textAlign:"right" as const,paddingRight:14,paddingBottom:10}}>
                 <button onClick={resetScan} style={{background:"none",border:"none",cursor:"pointer",
-                  fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:"0.12em",color:"rgba(40,175,210,0.35)",transition:"color .15s"}}
+                  fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:"0.12em",color:"rgba(44,178,212,0.35)",transition:"color .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.color="rgba(58,198,224,0.7)"}
-                  onMouseLeave={e=>e.currentTarget.style.color="rgba(40,175,210,0.35)"}>
+                  onMouseLeave={e=>e.currentTarget.style.color="rgba(44,178,212,0.35)"}>
                   NOT ME — CANCEL
                 </button>
               </div>
@@ -253,7 +253,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
             style={{width:"100%",height:46,borderRadius:13,display:"flex",alignItems:"center",justifyContent:"center",gap:10,
               fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,letterSpacing:"0.1em",
               color:"hsl(205,55%,5%)",cursor:"pointer",border:"0",
-              background:"linear-gradient(135deg,hsl(192,70%,45%),hsl(200,72%,58%))",
+              background:"linear-gradient(135deg,hsl(192,70%,45%),hsl(200,68%,58%))",
               boxShadow:"0 6px 28px rgba(50,190,218,0.45),inset 0 1px 0 rgba(255,255,255,0.2)",
               position:"relative" as const,overflow:"hidden"}}>
             <motion.span style={{position:"absolute" as const,inset:0,

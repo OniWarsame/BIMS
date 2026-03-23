@@ -325,16 +325,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
 
       {/* Custom header with smart back button */}
       <div style={{position:"sticky",top:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"space-between",
-        padding:"12px 24px",background:"rgba(0,5,18,0.68)",borderBottom:"1px solid rgba(0,200,255,0.12)",
+        padding:"12px 24px",background:"rgba(2,9,16,0.68)",borderBottom:"1px solid rgba(50,190,218,0.12)",
         backdropFilter:"blur(48px)"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <motion.button onClick={back} whileHover={{scale:1.04,x:-2}} whileTap={{scale:0.97}}
             style={{display:"flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:11,
-              background:"rgba(0,200,255,0.09)",
-              border:"1.5px solid rgba(0,200,255,0.3)",
-              color:"rgba(0,220,255,0.9)",cursor:"pointer",transition:"all .18s"}}
-            onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(0,200,255,0.18)";el.style.borderColor="rgba(0,230,255,0.55)";el.style.boxShadow="0 0 20px rgba(0,200,255,0.2)";}}
-            onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(0,200,255,0.09)";el.style.borderColor="rgba(0,200,255,0.3)";el.style.boxShadow="none";}}>
+              background:"rgba(50,190,218,0.09)",
+              border:"1.5px solid rgba(50,190,218,0.3)",
+              color:"rgba(55,196,224,0.9)",cursor:"pointer",transition:"all .18s"}}
+            onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(50,190,218,0.18)";el.style.borderColor="rgba(0,230,255,0.55)";el.style.boxShadow="0 0 20px rgba(50,190,218,0.2)";}}
+            onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.background="rgba(50,190,218,0.09)";el.style.borderColor="rgba(50,190,218,0.3)";el.style.boxShadow="none";}}>
             <ArrowLeft style={{width:15,height:15}}/>
             <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.1em"}}>
               {step==="result"?"← BACK TO TEMPLATES":step==="templates"?"← CATEGORIES":"← HOME"}
@@ -367,7 +367,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
             <select value={record?.id||""} onChange={e=>setRecord(allRecords.find(r=>r.id===e.target.value)||null)}
               style={{fontFamily:"'Orbitron',monospace",fontSize:8,fontWeight:700,letterSpacing:"0.1em",
                 padding:"7px 12px",borderRadius:8,background:"hsla(215,55%,5%,0.9)",
-                border:"1px solid hsla(192,100%,52%,0.35)",color:"hsl(192,100%,72%)",
+                border:"1px solid hsla(192,100%,52%,0.35)",color:"hsl(192,68%,72%)",
                 outline:"none",cursor:"pointer"}}>
               {allRecords.map(r=><option key={r.id} value={r.id}>{r.name} {r.surname}</option>)}
             </select>
@@ -546,10 +546,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
                 <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
                   <button onClick={()=>{setStep("templates");setSelTpl(null);setOutput("");}}
                     style={{...mono,display:"flex",alignItems:"center",gap:7,fontSize:11,fontWeight:700,letterSpacing:"0.1em",padding:"10px 18px",borderRadius:10,
-                      border:"1.5px solid rgba(0,200,255,0.35)",background:"rgba(0,180,255,0.08)",
-                      color:"rgba(0,220,255,0.85)",cursor:"pointer",transition:"all .18s",fontFamily:"'Orbitron',sans-serif"}}
-                    onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,190,255,0.18)";e.currentTarget.style.borderColor="rgba(0,220,255,0.6)";}}
-                    onMouseLeave={e=>{e.currentTarget.style.background="rgba(0,180,255,0.08)";e.currentTarget.style.borderColor="rgba(0,200,255,0.35)";}}>
+                      border:"1.5px solid rgba(50,190,218,0.35)",background:"rgba(42,180,212,0.08)",
+                      color:"rgba(55,196,224,0.85)",cursor:"pointer",transition:"all .18s",fontFamily:"'Orbitron',sans-serif"}}
+                    onMouseEnter={e=>{e.currentTarget.style.background="rgba(46,186,216,0.18)";e.currentTarget.style.borderColor="rgba(55,196,224,0.6)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.background="rgba(42,180,212,0.08)";e.currentTarget.style.borderColor="rgba(50,190,218,0.35)";}}>
                     ← CHOOSE ANOTHER TEMPLATE
                   </button>
                   <button onClick={()=>pickTemplate(selTpl!)} style={{display:"flex",alignItems:"center",gap:5,...mono,fontSize:10,fontWeight:700,letterSpacing:"0.12em",padding:"8px 14px",borderRadius:9,border:`1px solid ${selCat?.border}`,background:selCat?.bg,color:selCat?.color,cursor:"pointer"}}><RefreshCw size={11}/> REFRESH</button>

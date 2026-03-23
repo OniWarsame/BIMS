@@ -1,13 +1,5 @@
 import React, { useEffect, useRef } from "react";
 
-/*
-  best.jpg — Mystical Eye Background
-  Palette: deep teal #0a2535, cyan iris #4dd9e8, amber/gold accents #c8851a,
-           dark bark/slate #0d1a20, electric blue highlight #1a8fa8
-  Effects: organic vein-like particle streams, iris pulse rings,
-           amber spark particles, deep forest node network
-  Mouse:   organic ripple from iris, amber spark trail, veining lines
-*/
 export default function CyberBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -19,277 +11,285 @@ export default function CyberBackground() {
 
     let raf = 0, T = 0;
 
-    // ── Mouse ──
-    const M = { x: -999, y: -999, px: -999, py: -999, vx: 0, vy: 0, down: false, click: false };
-    const onMove = (e: MouseEvent) => { M.px=M.x; M.py=M.y; M.x=e.clientX; M.y=e.clientY; M.vx=M.x-M.px; M.vy=M.y-M.py; };
-    const onDown = () => { M.down=true; M.click=true; setTimeout(()=>{ M.click=false; },200); };
-    const onUp   = () => { M.down=false; };
-    const onOut  = () => { M.x=-999; M.y=-999; };
-    window.addEventListener("mousemove", onMove, {passive:true});
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup",   onUp);
-    window.addEventListener("mouseleave",onOut);
+    /* ── Mouse ── */
+    const M = { x: -999, y: -999, px: -999, py: -999, vx: 0, vy: 0, click: false };
+    const onMove = (e: MouseEvent) => {
+      M.px = M.x; M.py = M.y;
+      M.x = e.clientX; M.y = e.clientY;
+      M.vx = M.x - M.px; M.vy = M.y - M.py;
+    };
+    const onDown = () => { M.click = true; setTimeout(() => { M.click = false; }, 200); };
+    const onOut  = () => { M.x = -999; M.y = -999; };
+    window.addEventListener("mousemove",  onMove,  { passive: true });
+    window.addEventListener("mousedown",  onDown);
+    window.addEventListener("mouseleave", onOut);
 
-    // ── Resize ──
-    const resize = () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; initNodes(); };
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; init(); };
     window.addEventListener("resize", resize);
 
-    // ── Image ──
+    /* ── Image ── */
     const img = new Image();
     img.src = "/best.jpg";
     let imgOK = false;
     img.onload  = () => { imgOK = true; };
     img.onerror = () => { imgOK = false; };
 
-    // ── Types ──
-    interface Node  { x:number; y:number; vx:number; vy:number; r:number; baseR:number; hue:number; sat:number; }
-    interface Ring  { x:number; y:number; r:number; maxR:number; a:number; w:number; amber:boolean; }
-    interface Spark { x:number; y:number; vx:number; vy:number; life:number; ml:number; amber:boolean; }
-    interface Vein  { pts:{x:number;y:number}[]; a:number; amber:boolean; }
-    interface Trail { x:number; y:number; t:number; }
+    /* ── Particle types ── */
+    interface Mote   { x:number; y:number; vx:number; vy:number; r:number; br:number; hue:number; amber:boolean; }
+    interface Ring   { x:number; y:number; r:number; maxR:number; a:number; w:number; amber:boolean; }
+    interface Ember  { x:number; y:number; vx:number; vy:number; life:number; ml:number; amber:boolean; }
+    interface Tendril{ pts:{x:number;y:number}[]; a:number; amber:boolean; }
+    interface Trail  { x:number; y:number; t:number; }
 
-    let NODES: Node[] = [];
-    const RINGS:  Ring[]  = [];
-    const SPARKS: Spark[] = [];
-    const VEINS:  Vein[]  = [];
-    const TRAIL:  Trail[] = [];
+    let MOTES:   Mote[]    = [];
+    const RINGS:    Ring[]    = [];
+    const EMBERS:   Ember[]   = [];
+    const TENDRILS: Tendril[] = [];
+    const TRAIL:    Trail[]   = [];
 
-    function initNodes() {
-      const W=canvas.width, H=canvas.height;
-      NODES = Array.from({length:48},(_,i)=>({
-        x: Math.random()*W, y: Math.random()*H,
-        vx:(Math.random()-0.5)*0.22, vy:(Math.random()-0.5)*0.22,
-        r: i<6 ? 3+Math.random()*2 : 1+Math.random()*1.8,
-        baseR: i<6 ? 3+Math.random()*2 : 1+Math.random()*1.8,
-        // Mix cyan nodes with amber accent nodes
-        hue: i%7===0 ? 38 : i%5===0 ? 185 : 195,
-        sat: i%7===0 ? 80 : 100,
+    function init() {
+      const W = canvas.width, H = canvas.height;
+      MOTES = Array.from({ length: 55 }, (_, i) => ({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+        r: 0, br: i < 8 ? 2.8 + Math.random() * 1.8 : 0.9 + Math.random() * 1.6,
+        hue: i % 6 === 0 ? 36 : i % 4 === 0 ? 188 : 195,
+        amber: i % 6 === 0,
       }));
+      MOTES.forEach(m => { m.r = m.br; });
     }
 
-    function spawnVein() {
-      if (M.x<0) return;
+    function spawnTendril() {
+      if (M.x < 0) return;
       const spd = Math.hypot(M.vx, M.vy);
-      if (spd < 1.5) return;
-      const angle = Math.atan2(M.vy, M.vx);
-      const pts: {x:number;y:number}[] = [];
-      let cx=M.x, cy=M.y;
-      for (let i=0;i<22;i++){
-        pts.push({x:cx,y:cy});
-        // Organic branching vein-like curves
-        const curl = (Math.random()-0.5)*0.6;
-        cx += Math.cos(angle+curl)*10 + (Math.random()-0.5)*4;
-        cy += Math.sin(angle+curl)*10 + (Math.random()-0.5)*4;
+      if (spd < 2) return;
+      const ang = Math.atan2(M.vy, M.vx);
+      const pts: { x: number; y: number }[] = [];
+      let cx = M.x, cy = M.y;
+      for (let i = 0; i < 24; i++) {
+        pts.push({ x: cx, y: cy });
+        const drift = (Math.random() - 0.5) * 0.7;
+        cx += Math.cos(ang + drift) * 11 + (Math.random() - 0.5) * 5;
+        cy += Math.sin(ang + drift) * 11 + (Math.random() - 0.5) * 5;
       }
-      const amber = Math.random() > 0.6;
-      VEINS.push({pts, a:0.65+Math.random()*0.35, amber});
+      TENDRILS.push({ pts, a: 0.7 + Math.random() * 0.3, amber: Math.random() > 0.55 });
     }
 
-    function spawnSparks(x:number, y:number, n=18) {
-      for(let i=0;i<n;i++){
-        const a=Math.random()*Math.PI*2, s=1.5+Math.random()*4.5;
-        const amber = Math.random() > 0.5;
-        SPARKS.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0,ml:38+Math.random()*42,amber});
+    function spawnEmbers(x: number, y: number) {
+      for (let i = 0; i < 20; i++) {
+        const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * 4.5;
+        EMBERS.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0, ml: 40 + Math.random() * 45, amber: Math.random() > 0.45 });
       }
     }
 
+    /* ── Draw ── */
     function draw() {
       T += 0.016;
-      const W=canvas.width, H=canvas.height;
-      // Centre of the eye in the image (roughly 50% x, 42% y)
-      const EX=W*0.5, EY=H*0.42;
+      const W = canvas.width, H = canvas.height;
 
-      /* ── 1. Draw background image — NO heavy overlay, original colours ── */
+      /* 1 ─ Background image — FULL ORIGINAL, no dark overlay */
       if (imgOK) {
-        const iAR=img.width/img.height, cAR=W/H;
-        let iw:number,ih:number,ix:number,iy:number;
-        if(cAR>iAR){iw=W;ih=W/iAR;ix=0;iy=(H-ih)/2;}
-        else{ih=H;iw=H*iAR;ix=(W-iw)/2;iy=0;}
-        ctx.drawImage(img,ix,iy,iw,ih);
+        const iAR = img.width / img.height, cAR = W / H;
+        let iw: number, ih: number, ix: number, iy: number;
+        if (cAR > iAR) { iw = W; ih = W / iAR; ix = 0; iy = (H - ih) / 2; }
+        else            { ih = H; iw = H * iAR; ix = (W - iw) / 2; iy = 0; }
+        ctx.drawImage(img, ix, iy, iw, ih);
       } else {
-        const g=ctx.createLinearGradient(0,0,W,H);
-        g.addColorStop(0,"hsl(205,60%,6%)"); g.addColorStop(1,"hsl(195,55%,4%)");
-        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle = "hsl(205,55%,5%)";
+        ctx.fillRect(0, 0, W, H);
       }
 
-      /* ── 2. Minimal atmospheric tint — VERY light, preserves image ── */
-      // Only a faint dark vignette at outer edges, not a full-screen overlay
-      const vg=ctx.createRadialGradient(EX,EY,W*0.18,EX,EY,W*0.85);
-      vg.addColorStop(0,"transparent");
-      vg.addColorStop(0.7,"rgba(0,8,16,0.10)");
-      vg.addColorStop(1,"rgba(0,4,12,0.45)");
-      ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+      /* 2 ─ Barely-there vignette — only outer rim, image centre fully clear */
+      const vg = ctx.createRadialGradient(W * 0.5, H * 0.44, W * 0.2, W * 0.5, H * 0.44, W * 0.82);
+      vg.addColorStop(0, "transparent");
+      vg.addColorStop(0.75, "rgba(2,8,14,0.08)");
+      vg.addColorStop(1, "rgba(1,5,10,0.42)");
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, W, H);
 
-      /* ── 3. Nodes — deep teal + amber accents ── */
-      for(const n of NODES){
-        n.x+=n.vx; n.y+=n.vy;
-        if(n.x<0)n.x=W; if(n.x>W)n.x=0;
-        if(n.y<0)n.y=H; if(n.y>H)n.y=0;
-        // Attracted toward cursor
-        if(M.x>0){
-          const dx=M.x-n.x, dy=M.y-n.y, d=Math.hypot(dx,dy);
-          if(d<220&&d>1){ const f=0.016*(1-d/220); n.vx+=dx/d*f; n.vy+=dy/d*f; n.r=n.baseR*(1+0.7*(1-d/220)); }
-          else n.r+=(n.baseR-n.r)*0.08;
+      /* 3 ─ Motes — attract to cursor */
+      for (const m of MOTES) {
+        m.x += m.vx; m.y += m.vy;
+        if (m.x < 0) m.x = W; if (m.x > W) m.x = 0;
+        if (m.y < 0) m.y = H; if (m.y > H) m.y = 0;
+        if (M.x > 0) {
+          const dx = M.x - m.x, dy = M.y - m.y, d = Math.hypot(dx, dy);
+          if (d < 230 && d > 1) {
+            const f = 0.018 * (1 - d / 230);
+            m.vx += dx / d * f; m.vy += dy / d * f;
+            m.r = m.br * (1 + 0.85 * (1 - d / 230));
+          } else { m.r += (m.br - m.r) * 0.08; }
         }
-        const spd=Math.hypot(n.vx,n.vy);
-        if(spd>0.9){n.vx*=0.9/spd;n.vy*=0.9/spd;}
-        n.vx*=0.994; n.vy*=0.994;
+        const s = Math.hypot(m.vx, m.vy);
+        if (s > 0.95) { m.vx *= 0.95 / s; m.vy *= 0.95 / s; }
+        m.vx *= 0.994; m.vy *= 0.994;
       }
-      // Edges — organic vein-like connections
-      for(let i=0;i<NODES.length;i++){
-        for(let j=i+1;j<NODES.length;j++){
-          const dx=NODES[i].x-NODES[j].x, dy=NODES[i].y-NODES[j].y, d=Math.hypot(dx,dy);
-          if(d>140)continue;
-          const a=(1-d/140)*0.12;
-          const isAmber=NODES[i].hue===38||NODES[j].hue===38;
-          ctx.beginPath();ctx.moveTo(NODES[i].x,NODES[i].y);ctx.lineTo(NODES[j].x,NODES[j].y);
-          ctx.strokeStyle=isAmber?`rgba(200,130,20,${a*0.8})`:`rgba(60,200,220,${a})`;
-          ctx.lineWidth=0.5; ctx.stroke();
+
+      /* Mote connections */
+      for (let i = 0; i < MOTES.length; i++) {
+        for (let j = i + 1; j < MOTES.length; j++) {
+          const dx = MOTES[i].x - MOTES[j].x, dy = MOTES[i].y - MOTES[j].y;
+          const d = Math.hypot(dx, dy);
+          if (d > 145) continue;
+          const a = (1 - d / 145) * 0.11;
+          const col = (MOTES[i].amber || MOTES[j].amber) ? `rgba(195,135,25,${a})` : `rgba(55,190,215,${a})`;
+          ctx.beginPath(); ctx.moveTo(MOTES[i].x, MOTES[i].y); ctx.lineTo(MOTES[j].x, MOTES[j].y);
+          ctx.strokeStyle = col; ctx.lineWidth = 0.5; ctx.stroke();
         }
       }
-      const pulse=0.5+0.5*Math.sin(T*1.3);
-      for(const n of NODES){
-        const isAmber=n.hue===38;
-        const col=isAmber?`hsla(38,80%,58%,${n.baseR>2?0.7*pulse:0.45*pulse})`:`hsla(${n.hue},${n.sat}%,68%,${n.baseR>2?0.75*pulse:0.4*pulse})`;
-        if(n.baseR>2){
-          ctx.save();
-          ctx.shadowBlur=isAmber?12:14;
-          ctx.shadowColor=isAmber?"rgba(200,130,20,0.7)":"rgba(40,190,220,0.7)";
-          ctx.beginPath();ctx.arc(n.x,n.y,n.r*(0.9+0.15*pulse),0,Math.PI*2);
-          ctx.fillStyle=col;ctx.fill();ctx.restore();
-          ctx.beginPath();ctx.arc(n.x,n.y,n.r*2.4,0,Math.PI*2);
-          ctx.strokeStyle=isAmber?`rgba(200,130,20,${0.14*pulse})`:`rgba(60,200,220,${0.14*pulse})`;
-          ctx.lineWidth=0.7;ctx.stroke();
+
+      /* Mote dots */
+      const pulse = 0.5 + 0.5 * Math.sin(T * 1.4);
+      for (const m of MOTES) {
+        const alpha = m.br > 2 ? 0.75 * pulse : 0.42 * pulse;
+        const col = m.amber ? `hsla(36,82%,58%,${alpha})` : `hsla(${m.hue},72%,68%,${alpha})`;
+        const glow = m.amber ? "rgba(195,135,25,0.75)" : "rgba(50,185,215,0.75)";
+        if (m.br > 2) {
+          ctx.save(); ctx.shadowBlur = 14; ctx.shadowColor = glow;
+          ctx.beginPath(); ctx.arc(m.x, m.y, m.r * (0.9 + 0.15 * pulse), 0, Math.PI * 2);
+          ctx.fillStyle = col; ctx.fill(); ctx.restore();
+          ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 2.5, 0, Math.PI * 2);
+          ctx.strokeStyle = m.amber ? `rgba(195,135,25,${0.12 * pulse})` : `rgba(50,185,215,${0.12 * pulse})`;
+          ctx.lineWidth = 0.7; ctx.stroke();
         } else {
-          ctx.beginPath();ctx.arc(n.x,n.y,n.r*(0.85+0.2*pulse),0,Math.PI*2);
-          ctx.fillStyle=col;ctx.fill();
+          ctx.beginPath(); ctx.arc(m.x, m.y, m.r * (0.85 + 0.2 * pulse), 0, Math.PI * 2);
+          ctx.fillStyle = col; ctx.fill();
         }
       }
 
-      /* ── 4. Iris pulse rings from eye centre — organic slow breath ── */
-      const irisR1 = W*0.08 + W*0.012*Math.sin(T*0.8);
-      const irisR2 = W*0.13 + W*0.008*Math.sin(T*0.6+1);
-      const irisR3 = W*0.19 + W*0.005*Math.sin(T*0.5+2);
-      [[irisR1,0.12],[irisR2,0.07],[irisR3,0.04]].forEach(([r,a])=>{
-        ctx.save();
-        ctx.shadowBlur=12; ctx.shadowColor="rgba(40,190,230,0.4)";
-        ctx.beginPath();ctx.arc(EX,EY,r as number,0,Math.PI*2);
-        ctx.strokeStyle=`rgba(60,195,225,${(a as number)*(0.8+0.2*Math.sin(T*0.9))})`;
-        ctx.lineWidth=0.8;ctx.setLineDash([8,22]);ctx.stroke();ctx.setLineDash([]);
-        ctx.restore();
+      /* 4 ─ Iris breath rings from eye centre */
+      const EX = W * 0.5, EY = H * 0.44;
+      [[W * 0.07, 0.10], [W * 0.12, 0.065], [W * 0.18, 0.040], [W * 0.25, 0.022]].forEach(([r, a], idx) => {
+        const breath = r + W * 0.006 * Math.sin(T * 0.65 + idx);
+        ctx.save(); ctx.shadowBlur = 10; ctx.shadowColor = "rgba(50,185,215,0.35)";
+        ctx.beginPath(); ctx.arc(EX, EY, breath, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(60,195,225,${(a as number) * (0.75 + 0.25 * Math.sin(T * 0.8 + idx))})`;
+        ctx.lineWidth = 0.75; ctx.setLineDash([7, 20]); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
       });
 
-      /* ── 5. Mouse — organic iris aura matching eye colours ── */
-      if(M.x>0){
-        // Outer iris-like glow — teal
-        const R1=180+16*Math.sin(T*2.2);
-        const g1=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,R1);
-        g1.addColorStop(0,`rgba(40,190,220,${0.12+0.04*Math.sin(T*3.5)})`);
-        g1.addColorStop(0.4,"rgba(20,140,180,0.04)");
-        g1.addColorStop(1,"transparent");
-        ctx.fillStyle=g1;ctx.beginPath();ctx.arc(M.x,M.y,R1,0,Math.PI*2);ctx.fill();
+      /* Amber breath rings — mimic the gold in the iris */
+      [[W * 0.055, 0.08], [W * 0.09, 0.05]].forEach(([r, a], idx) => {
+        const breath = r + W * 0.004 * Math.sin(T * 0.9 + idx + 1.5);
+        ctx.beginPath(); ctx.arc(EX, EY, breath, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(195,135,25,${(a as number) * (0.7 + 0.3 * Math.sin(T * 1.1 + idx))})`;
+        ctx.lineWidth = 0.6; ctx.setLineDash([4, 16]); ctx.stroke(); ctx.setLineDash([]);
+      });
 
-        // Inner amber glow — matches the gold in the iris
-        const R2=38+5*Math.sin(T*6);
-        const g2=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,R2);
-        g2.addColorStop(0,`rgba(200,140,30,${0.22+0.08*Math.sin(T*5)})`);
-        g2.addColorStop(0.6,"rgba(160,100,20,0.06)");
-        g2.addColorStop(1,"transparent");
-        ctx.fillStyle=g2;ctx.beginPath();ctx.arc(M.x,M.y,R2,0,Math.PI*2);ctx.fill();
+      /* 5 ─ Mouse effects */
+      if (M.x > 0) {
+        /* Outer teal iris bloom */
+        const R1 = 190 + 18 * Math.sin(T * 2.2);
+        const g1 = ctx.createRadialGradient(M.x, M.y, 0, M.x, M.y, R1);
+        g1.addColorStop(0, `rgba(45,185,215,${0.11 + 0.04 * Math.sin(T * 3.5)})`);
+        g1.addColorStop(0.45, "rgba(20,130,170,0.03)");
+        g1.addColorStop(1, "transparent");
+        ctx.fillStyle = g1; ctx.beginPath(); ctx.arc(M.x, M.y, R1, 0, Math.PI * 2); ctx.fill();
 
-        // Rotating iris ring — teal dashed
-        ctx.save();ctx.translate(M.x,M.y);ctx.rotate(T*1.6);
-        ctx.beginPath();ctx.arc(0,0,28+3*Math.sin(T*4),0,Math.PI*2);
-        ctx.strokeStyle=`rgba(50,200,225,${0.5+0.2*Math.sin(T*2.8)})`;
-        ctx.lineWidth=1;ctx.setLineDash([5,12]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+        /* Inner amber ember glow */
+        const R2 = 36 + 5 * Math.sin(T * 6.5);
+        const g2 = ctx.createRadialGradient(M.x, M.y, 0, M.x, M.y, R2);
+        g2.addColorStop(0, `rgba(205,145,35,${0.24 + 0.09 * Math.sin(T * 5.5)})`);
+        g2.addColorStop(0.6, "rgba(160,100,18,0.05)");
+        g2.addColorStop(1, "transparent");
+        ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(M.x, M.y, R2, 0, Math.PI * 2); ctx.fill();
 
-        // Reverse amber ring
-        ctx.save();ctx.translate(M.x,M.y);ctx.rotate(-T*2.2);
-        ctx.beginPath();ctx.arc(0,0,18+2*Math.sin(T*7),0,Math.PI*2);
-        ctx.strokeStyle=`rgba(200,140,30,${0.4+0.15*Math.sin(T*4)})`;
-        ctx.lineWidth=0.8;ctx.setLineDash([3,8]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+        /* Rotating teal iris ring */
+        ctx.save(); ctx.translate(M.x, M.y); ctx.rotate(T * 1.7);
+        ctx.beginPath(); ctx.arc(0, 0, 30 + 3.5 * Math.sin(T * 4.2), 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(55,195,225,${0.52 + 0.2 * Math.sin(T * 2.8)})`; ctx.lineWidth = 1.1;
+        ctx.setLineDash([6, 13]); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
 
-        // Crosshair
-        const ch=20, ca=0.22+0.1*Math.sin(T*2.5);
-        ctx.strokeStyle=`rgba(60,200,220,${ca})`;ctx.lineWidth=0.7;
-        ctx.beginPath();ctx.moveTo(M.x-ch,M.y);ctx.lineTo(M.x+ch,M.y);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(M.x,M.y-ch);ctx.lineTo(M.x,M.y+ch);ctx.stroke();
+        /* Counter-rotating amber ring */
+        ctx.save(); ctx.translate(M.x, M.y); ctx.rotate(-T * 2.5);
+        ctx.beginPath(); ctx.arc(0, 0, 19 + 2 * Math.sin(T * 7.5), 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(205,145,35,${0.42 + 0.16 * Math.sin(T * 4)})`; ctx.lineWidth = 0.85;
+        ctx.setLineDash([3, 8]); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+
+        /* Scanning cross-hairs */
+        const ch = 22, ca = 0.24 + 0.10 * Math.sin(T * 2.6);
+        ctx.strokeStyle = `rgba(55,195,225,${ca})`; ctx.lineWidth = 0.75;
+        ctx.beginPath(); ctx.moveTo(M.x - ch, M.y); ctx.lineTo(M.x + ch, M.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(M.x, M.y - ch); ctx.lineTo(M.x, M.y + ch); ctx.stroke();
+
+        /* Corner brackets — like a targeting reticle */
+        const bl = 8, bd = 18;
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sy]) => {
+          const bx = M.x + sx * bd, by = M.y + sy * bd;
+          ctx.strokeStyle = `rgba(205,145,35,${ca * 1.1})`; ctx.lineWidth = 0.9;
+          ctx.beginPath(); ctx.moveTo(bx, by - sy * bl); ctx.lineTo(bx, by); ctx.lineTo(bx - sx * bl, by); ctx.stroke();
+        });
       }
 
-      /* ── 6. Vein trail ── */
-      if(M.x>0) TRAIL.push({x:M.x,y:M.y,t:T});
-      while(TRAIL.length>0&&T-TRAIL[0].t>0.45) TRAIL.shift();
-      for(let i=1;i<TRAIL.length;i++){
-        const age=(T-TRAIL[i].t)/0.45;
-        ctx.beginPath();ctx.moveTo(TRAIL[i-1].x,TRAIL[i-1].y);ctx.lineTo(TRAIL[i].x,TRAIL[i].y);
-        ctx.strokeStyle=`rgba(50,195,220,${(1-age)*0.42})`;
-        ctx.lineWidth=(1-age)*2;ctx.stroke();
+      /* 6 ─ Mouse trail */
+      if (M.x > 0) TRAIL.push({ x: M.x, y: M.y, t: T });
+      while (TRAIL.length > 0 && T - TRAIL[0].t > 0.48) TRAIL.shift();
+      for (let i = 1; i < TRAIL.length; i++) {
+        const age = (T - TRAIL[i].t) / 0.48;
+        ctx.beginPath(); ctx.moveTo(TRAIL[i - 1].x, TRAIL[i - 1].y); ctx.lineTo(TRAIL[i].x, TRAIL[i].y);
+        ctx.strokeStyle = `rgba(55,192,220,${(1 - age) * 0.45})`; ctx.lineWidth = (1 - age) * 2.2; ctx.stroke();
       }
 
-      /* ── 7. Organic vein lines from fast movement ── */
-      spawnVein();
-      for(let i=VEINS.length-1;i>=0;i--){
-        const v=VEINS[i]; v.a*=0.87;
-        if(v.a<0.02){VEINS.splice(i,1);continue;}
-        ctx.beginPath();ctx.moveTo(v.pts[0].x,v.pts[0].y);
-        for(let j=1;j<v.pts.length;j++)ctx.lineTo(v.pts[j].x,v.pts[j].y);
-        ctx.strokeStyle=v.amber?`rgba(200,140,30,${v.a*0.55})`:`rgba(50,195,220,${v.a*0.5})`;
-        ctx.lineWidth=0.9;ctx.stroke();
+      /* 7 ─ Organic tendril lines from fast movement */
+      spawnTendril();
+      for (let i = TENDRILS.length - 1; i >= 0; i--) {
+        const v = TENDRILS[i]; v.a *= 0.86;
+        if (v.a < 0.02) { TENDRILS.splice(i, 1); continue; }
+        ctx.beginPath(); ctx.moveTo(v.pts[0].x, v.pts[0].y);
+        for (let j = 1; j < v.pts.length; j++) ctx.lineTo(v.pts[j].x, v.pts[j].y);
+        ctx.strokeStyle = v.amber ? `rgba(200,140,30,${v.a * 0.5})` : `rgba(55,192,220,${v.a * 0.48})`;
+        ctx.lineWidth = 0.9; ctx.stroke();
       }
 
-      /* ── 8. Click — iris burst rings + amber + teal sparks ── */
-      if(M.click&&M.x>0){
-        RINGS.push({x:M.x,y:M.y,r:5,maxR:130,a:0.9,w:1.8,amber:false});
-        RINGS.push({x:M.x,y:M.y,r:5,maxR:80, a:0.7,w:1.3,amber:true});
-        RINGS.push({x:M.x,y:M.y,r:5,maxR:44, a:0.5,w:1,  amber:false});
-        spawnSparks(M.x,M.y);
+      /* 8 ─ Click rings + embers */
+      if (M.click && M.x > 0) {
+        RINGS.push({ x: M.x, y: M.y, r: 5, maxR: 135, a: 0.9, w: 1.8, amber: false });
+        RINGS.push({ x: M.x, y: M.y, r: 5, maxR: 82,  a: 0.7, w: 1.3, amber: true  });
+        RINGS.push({ x: M.x, y: M.y, r: 5, maxR: 46,  a: 0.55,w: 1,   amber: false });
+        spawnEmbers(M.x, M.y);
       }
-      for(let i=RINGS.length-1;i>=0;i--){
-        const rp=RINGS[i]; rp.r+=3.2; rp.a*=0.91;
-        ctx.save();
-        ctx.shadowBlur=12;
-        ctx.shadowColor=rp.amber?"rgba(200,140,30,0.7)":"rgba(40,190,220,0.7)";
-        ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);
-        ctx.strokeStyle=rp.amber?`rgba(200,140,30,${rp.a})`:`rgba(50,200,225,${rp.a})`;
-        ctx.lineWidth=rp.w;ctx.stroke();ctx.restore();
-        if(rp.r>=rp.maxR)RINGS.splice(i,1);
+      for (let i = RINGS.length - 1; i >= 0; i--) {
+        const rp = RINGS[i]; rp.r += 3.4; rp.a *= 0.91;
+        ctx.save(); ctx.shadowBlur = 13; ctx.shadowColor = rp.amber ? "rgba(205,145,35,0.7)" : "rgba(50,190,220,0.7)";
+        ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+        ctx.strokeStyle = rp.amber ? `rgba(205,145,35,${rp.a})` : `rgba(55,195,225,${rp.a})`;
+        ctx.lineWidth = rp.w; ctx.stroke(); ctx.restore();
+        if (rp.r >= rp.maxR) RINGS.splice(i, 1);
       }
-      for(let i=SPARKS.length-1;i>=0;i--){
-        const s=SPARKS[i]; s.x+=s.vx;s.y+=s.vy;s.vx*=0.965;s.vy*=0.965;s.life++;
-        if(s.life>=s.ml){SPARKS.splice(i,1);continue;}
-        const p=s.life/s.ml, a=p<0.2?p/0.2:1-(p-0.2)/0.8;
-        ctx.beginPath();ctx.arc(s.x,s.y,2.5*(1-p*0.5),0,Math.PI*2);
-        ctx.fillStyle=s.amber?`rgba(210,150,40,${Math.max(0,a)*0.88})`:`rgba(50,200,225,${Math.max(0,a)*0.88})`;
+      for (let i = EMBERS.length - 1; i >= 0; i--) {
+        const e = EMBERS[i]; e.x += e.vx; e.y += e.vy; e.vx *= 0.964; e.vy *= 0.964; e.life++;
+        if (e.life >= e.ml) { EMBERS.splice(i, 1); continue; }
+        const p = e.life / e.ml, a = p < 0.2 ? p / 0.2 : 1 - (p - 0.2) / 0.8;
+        ctx.beginPath(); ctx.arc(e.x, e.y, 2.6 * (1 - p * 0.5), 0, Math.PI * 2);
+        ctx.fillStyle = e.amber ? `rgba(210,150,40,${Math.max(0, a) * 0.9})` : `rgba(55,195,225,${Math.max(0, a) * 0.9})`;
         ctx.fill();
       }
 
-      /* ── 9. Slow vertical scan — very subtle, like an iris sweep ── */
-      const sY=((T*0.028)%1)*H;
-      const sg=ctx.createLinearGradient(0,sY-2,0,sY+2);
-      sg.addColorStop(0,"transparent");sg.addColorStop(0.5,"rgba(50,195,220,0.025)");sg.addColorStop(1,"transparent");
-      ctx.fillStyle=sg;ctx.fillRect(0,sY-2,W,4);
+      /* 9 ─ Ultra-subtle iris sweep — just a whisper */
+      const sY = ((T * 0.026) % 1) * H;
+      const sg = ctx.createLinearGradient(0, sY - 2, 0, sY + 2);
+      sg.addColorStop(0, "transparent"); sg.addColorStop(0.5, "rgba(55,192,220,0.022)"); sg.addColorStop(1, "transparent");
+      ctx.fillStyle = sg; ctx.fillRect(0, sY - 2, W, 4);
 
-      raf=requestAnimationFrame(draw);
+      raf = requestAnimationFrame(draw);
     }
 
-    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-    initNodes();
-    ctx.fillStyle="hsl(205,55%,5%)"; ctx.fillRect(0,0,canvas.width,canvas.height);
-    raf=requestAnimationFrame(draw);
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    init();
+    ctx.fillStyle = "hsl(205,55%,5%)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    raf = requestAnimationFrame(draw);
 
-    return()=>{
+    return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize",    resize);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("mouseup",   onUp);
-      window.removeEventListener("mouseleave",onOut);
+      window.removeEventListener("mouseleave", onOut);
     };
-  },[]);
+  }, []);
 
-  return(
+  return (
     <div className="fixed inset-0 z-0" aria-hidden>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full"/>
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
     </div>
   );
 }
