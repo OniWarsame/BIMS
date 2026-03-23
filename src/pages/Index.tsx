@@ -487,418 +487,172 @@ Respond ONLY with valid JSON (no markdown):
     ]:[{label:"Create",   sub:"Generate Documents",         Icon:null,      path:"/create",   hue:200}]),
   ] as {label:string;sub:string;Icon:any;path:string|null;hue:number;osint?:boolean}[];
 
-  return (
-    <div style={{minHeight:"100vh",overflow:"hidden",background:"rgb(3,8,22)",position:"relative"}}>
-      <CyberBackground/>
-      {/* ══ SLIM NAVBAR ══ */}
-      <div style={{position:"fixed",top:15,left:0,right:0,zIndex:40,height:44,
-        display:"flex",alignItems:"center",padding:"0 14px",gap:8,
-        background:"rgba(1,4,16,0.82)",borderBottom:"1px solid rgba(0,180,255,0.12)",
-        backdropFilter:"blur(24px)"}}>
+  const roleColors: Record<string,string> = {
+    owner:"hsl(270,80%,70%)", admin:"hsl(354,82%,64%)",
+    operator:"hsl(36,95%,60%)", analyst:"hsl(200,100%,62%)"
+  };
+  const RC = roleColors;
+  const RU = currentUser?.role||"analyst";
 
-        {/* Logo */}
-        <div style={{display:"flex",alignItems:"center",gap:8,marginRight:12,flexShrink:0}}>
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <polygon points="14,1 26,7 26,21 14,27 2,21 2,7" stroke="rgba(0,180,255,0.55)" strokeWidth="1" fill="none"/>
-            <polygon points="14,5 23,10 23,18 14,23 5,18 5,10" stroke="rgba(0,150,220,0.25)" strokeWidth="0.5" fill="rgba(0,80,160,0.08)"/>
-            <text x="14" y="18" textAnchor="middle" fontFamily="monospace" fontSize="8" fontWeight="900" fill="rgba(0,220,255,0.9)">B</text>
-          </svg>
+  const CMDS = [
+    {label:"Register",    sub:"Enroll Biometric Subject",   Icon:UserPlus,  path:"/register",  hue:218, color:"hsl(218,100%,68%)"},
+    {label:"Database",    sub:"Access Records Vault",       Icon:Database,  path:"/database",  hue:196, color:"hsl(196,100%,62%)"},
+    {label:"Deep Search", sub:"OSINT Intelligence Query",   Icon:Search,    path:null,         hue:270, color:"hsl(270,80%,70%)", osint:true},
+    ...(userIsAdmin?[
+      {label:"Users",     sub:"Access Control",             Icon:Users,     path:"/users",     hue:36,  color:"hsl(36,100%,60%)"},
+      {label:"Reports",   sub:"Audit & Activity Log",       Icon:FileText,  path:"/reports",   hue:158, color:"hsl(158,80%,52%)"},
+      {label:"Create",    sub:"Generate Documents",         Icon:FileText,  path:"/create",    hue:218, color:"hsl(218,100%,68%)"},
+    ]:[{label:"Create",   sub:"Generate Documents",         Icon:FileText,  path:"/create",    hue:218, color:"hsl(218,100%,68%)"}]),
+  ] as {label:string;sub:string;Icon:any;path:string|null;hue:number;color:string;osint?:boolean}[];
+
+  const scanColor = isMatch?"hsl(158,80%,52%)":isNoMatch?"hsl(354,85%,60%)":isScanning?"hsl(36,100%,56%)":"hsl(218,100%,68%)";
+  const scanShadow = isMatch?"rgba(50,200,130,0.55)":isNoMatch?"rgba(220,60,60,0.55)":isScanning?"rgba(255,160,30,0.55)":"rgba(50,140,255,0.55)";
+
+  return (
+    <div style={{minHeight:"100vh",overflow:"hidden",background:"var(--c-void)",position:"relative",fontFamily:"'Outfit',-apple-system,sans-serif"}}>
+      <CyberBackground/>
+
+      {/* NAV */}
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:40,height:52,display:"flex",alignItems:"center",padding:"0 20px",gap:10,background:"rgba(2,4,15,0.65)",borderBottom:"1px solid rgba(255,255,255,0.07)",backdropFilter:"blur(52px) saturate(180%)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginRight:16,flexShrink:0}}>
+          <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,hsl(218,100%,56%),hsl(232,100%,68%))",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(40,100,255,0.4)"}}>
+            <Shield style={{width:16,height:16,color:"white"}}/>
+          </div>
           <div>
-            <div style={{fontFamily:"'Inter',sans-serif",fontSize:11,fontWeight:800,letterSpacing:"0.25em",color:"rgba(205,235,255,0.92)"}}>BIMS</div>
-            <div style={{fontFamily:"'Inter',sans-serif",fontSize:6.5,fontWeight:500,letterSpacing:"0.08em",color:"rgba(0,160,220,0.38)",textTransform:"uppercase" as const}}>Biometric Identity</div>
+            <div style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(210,235,255,0.95)"}}>Nexus<span style={{color:"hsl(218,100%,72%)",marginLeft:4}}>BIMS</span></div>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"rgba(80,140,220,0.42)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
           </div>
         </div>
-
-        {/* Status pills */}
-        <div className="nav-status-pills" style={{display:"flex",gap:4,flex:1,alignItems:"center"}}>
-          {([{l:"Online",H:145},{l:"Vault Secured",H:200},{l:"AES-256",H:32}] as const).map(({l,H},i)=>(
-            <div key={l} style={{display:"flex",alignItems:"center",gap:4,padding:"2px 7px",borderRadius:2,
-              background:`hsla(${H},80%,50%,0.06)`,border:`1px solid hsla(${H},80%,50%,0.18)`}}>
-              <div className="status-dot" style={{background:`hsl(${H},90%,58%)`,boxShadow:`0 0 5px hsl(${H},90%,55%)`,animationDelay:`${i*0.7}s`}}/>
-              <span style={{fontFamily:"'Inter',sans-serif",fontSize:8,fontWeight:500,letterSpacing:"0.06em",color:`hsla(${H},65%,68%,0.65)`}}>{l}</span>
+        <div className="nav-status-pills" style={{display:"flex",gap:5,flex:1,alignItems:"center"}}>
+          {([{l:"System Online",H:158},{l:"Vault Secured",H:218},{l:"AES-256",H:36}] as const).map(({l,H},i)=>(
+            <div key={l} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 9px",borderRadius:99,background:`hsla(${H},80%,50%,0.07)`,border:`1px solid hsla(${H},80%,50%,0.2)`}}>
+              <div className="status-dot" style={{background:`hsl(${H},90%,58%)`,boxShadow:`0 0 6px hsl(${H},90%,55%)`,animationDelay:`${i*0.8}s`}}/>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"0.05em",color:`hsla(${H},60%,70%,0.7)`}}>{l}</span>
             </div>
           ))}
         </div>
-
-        {/* Right controls */}
-        <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
-          <button className="btn-ghost" onClick={()=>setShowSupport(true)}>
-            <Headphones style={{width:11,height:11}}/><span className="nav-support-text">Support</span>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+          <button onClick={()=>setShowSupport(true)} className="btn-ghost" style={{fontSize:11.5,padding:"5px 12px",borderRadius:99}}><Headphones style={{width:12,height:12}}/><span className="nav-support-text">Support</span></button>
+          <button onClick={()=>setShowNotif(v=>!v)} style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.055)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(130,185,255,0.6)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.14)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.055)"}}>
+            <Bell style={{width:13,height:13}}/>{notifCount>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,100%,68%)",border:"1.5px solid var(--c-void)",boxShadow:"0 0 6px rgba(50,140,255,0.8)"}}/>}
           </button>
-          {/* Bell */}
-          <button onClick={()=>setShowNotif(v=>!v)} style={{position:"relative",width:28,height:28,borderRadius:2,background:"transparent",border:"1px solid rgba(0,150,220,0.15)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(0,175,230,0.45)"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,150,220,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-            <Bell style={{width:12,height:12}}/>
-            {notifCount>0&&<div style={{position:"absolute",top:3,right:3,width:5,height:5,borderRadius:"50%",background:"#00d4ff",border:"1px solid rgb(3,8,22)"}}/>}
+          <button onClick={()=>setShowDM(v=>!v)} style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.055)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(130,185,255,0.6)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.14)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.055)"}}>
+            <MessageSquare style={{width:13,height:13}}/>{dmUnread>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,70%)",border:"1.5px solid var(--c-void)"}}/>}
           </button>
-          {/* DM */}
-          <button onClick={()=>setShowDM(v=>!v)} style={{position:"relative",width:28,height:28,borderRadius:2,background:"transparent",border:"1px solid rgba(0,150,220,0.15)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(0,175,230,0.45)"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,150,220,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-            <MessageSquare style={{width:12,height:12}}/>
-            {dmUnread>0&&<div style={{position:"absolute",top:3,right:3,width:5,height:5,borderRadius:"50%",background:"hsl(270,80%,65%)",border:"1px solid rgb(3,8,22)"}}/>}
+          <div style={{width:1,height:20,background:"rgba(255,255,255,0.1)",margin:"0 2px"}}/>
+          <button onClick={()=>setShowUserMenu(v=>!v)} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 12px 4px 5px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.055)",border:"1px solid rgba(255,255,255,0.1)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.1)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.055)"}}>
+            <div style={{width:24,height:24,borderRadius:"50%",background:`${RC[RU]}20`,border:`2px solid ${RC[RU]}55`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:700,color:RC[RU]}}>{(currentUser?.username||"?")[0].toUpperCase()}</div>
+            <div><div style={{fontFamily:"'Outfit',sans-serif",fontSize:11,fontWeight:600,color:"rgba(210,235,255,0.9)",lineHeight:1.2}}>{currentUser?.username||"user"}</div><div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:RC[RU],letterSpacing:"0.05em",lineHeight:1}}>{(currentUser?.role||"analyst").toUpperCase()}</div></div>
           </button>
-          <div style={{width:1,height:18,background:"rgba(0,150,220,0.2)",margin:"0 2px"}}/>
-          {/* User */}
-          <button onClick={()=>setShowUserMenu(v=>!v)} style={{display:"flex",alignItems:"center",gap:6,padding:"2px 7px 2px 3px",borderRadius:2,cursor:"pointer",background:"transparent",border:"1px solid rgba(0,150,220,0.15)"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,150,220,0.09)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-            <div style={{width:22,height:22,borderRadius:3,background:`${RC[RU]}18`,border:`1px solid ${RC[RU]}44`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:700,color:RC[RU]}}>
-              {(currentUser?.username||"?")[0].toUpperCase()}
-            </div>
-            <div>
-              <div style={{fontFamily:"'Inter',sans-serif",fontSize:9.5,fontWeight:600,color:"rgba(200,230,255,0.88)"}}>{currentUser?.username||"user"}</div>
-              <div style={{fontFamily:"'Inter',sans-serif",fontSize:7,fontWeight:500,color:RC[RU],letterSpacing:"0.05em"}}>{(currentUser?.role||"analyst").toUpperCase()}</div>
-            </div>
-          </button>
-          {/* Logout */}
-          <button onClick={()=>{doLogout();window.location.href="/login";}} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 8px",borderRadius:2,cursor:"pointer",background:"transparent",border:"1px solid rgba(180,40,40,0.22)",fontFamily:"'Inter',sans-serif",fontSize:9,fontWeight:500,color:"rgba(200,70,70,0.52)"}} onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,100,100,0.88)";e.currentTarget.style.background="rgba(180,40,40,0.1)";}} onMouseLeave={e=>{e.currentTarget.style.color="rgba(200,70,70,0.52)";e.currentTarget.style.background="transparent";}}>
+          <button onClick={()=>{doLogout();window.location.href="/login";}} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",background:"transparent",border:"1px solid rgba(200,60,60,0.22)",fontFamily:"'Outfit',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(220,80,80,0.55)",transition:"all .18s"}} onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,110,110,0.92)";e.currentTarget.style.background="rgba(200,50,50,0.1)"}} onMouseLeave={e=>{e.currentTarget.style.color="rgba(220,80,80,0.55)";e.currentTarget.style.background="transparent"}}>
             <LogOut style={{width:11,height:11}}/> Logout
           </button>
         </div>
-
-        {/* User dropdown */}
         <AnimatePresence>
           {showUserMenu&&(
-            <motion.div initial={{opacity:0,y:-7}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-7}}
-              className="bio-card bio-corners"
-              style={{position:"absolute",top:48,right:12,minWidth:175,zIndex:60,padding:"7px 0",borderRadius:3,boxShadow:"0 20px 60px rgba(0,0,0,0.95)"}}>
-              <div style={{padding:"7px 12px 6px",borderBottom:"1px solid rgba(0,140,210,0.14)",marginBottom:3}}>
-                <div style={{fontFamily:"'Inter',sans-serif",fontSize:11,fontWeight:600,color:"rgba(200,230,255,0.88)"}}>{currentUser?.fullName||currentUser?.username}</div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"rgba(0,160,220,0.42)",marginTop:1}}>@{currentUser?.username}</div>
+            <motion.div initial={{opacity:0,y:-8,scale:0.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.96}} transition={{duration:0.18}}
+              className="bio-card" style={{position:"absolute",top:58,right:16,minWidth:180,zIndex:60,padding:"8px 0",borderRadius:14,boxShadow:"0 24px 64px rgba(0,0,0,0.9)"}}>
+              <div style={{padding:"8px 14px 7px",borderBottom:"1px solid rgba(60,120,255,0.12)",marginBottom:4}}>
+                <div style={{fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,color:"rgba(210,235,255,0.92)"}}>{currentUser?.fullName||currentUser?.username}</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"rgba(80,150,230,0.45)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
               {[{label:"My Profile",path:"/profile"},{label:"Settings",path:"/settings"}].map(({label,path})=>(
-                <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}} style={{width:"100%",textAlign:"left" as const,padding:"6px 12px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Inter',sans-serif",fontSize:10.5,color:"rgba(100,185,230,0.52)"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,150,220,0.1)";e.currentTarget.style.color="rgba(160,225,255,0.88)";}} onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(100,185,230,0.52)";}}>
-                  {label}
-                </button>
+                <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}} style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Outfit',sans-serif",fontSize:12.5,color:"rgba(110,180,240,0.55)",transition:"all .14s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(50,120,255,0.1)";e.currentTarget.style.color="rgba(170,220,255,0.92)"}} onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(110,180,240,0.55)"}}>{label}</button>
               ))}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          MAIN CONTENT — glass overlay sitting ON TOP of the image
-          Centered vertical stack: title → scanner → buttons → commands
-      ══════════════════════════════════════════════════════════════ */}
-      <div style={{position:"fixed",top:59,left:0,right:0,bottom:15,zIndex:2,
-        display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",
-        overflow:"hidden",padding:"0 16px 4px"}}>
+      {/* MAIN */}
+      <div style={{position:"fixed",top:52,left:0,right:0,bottom:0,zIndex:2,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"12px 20px 16px",overflow:"hidden"}}>
+        <motion.div initial={{opacity:0,y:20,scale:0.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:0.5,ease:[0.16,1,0.3,1]}}
+          style={{width:"100%",maxWidth:660,display:"flex",flexDirection:"column" as const,alignItems:"center",gap:14}}>
 
-        {/* Glass panel — semi-transparent container over the image */}
-        <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} transition={{delay:0.1,duration:0.5}}
-          style={{
-            display:"flex",flexDirection:"column" as const,alignItems:"center",
-            padding:"18px 24px 16px",
-            background:"rgba(1,5,18,0.58)",
-            backdropFilter:"blur(14px)",
-            border:"1px solid rgba(0,180,255,0.22)",
-            borderTop:"2px solid rgba(0,200,255,0.5)",
-            borderRadius:4,
-            boxShadow:"0 0 80px rgba(0,0,0,0.7),0 0 40px rgba(0,120,200,0.1),inset 0 0 40px rgba(0,60,120,0.06)",
-            width:"100%",maxWidth:640,
-          }}>
-
-          {/* Title row */}
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,alignSelf:"stretch"}}>
-            <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,rgba(0,180,255,0.35))"}}/>
-            <div style={{textAlign:"center" as const}}>
-              <div style={{fontFamily:"'Inter',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.3em",
-                color:"rgba(255,140,0,0.65)",textTransform:"uppercase" as const,marginBottom:3}}>
-                Biometric Identity Scanner
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:6,justifyContent:"center"}}>
-                <motion.div animate={{opacity:[1,0.15,1]}} transition={{duration:isScanning?0.4:2,repeat:Infinity}}
-                  style={{width:5,height:5,borderRadius:"50%",background:SC,boxShadow:`0 0 8px ${SC}`}}/>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fontWeight:500,letterSpacing:"0.12em",
-                  color:`${SC}cc`,textTransform:"uppercase" as const}}>
-                  {isScanning?"SCANNING BIOMETRIC DATA…":isMatch?"IDENTITY VERIFIED":isNoMatch?"NO MATCH FOUND":"SYSTEM READY"}
-                </span>
-              </div>
+          {/* Title */}
+          <div style={{textAlign:"center" as const,marginBottom:2}}>
+            <motion.h1 initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.1}}
+              style={{fontFamily:"'Syne',sans-serif",fontSize:"clamp(14px,2vw,22px)",fontWeight:800,letterSpacing:"0.12em",color:"rgba(205,232,255,0.96)",textTransform:"uppercase" as const,marginBottom:5}}>
+              Biometric Identity Scanner
+            </motion.h1>
+            <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
+              <motion.span animate={{opacity:[1,0.15,1]}} transition={{duration:isScanning?0.45:2.2,repeat:Infinity}}
+                style={{display:"inline-block",width:6,height:6,borderRadius:"50%",background:scanColor,boxShadow:`0 0 10px ${scanShadow}`}}/>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9.5,letterSpacing:"0.14em",color:`${scanColor}cc`,textTransform:"uppercase" as const}}>
+                {isScanning?"SCANNING BIOMETRIC DATA…":isMatch?"IDENTITY VERIFIED":isNoMatch?"NO MATCH FOUND":"SYSTEM READY"}
+              </span>
             </div>
-            <div style={{flex:1,height:1,background:"linear-gradient(90deg,rgba(0,180,255,0.35),transparent)"}}/>
           </div>
 
-          {/* ── SCANNER ── */}
-          <motion.div initial={{opacity:0,scale:0.75}} animate={{opacity:1,scale:1}}
-            transition={{delay:0.2,duration:0.6,ease:[0.34,1.4,0.64,1]}}
-            style={{position:"relative",marginBottom:14}}>
-
-            {/* Outer ambient */}
-            <motion.div style={{position:"absolute",inset:-36,borderRadius:"50%",pointerEvents:"none",
-              background:`radial-gradient(circle,${SC}25 0%,transparent 70%)`}}
-              animate={{scale:[0.92,1.08,0.92]}} transition={{duration:4,repeat:Infinity,ease:"easeInOut"}}/>
-
-            {/* Rotating arcs */}
-            <svg style={{position:"absolute",inset:-20,pointerEvents:"none",overflow:"visible"}} viewBox="0 0 280 280" width="280" height="280">
-              <motion.circle cx="140" cy="140" r="134" fill="none"
-                stroke={SC} strokeWidth="1.5" strokeDasharray="38 520" strokeLinecap="round"
-                animate={{rotate:[0,360]}} transition={{duration:isScanning?1.3:3.8,repeat:Infinity,ease:"linear"}}
-                style={{filter:`drop-shadow(0 0 6px ${SC})`}}/>
-              <motion.circle cx="140" cy="140" r="134" fill="none"
-                stroke={`${SC}44`} strokeWidth="0.8" strokeDasharray="9 32"
-                animate={{rotate:[360,0]}} transition={{duration:6.5,repeat:Infinity,ease:"linear"}}/>
-              {/* Tick marks */}
-              {Array.from({length:40}).map((_,i)=>{
-                const a=(i/40)*Math.PI*2-Math.PI/2;
-                const R=134, len=i%10===0?11:i%5===0?6:3;
-                return <line key={i}
-                  x1={140+(R-len)*Math.cos(a)} y1={140+(R-len)*Math.sin(a)}
-                  x2={140+R*Math.cos(a)} y2={140+R*Math.sin(a)}
-                  stroke={`${SC}${i%10===0?"bb":i%5===0?"66":"33"}`}
-                  strokeWidth={i%10===0?1.5:0.7}/>;
-              })}
+          {/* Scanner */}
+          <motion.div initial={{opacity:0,scale:0.7}} animate={{opacity:1,scale:1}} transition={{delay:0.18,duration:0.65,ease:[0.34,1.4,0.64,1]}} style={{position:"relative",flexShrink:0}}>
+            <motion.div animate={{scale:[0.88,1.1,0.88],opacity:[0.35,0.65,0.35]}} transition={{duration:3.5,repeat:Infinity,ease:"easeInOut"}}
+              style={{position:"absolute",inset:-40,borderRadius:"50%",background:`radial-gradient(circle,${scanShadow} 0%,transparent 68%)`,pointerEvents:"none"}}/>
+            <svg style={{position:"absolute",inset:-22,overflow:"visible",pointerEvents:"none"}} viewBox="0 0 284 284" width="284" height="284">
+              <motion.circle cx="142" cy="142" r="136" fill="none" stroke={scanColor} strokeWidth="1.8" strokeDasharray="42 520" strokeLinecap="round"
+                style={{filter:`drop-shadow(0 0 8px ${scanShadow})`}}
+                animate={{rotate:[0,360]}} transition={{duration:isScanning?1.1:3.5,repeat:Infinity,ease:"linear"}}/>
+              <motion.circle cx="142" cy="142" r="136" fill="none" stroke={`${scanColor}38`} strokeWidth="0.8" strokeDasharray="8 28"
+                animate={{rotate:[360,0]}} transition={{duration:7,repeat:Infinity,ease:"linear"}}/>
+              {Array.from({length:36}).map((_,i)=>{const a=(i/36)*Math.PI*2-Math.PI/2,R=136,len=i%9===0?12:i%3===0?6:3;return<line key={i} x1={142+(R-len)*Math.cos(a)} y1={142+(R-len)*Math.sin(a)} x2={142+R*Math.cos(a)} y2={142+R*Math.sin(a)} stroke={`${scanColor}${i%9===0?"bb":i%3===0?"55":"28"}`} strokeWidth={i%9===0?1.4:0.6}/>;})}
+              {[0,90,180,270].map(deg=>{const a=deg*Math.PI/180;return<line key={deg} x1={142+130*Math.cos(a)} y1={142+130*Math.sin(a)} x2={142+150*Math.cos(a)} y2={142+150*Math.sin(a)} stroke={`${scanColor}66`} strokeWidth="1.5" strokeLinecap="round"/>;})}
             </svg>
-
-            {/* MAIN DISC */}
-            <div style={{
-              width:240,height:240,borderRadius:"50%",
-              position:"relative" as const,overflow:"hidden",
-              background:`radial-gradient(circle at 38% 34%,rgba(${isMatch?"0,110,60":isNoMatch?"90,15,15":isScanning?"90,55,0":"0,55,110"},0.35) 0%,rgba(1,5,20,0.92) 62%)`,
-              border:`2px solid ${SC}${isScanning?"bb":isMatch?"cc":isNoMatch?"aa":"44"}`,
-              boxShadow:`0 0 ${isScanning?100:55}px ${SC}${isScanning?"55":"22"},inset 0 0 ${isScanning?60:28}px ${SC}${isScanning?"10":"06"},0 0 0 1px ${SC}11`,
-              transition:"all 0.55s ease",
-            }}>
-              {/* Dot grid */}
-              <div style={{position:"absolute",inset:0,borderRadius:"50%",
-                backgroundImage:`radial-gradient(circle,${SC}${isScanning?"22":"0d"} 1px,transparent 1px)`,
-                backgroundSize:"14px 14px",pointerEvents:"none"}}/>
-              {/* Crosshairs */}
-              <div style={{position:"absolute",top:"50%",left:14,right:14,height:"0.5px",transform:"translateY(-50%)",
-                background:`linear-gradient(90deg,transparent,${SC}${isScanning?"33":"0f"},transparent)`,pointerEvents:"none"}}/>
-              <div style={{position:"absolute",left:"50%",top:14,bottom:14,width:"0.5px",transform:"translateX(-50%)",
-                background:`linear-gradient(180deg,transparent,${SC}${isScanning?"33":"0f"},transparent)`,pointerEvents:"none"}}/>
-
-              {/* Scan beam */}
-              {isScanning&&(
-                <motion.div style={{position:"absolute",left:0,right:0,height:2.5,
-                  background:`linear-gradient(90deg,transparent,${SC}ee,rgba(255,255,255,0.92),${SC}ee,transparent)`,
-                  boxShadow:`0 0 18px ${SC},0 0 38px ${SC}88`,borderRadius:2}}
-                  initial={{top:"6%"}} animate={{top:["6%","92%","6%"]}}
-                  transition={{duration:1.15,repeat:Infinity,ease:"easeInOut"}}/>
-              )}
-
-              {/* Fingerprint + state */}
-              <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column" as const,
-                alignItems:"center",justifyContent:"center",gap:10}}>
-                <motion.div animate={isScanning?{scale:[1,1.1,1]}:{scale:1}} transition={{duration:0.68,repeat:Infinity}}>
-                  <Fingerprint style={{width:74,height:74,color:SC,
-                    filter:`drop-shadow(0 0 ${isScanning?28:15}px ${SC}) drop-shadow(0 0 ${isScanning?56:30}px ${SC}77)`,
-                    transition:"all 0.5s ease"}}/>
-                </motion.div>
-                <AnimatePresence mode="wait">
-                  {isIdle&&<motion.div key="i" initial={{opacity:0,y:5}} animate={{opacity:1,y:0}} exit={{opacity:0}} style={{textAlign:"center" as const}}>
-                    <motion.p animate={{opacity:[1,0.2,1]}} transition={{duration:2.5,repeat:Infinity}}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"0.14em",color:"rgba(0,195,250,0.55)",textTransform:"uppercase" as const,margin:0}}>Place Finger</motion.p>
-                  </motion.div>}
-                  {isScanning&&<motion.div key="s" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-                    <motion.p animate={{opacity:[1,0.08,1]}} transition={{duration:0.38,repeat:Infinity}}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.14em",color:"rgba(255,165,0,0.92)",textTransform:"uppercase" as const,margin:0}}>Scanning…</motion.p>
-                  </motion.div>}
-                  {isMatch&&<motion.div key="m" initial={{opacity:0,scale:0.7}} animate={{opacity:1,scale:1}} exit={{opacity:0}}>
-                    <p style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.14em",color:"#00e87a",textTransform:"uppercase" as const,margin:0}}>✓ Verified</p>
-                  </motion.div>}
-                  {isNoMatch&&<motion.div key="n" initial={{opacity:0,scale:0.7}} animate={{opacity:1,scale:1}} exit={{opacity:0}}>
-                    <p style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.14em",color:"#ff3b3b",textTransform:"uppercase" as const,margin:0}}>✕ No Match</p>
-                  </motion.div>}
-                </AnimatePresence>
-              </div>
-
-              {/* Bottom strip */}
-              <div style={{position:"absolute",bottom:0,left:0,right:0,height:18,
-                background:"rgba(0,2,12,0.8)",borderTop:`1px solid ${SC}22`,
-                display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 12px"}}>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:6.5,fontWeight:600,letterSpacing:"0.12em",color:`${SC}66`}}>SYS·BIO·01</span>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:6.5,fontWeight:600,letterSpacing:"0.1em",color:`${SC}66`}}>
-                  {isScanning?"ACTIVE":isMatch?"VERIFIED":isNoMatch?"REJECTED":"STANDBY"}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ── SCAN BUTTON ── */}
-          <motion.button onClick={handleScan} disabled={!isIdle}
-            initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.3}}
-            whileHover={isIdle?{scale:1.04,y:-2}:{}} whileTap={isIdle?{scale:0.97}:{}}
-            style={{
-              marginBottom:14,width:200,height:38,borderRadius:2,
-              cursor:isIdle?"pointer":"not-allowed",
-              position:"relative" as const,overflow:"hidden",
-              background:isIdle?"rgba(0,100,165,0.22)":"rgba(1,5,18,0.5)",
-              border:isIdle?"1px solid rgba(0,200,255,0.48)":"1px solid rgba(0,80,130,0.18)",
-              boxShadow:isIdle?"0 0 22px rgba(0,190,255,0.18),inset 0 0 20px rgba(0,130,200,0.06)":"none",
-              display:"flex",alignItems:"center",justifyContent:"center",gap:9,
-              fontFamily:"'Inter',sans-serif",fontSize:11,fontWeight:700,letterSpacing:"0.1em",
-              textTransform:"uppercase" as const,
-              color:isIdle?"rgba(0,215,255,0.92)":"rgba(0,100,150,0.38)",
-              transition:"all 0.3s ease"}}>
-            {isIdle&&<motion.div style={{position:"absolute" as const,inset:0,background:"linear-gradient(105deg,transparent 20%,rgba(0,200,255,0.06) 50%,transparent 80%)"}} animate={{x:["-100%","110%"]}} transition={{duration:2.8,repeat:Infinity,repeatDelay:0.8}}/>}
-            <Fingerprint style={{width:14,height:14,flexShrink:0,position:"relative" as const}}/>
-            <span style={{position:"relative" as const}}>{isIdle?"Initiate Scan":isScanning?"Processing…":"Complete"}</span>
-          </motion.button>
-
-          {/* ── COMMAND GRID — 3 columns ── */}
-          <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.36}}
-            style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5,width:"100%"}}>
-            {CMDS.map(({label,sub,Icon,path,hue,osint},idx)=>(
-              <motion.button key={label}
-                onClick={()=>path?navigate(path):setShowDeepSearch(true)}
-                initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.4+idx*0.04}}
-                whileHover={{y:-2,scale:1.03}} whileTap={{scale:0.97}}
-                style={{cursor:"pointer",outline:"none",border:"none",background:"transparent",padding:0}}>
-                <div style={{
-                  padding:"9px 10px 8px",borderRadius:2,textAlign:"left" as const,
-                  background:"rgba(1,5,18,0.75)",backdropFilter:"blur(10px)",
-                  border:`1px solid hsla(${hue},80%,55%,0.14)`,
-                  borderTop:`2px solid hsla(${hue},80%,55%,${idx===0||idx===3?0.55:0.28})`,
-                  boxShadow:"0 4px 20px rgba(0,0,0,0.5)",
-                  position:"relative" as const,overflow:"hidden",
-                  transition:"all 0.14s ease",
-                }}
-                onMouseEnter={e=>{
-                  const el=e.currentTarget as HTMLElement;
-                  el.style.background="rgba(2,8,26,0.92)";
-                  el.style.borderTopColor=`hsla(${hue},85%,58%,0.75)`;
-                  el.style.boxShadow=`0 8px 28px rgba(0,0,0,0.65),0 0 16px hsla(${hue},80%,55%,0.12)`;
-                }}
-                onMouseLeave={e=>{
-                  const el=e.currentTarget as HTMLElement;
-                  el.style.background="rgba(1,5,18,0.75)";
-                  el.style.borderTopColor=`hsla(${hue},80%,55%,${idx===0||idx===3?0.55:0.28})`;
-                  el.style.boxShadow="0 4px 20px rgba(0,0,0,0.5)";
-                }}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
-                    <div style={{width:24,height:24,borderRadius:3,flexShrink:0,
-                      background:`hsla(${hue},75%,52%,0.12)`,border:`1px solid hsla(${hue},75%,55%,0.22)`,
-                      display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {Icon?<Icon style={{width:11,height:11,color:`hsl(${hue},80%,65%)`}}/>:<span style={{fontSize:11,color:`hsl(${hue},80%,65%)`}}>✦</span>}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap" as const}}>
-                        <span style={{fontFamily:"'Inter',sans-serif",fontSize:10,fontWeight:700,color:"rgba(200,230,255,0.92)"}}>{label}</span>
-                        {osint&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:6,fontWeight:700,padding:"1px 3px",borderRadius:2,color:`hsl(${hue},80%,65%)`,background:`hsla(${hue},80%,52%,0.15)`,border:`1px solid hsla(${hue},80%,52%,0.3)`}}>OSINT</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{fontFamily:"'Inter',sans-serif",fontSize:8,color:`hsla(${hue},35%,60%,0.42)`,lineHeight:1.3}}>{sub}</div>
-                  <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,
-                    background:`linear-gradient(90deg,transparent,hsla(${hue},75%,55%,0.28),transparent)`}}/>
-                </div>
-              </motion.button>
-            ))}
-          </motion.div>
-
-        </motion.div>
-      </div>
-
-      {/* ══ DEEP SEARCH MODAL ══ */}
-      <AnimatePresence>
-        {showDeepSearch&&(
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            className="fixed inset-0 z-50 flex items-start justify-center"
-            style={{paddingTop:74,paddingLeft:16,paddingRight:16,background:"rgba(1,3,14,0.88)",backdropFilter:"blur(12px)"}}
-            onClick={()=>{setShowDeepSearch(false);setDsInput("");setDsResults(null);setDsImageData(null);setDsTab("text");}}>
-            <motion.div initial={{scale:0.94,y:14}} animate={{scale:1,y:0}} exit={{scale:0.94,y:14}}
-              className="w-full max-w-3xl bio-card bio-corners"
-              style={{borderRadius:3,overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,0.95)"}}
-              onClick={e=>e.stopPropagation()}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 18px",borderBottom:"1px solid rgba(0,145,210,0.14)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:32,height:32,borderRadius:3,background:"rgba(70,0,160,0.14)",border:"1px solid rgba(110,0,240,0.28)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <Search style={{width:14,height:14,color:"rgba(160,100,255,0.88)"}}/>
-                  </div>
-                  <div>
-                    <div style={{fontFamily:"'Inter',sans-serif",fontSize:13,fontWeight:700,color:"rgba(200,230,255,0.92)"}}>Deep Search</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:7.5,color:"rgba(100,165,215,0.45)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>OSINT · Social Media · Network Intelligence</div>
-                  </div>
-                </div>
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  {(["text","image"] as const).map(tab=>(
-                    <button key={tab} onClick={()=>setDsTab(tab)} style={{padding:"3px 11px",borderRadius:2,cursor:"pointer",fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:500,background:dsTab===tab?"rgba(0,135,205,0.14)":"transparent",border:dsTab===tab?"1px solid rgba(0,185,235,0.38)":"1px solid rgba(0,105,155,0.2)",color:dsTab===tab?"rgba(0,215,255,0.88)":"rgba(80,160,210,0.42)"}}>{tab==="text"?"Text":"Face"}</button>
-                  ))}
-                  <button onClick={()=>{setShowDeepSearch(false);setDsInput("");setDsResults(null);setDsImageData(null);setDsTab("text");}} style={{width:26,height:26,borderRadius:2,cursor:"pointer",background:"transparent",border:"1px solid rgba(0,105,155,0.18)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(80,160,210,0.42)"}}>
-                    <X style={{width:11,height:11}}/>
-                  </button>
-                </div>
-              </div>
-              {dsTab==="text"&&(
-                <div style={{padding:"12px 18px",borderBottom:"1px solid rgba(0,115,165,0.12)"}}>
-                  <div style={{display:"flex",gap:4,marginBottom:9}}>
-                    {([{key:"name",label:"Full Name"},{key:"username",label:"Username"},{key:"email",label:"Email"},{key:"phone",label:"Phone"}] as const).map(t=>(
-                      <button key={t.key} onClick={()=>{setDsType(t.key);setDsInput("");setDsResults(null);}} style={{flex:1,padding:"4px",borderRadius:2,cursor:"pointer",fontFamily:"'IBM Plex Mono',monospace",fontSize:8.5,background:dsType===t.key?"rgba(0,135,205,0.12)":"transparent",border:dsType===t.key?"1px solid rgba(0,185,235,0.32)":"1px solid rgba(0,105,155,0.16)",color:dsType===t.key?"rgba(0,215,255,0.82)":"rgba(80,160,210,0.38)"}}>{t.label}</button>
-                    ))}
-                  </div>
-                  <div style={{display:"flex",gap:8}}>
-                    <div style={{position:"relative",flex:1}}>
-                      <Search style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",width:12,height:12,color:"rgba(0,160,220,0.32)",pointerEvents:"none"}}/>
-                      <input value={dsInput} onChange={e=>{setDsInput(e.target.value);setDsResults(null);}} onKeyDown={e=>e.key==="Enter"&&dsInput.trim()&&handleDeepSearch()}
-                        placeholder={dsType==="name"?"e.g. John Smith":dsType==="username"?"e.g. john_smith":dsType==="email"?"e.g. john@email.com":"e.g. +254700000000"}
-                        autoFocus className="input-cyber" style={{paddingLeft:30}}/>
-                    </div>
-                    <button id="ds-search-btn" onClick={handleDeepSearch} disabled={!dsInput.trim()||dsLoading}
-                      className={dsInput.trim()&&!dsLoading?"btn-bio":""}
-                      style={{padding:"0 14px",cursor:dsInput.trim()&&!dsLoading?"pointer":"not-allowed",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,whiteSpace:"nowrap" as const,
-                        background:dsInput.trim()&&!dsLoading?undefined:"transparent",
-                        border:dsInput.trim()&&!dsLoading?undefined:"1px solid rgba(0,90,140,0.16)",
-                        color:dsInput.trim()&&!dsLoading?undefined:"rgba(0,110,155,0.32)"}}>
-                      {dsLoading?"Searching…":"Search"}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {dsTab==="image"&&(
-                <div style={{padding:"12px 18px",borderBottom:"1px solid rgba(0,115,165,0.12)"}}>
-                  <input ref={dsImageRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onloadend=()=>{setDsImageData(reader.result as string);setDsImageResults(null);};reader.readAsDataURL(file);e.target.value="";}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:14}}>
-                    <div onClick={()=>dsImageRef.current?.click()} style={{width:76,height:76,flexShrink:0,cursor:"pointer",borderRadius:3,overflow:"hidden",border:dsImageData?"1px solid rgba(0,225,140,0.4)":"1px dashed rgba(0,160,220,0.3)",background:"rgba(1,4,16,0.9)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {dsImageData?<img src={dsImageData} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> :<div style={{textAlign:"center" as const}}><Camera style={{width:20,height:20,color:"rgba(0,160,220,0.32)",margin:"0 auto 3px"}}/><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"rgba(0,160,220,0.32)"}}>Upload</div></div>}
-                    </div>
-                    <div style={{flex:1}}>
-                      <div style={{fontFamily:"'Inter',sans-serif",fontSize:12,fontWeight:600,color:"rgba(195,228,255,0.88)",marginBottom:4}}>Facial Recognition OSINT</div>
-                      <div style={{fontFamily:"'Inter',sans-serif",fontSize:10,color:"rgba(80,160,215,0.42)",marginBottom:9,lineHeight:1.5}}>Upload a photo to analyse features and generate targeted OSINT search queries.</div>
-                      <button onClick={()=>{if(dsImageData)handleImageDeepSearch(dsImageData);}} disabled={!dsImageData||dsImageLoading}
-                        className={dsImageData&&!dsImageLoading?"btn-bio":""}
-                        style={{padding:"5px 13px",cursor:dsImageData&&!dsImageLoading?"pointer":"not-allowed",fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,
-                          background:dsImageData&&!dsImageLoading?undefined:"transparent",border:dsImageData&&!dsImageLoading?undefined:"1px solid rgba(0,90,140,0.16)",color:dsImageData&&!dsImageLoading?undefined:"rgba(0,110,155,0.32)"}}>
-                        {dsImageLoading?`${dsImageStage||"Analysing…"}`:"Analyse Face"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div style={{maxHeight:340,overflowY:"auto" as const,padding:"11px 18px"}}>
-                {dsLoading&&<div style={{textAlign:"center" as const,padding:"20px 0",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"rgba(80,160,215,0.42)"}}>Searching…</div>}
-                {dsResults?.error&&<div style={{textAlign:"center" as const,padding:"16px 0",color:"rgba(220,70,70,0.8)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10}}>Search failed. Try again.</div>}
-                {dsResults?.platforms&&(
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:7}}>
-                    {dsResults.platforms.map((pl:any,i:number)=>(
-                      <div key={i} className="bio-card" style={{borderRadius:3,padding:"8px 10px"}}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fontWeight:700,letterSpacing:"0.1em",color:`hsl(${pl.color})`,marginBottom:5,textTransform:"uppercase" as const}}>{pl.icon} {pl.name}</div>
-                        {pl.links.map((lk:any,j:number)=>(
-                          <a key={j} href={lk.url} target="_blank" rel="noopener noreferrer" style={{display:"block",padding:"2.5px 0",fontFamily:"'Inter',sans-serif",fontSize:9.5,color:"rgba(100,170,220,0.55)",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}} onMouseEnter={e=>(e.currentTarget.style.color=`hsl(${pl.color})`)} onMouseLeave={e=>(e.currentTarget.style.color="rgba(100,170,220,0.55)")}>&#8599; {lk.label}</a>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {dsImageResults?.ok&&(
-                  <div>
-                    <div className="bio-card" style={{borderRadius:3,padding:"8px 11px",marginBottom:9}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fontWeight:700,color:"rgba(0,215,255,0.75)",marginBottom:3}}>FACIAL ANALYSIS</div>
-                      <p style={{fontFamily:"'Inter',sans-serif",fontSize:11,color:"rgba(160,215,245,0.7)",margin:0}}>{dsImageResults.face?.description}</p>
-                    </div>
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:4}}>
-                      {dsImageResults.searchHits?.map((hit:any,i:number)=>(
-                        <a key={i} href={hit.url} target="_blank" rel="noopener noreferrer" className="bio-card" style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",borderRadius:3,textDecoration:"none"}} onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderTopColor="rgba(0,200,255,0.5)";}} onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderTopColor="rgba(0,200,255,0.32)";}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:7.5,fontWeight:700,color:`hsl(${hit.color})`,minWidth:52,flexShrink:0,textTransform:"uppercase" as const}}>{hit.platform}</span>
-                          <span style={{fontFamily:"'Inter',sans-serif",fontSize:9.5,color:"rgba(100,170,220,0.55)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,flex:1}}>{hit.label}</span>
-                          <ExternalLink style={{width:9,height:9,flexShrink:0,color:"rgba(0,135,180,0.35)"}}/>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            <motion.div className={isScanning?"scanner-pulse":""} style={{width:238,height:238,borderRadius:"50%",background:isMatch?"radial-gradient(circle at 35% 35%,hsla(158,80%,10%,0.96),hsla(158,80%,3%,0.98))":isNoMatch?"radial-gradient(circle at 35% 35%,hsla(354,80%,10%,0.96),hsla(354,80%,3%,0.98))":"radial-gradient(circle at 35% 35%,rgba(10,24,66,0.97),rgba(3,8,28,0.99))",border:`2px solid ${scanColor}55`,boxShadow:`0 0 60px ${scanShadow}22,inset 0 0 60px rgba(0,0,0,0.5)`,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:10,position:"relative",overflow:"hidden",transition:"all 0.4s"}}>
+              <div style={{position:"absolute",inset:22,borderRadius:"50%",border:`1px solid ${scanColor}28`,pointerEvents:"none"}}/>
+              <div style={{position:"absolute",inset:44,borderRadius:"50%",border:`1px dashed ${scanColor}18`,pointerEvents:"none"}}/>
+              {isScanning&&<motion.div animate={{y:["-50%","150%"]}} transition={{duration:0.85,repeat:Infinity,ease:"linear"}} style={{position:"absolute",left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${scanColor}cc,transparent)`,boxShadow:`0 0 12px ${scanShadow}`}}/>}
+              <motion.div animate={isScanning?{scale:[1,1.08,1],opacity:[0.78,1,0.78]}:{scale:1,opacity:1}} transition={{duration:0.85,repeat:isScanning?Infinity:0}}>
+                <Fingerprint style={{width:68,height:68,color:scanColor,filter:`drop-shadow(0 0 18px ${scanShadow})`}}/>
+              </motion.div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,letterSpacing:"0.22em",color:`${scanColor}80`,textTransform:"uppercase" as const}}>
+                {isScanning?"SCANNING…":isMatch?"VERIFIED":isNoMatch?"NO MATCH":"PLACE FINGER"}
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
 
+          {/* Scan button */}
+          <motion.button initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0.3}} onClick={handleScan} disabled={!isIdle}
+            whileHover={isIdle?{scale:1.015,y:-1}:{}} whileTap={isIdle?{scale:0.98}:{}}
+            style={{display:"flex",alignItems:"center",justifyContent:"center",gap:9,padding:"12px 44px",borderRadius:13,fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase" as const,color:isIdle?"white":isScanning?"rgba(255,160,40,0.9)":isMatch?"hsl(158,80%,65%)":"hsl(354,85%,70%)",background:isIdle?"linear-gradient(135deg,hsl(218,100%,56%),hsl(232,100%,68%))":isScanning?"linear-gradient(135deg,rgba(200,120,20,0.18),rgba(160,80,10,0.1))":isMatch?"linear-gradient(135deg,rgba(30,160,90,0.18),rgba(20,100,60,0.1))":"linear-gradient(135deg,rgba(180,40,40,0.18),rgba(120,20,20,0.1))",border:isIdle?"0":`1px solid ${scanColor}44`,boxShadow:isIdle?"0 6px 28px rgba(30,90,255,0.45),0 2px 8px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.18)":`0 0 24px ${scanShadow}20`,cursor:isIdle?"pointer":"default",opacity:isIdle?1:0.88,transition:"all 0.3s",width:"100%",maxWidth:340}}>
+            {isScanning?<><div style={{width:14,height:14,borderRadius:"50%",border:`2px solid ${scanColor}44`,borderTopColor:scanColor,animation:"spin 0.7s linear infinite"}}/> SCANNING...</>:<><Fingerprint style={{width:18,height:18}}/> INITIATE SCAN</>}
+          </motion.button>
+
+          {/* Command grid */}
+          <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.4}}
+            style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,width:"100%"}}>
+            {CMDS.map(({label,sub,Icon,path,hue,color,osint},i)=>(
+              <motion.button key={label} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} transition={{delay:0.45+i*0.04}}
+                whileHover={{y:-3,scale:1.022}} whileTap={{scale:0.97}}
+                onClick={()=>osint?setShowDeepSearch(true):path?navigate(path):null}
+                style={{display:"flex",flexDirection:"column" as const,alignItems:"flex-start",padding:"13px 14px",background:"linear-gradient(160deg,rgba(8,18,50,0.92),rgba(4,12,36,0.90))",border:`1px solid hsla(${hue},80%,60%,0.15)`,borderTop:`1.5px solid hsla(${hue},80%,60%,0.32)`,borderRadius:13,cursor:"pointer",transition:"all 0.22s",boxShadow:"0 4px 20px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)",backdropFilter:"blur(20px)",position:"relative" as const,overflow:"hidden",textAlign:"left" as const}}
+                onMouseEnter={e=>{const el=e.currentTarget as HTMLElement;el.style.borderTopColor=`hsla(${hue},80%,65%,0.62)`;el.style.boxShadow=`0 8px 28px rgba(0,0,0,0.5),0 0 18px hsla(${hue},80%,50%,0.11),inset 0 1px 0 rgba(255,255,255,0.07)`;}}
+                onMouseLeave={e=>{const el=e.currentTarget as HTMLElement;el.style.borderTopColor=`hsla(${hue},80%,60%,0.32)`;el.style.boxShadow="0 4px 20px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)";}}>
+                <div style={{position:"absolute",top:0,right:0,width:44,height:44,background:`radial-gradient(circle at top right,hsla(${hue},80%,60%,0.1),transparent 60%)`,pointerEvents:"none"}}/>
+                <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:5}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`hsla(${hue},80%,55%,0.13)`,border:`1px solid hsla(${hue},80%,60%,0.26)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {Icon&&<Icon style={{width:13,height:13,color}}/>}
+                  </div>
+                  <span style={{fontFamily:"'Syne',sans-serif",fontSize:12.5,fontWeight:700,color:"rgba(215,235,255,0.92)",letterSpacing:"0.02em"}}>{label}</span>
+                  {osint&&<span style={{fontSize:7.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"hsla(270,80%,55%,0.2)",border:"1px solid hsla(270,80%,65%,0.32)",color:"hsl(270,80%,72%)",letterSpacing:"0.06em"}}>OSINT</span>}
+                </div>
+                <span style={{fontFamily:"'Outfit',sans-serif",fontSize:10,color:"rgba(110,165,220,0.48)",lineHeight:1.3}}>{sub}</span>
+              </motion.button>
+            ))}
+          </motion.div>
+        </motion.div>
+      </div>
+    </motion.div>
+    </motion.div>
+
+      <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)} currentUser={currentUser}/>
+      <DirectMessagePanel open={showDM} onClose={()=>setShowDM(false)} currentUser={currentUser}/>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
       {/* ══ NOTIFICATION PANEL ══ */}
       <AnimatePresence>
         {showNotif&&(
@@ -938,9 +692,7 @@ Respond ONLY with valid JSON (no markdown):
         )}
       </AnimatePresence>
 
-      {showSupport&&<TechSupportModal onClose={()=>setShowSupport(false)} allowManualReporter={false}/>}
-      {showDM&&<DirectMessagePanel onClose={()=>setShowDM(false)}/>}
-      </div>
+    </div>
   );
 };
 
