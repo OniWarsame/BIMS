@@ -1,15 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Fingerprint, Database, UserPlus, Wifi, Server, Shield, LogOut, Search, X, ExternalLink, Camera, Users, FileText, Headphones, Bell, CheckCircle, Clock, AlertTriangle, MessageSquare } from "lucide-react";
+import { Fingerprint, Database, UserPlus, Shield, LogOut, Search, X, Users, FileText, Headphones, Bell, MessageSquare } from "lucide-react";
 import CyberBackground from "@/components/CyberBackground";
 import TechSupportModal from "@/components/TechSupportModal";
-import DirectMessagePanel, { unreadCount, getDMs } from "@/components/DirectMessagePanel";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Separator } from "@/components/ui/separator";
+import DirectMessagePanel, { unreadCount } from "@/components/DirectMessagePanel";
 import { generateFingerprintHash, getRecords } from "@/lib/biometric-store";
 import { doLogout, getCurrentUser, isAdmin } from "@/pages/Login";
 
@@ -161,7 +156,6 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
 const Index = () => {
   const navigate = useNavigate();
   const [scanState, setScanState] = useState<"idle"|"scanning"|"match"|"no-match">("idle");
-  const [statusText, setStatusText] = useState("SYSTEM READY — AWAITING BIOMETRIC INPUT");
   const [showDeepSearch, setShowDeepSearch] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
@@ -183,7 +177,6 @@ const Index = () => {
   const getTickets = () => {
     try { return JSON.parse(localStorage.getItem("bims_tickets") || "[]"); } catch { return []; }
   };
-  const saveTickets = (tickets: any[]) => localStorage.setItem("bims_tickets", JSON.stringify(tickets));
 
   // Admin notification: unread tickets (no response yet)
   // User notification: tickets with admin response not yet seen
@@ -448,20 +441,17 @@ Respond ONLY with valid JSON (no markdown):
   const handleScan = () => {
     if (scanState !== "idle") return;
     setScanState("scanning");
-    setStatusText("PROCESSING BIOMETRIC DATA...");
     setTimeout(() => {
       const records = getRecords();
       const shouldMatch = Math.random() > 0.5 && records.length > 0;
       if (shouldMatch) {
         const record = records[Math.floor(Math.random() * records.length)];
         setScanState("match");
-        setStatusText(`IDENTITY VERIFIED — ${record.surname}, ${record.name}`);
         setTimeout(() => navigate(`/result/${record.id}`), 1500);
       } else {
         generateFingerprintHash();
         setScanState("no-match");
-        setStatusText("NO RECORD FOUND");
-        setTimeout(() => { setScanState("idle"); setStatusText("SYSTEM READY — AWAITING BIOMETRIC INPUT"); }, 5000);
+        setTimeout(() => { setScanState("idle"); }, 5000);
       }
     }, 2500);
   };
