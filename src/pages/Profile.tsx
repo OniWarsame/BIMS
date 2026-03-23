@@ -120,12 +120,5 @@ export default function Profile() {
           </div>
         )}
       </div>
-
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 32px",background:"rgba(8,15,30,0.92)",borderTop:"1px solid rgba(203,178,120,0.2)",...mono,fontSize:11,fontWeight:700}}>
-        <span style={{color:"#e8c870"}}>BIMS v1.0 · © 2026&nbsp;<a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"#f0dc90",textDecoration:"underline"}}>KUMI</a></span>
-        <span style={{margin:"0 16px",width:4,height:4,borderRadius:"50%",background:"rgba(203,178,120,0.4)",display:"inline-block"}}/>
-        <span style={{color:"hsl(195,80%,72%)"}}>USER PROFILE</span>
-      </div>
-    </div>
   );
 }

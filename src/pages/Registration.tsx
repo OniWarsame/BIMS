@@ -1086,16 +1086,7 @@ const Registration = () => {
             </div>
           )}
         </div>
-      </div>
-      <div className="fixed bottom-0 left-0 right-0 z-10 flex items-center justify-center px-6 py-1"
-        style={{ background:"hsla(25,15%,5%,0.88)", backdropFilter:"blur(20px)", borderTop:"1px solid hsla(35,65%,38%,0.25)" }}>
-        <div className="flex items-center gap-4 font-mono text-[9px] font-semibold">
-          <span style={{ color:"hsla(192,90%,62%,0.75)" }}>BIMS v1.0 · © 2026 <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{ color:"hsl(192,100%,68%)", textDecoration:"underline", textUnderlineOffset:"3px", textShadow:"0 0 8px hsla(38,90%,62%,0.45)" }}>KUMI</a></span>
-          <span className="w-1 h-1 rounded-full" style={{ background:"hsla(192,100%,55%,0.4)" }}/>
-          <span style={{ color:"hsla(38,65%,58%,0.6)" }}>ENCRYPTED CHANNEL</span>
-        </div>
-      </div>
-    </div>
+      </div></div>
   );
 };
 
