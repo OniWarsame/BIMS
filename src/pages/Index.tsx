@@ -58,7 +58,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
   if (!open) return (
     <button onClick={()=>{ setOpen(true); setText(isEdit ? (ticket.adminResponse||"") : ""); }}
       style={{
-        fontFamily:"'Orbitron',monospace", fontSize:8, fontWeight:700, letterSpacing:"0.14em",
+        fontFamily:"'Orbitron',sans-serif", fontSize:8, fontWeight:700, letterSpacing:"0.14em",
         padding:"5px 12px", borderRadius:6, cursor:"pointer",
         border:`1px solid ${isEdit?"hsla(192,100%,52%,0.4)":"hsla(142,80%,50%,0.55)"}`,
         background:isEdit?"hsla(192,100%,52%,0.08)":"hsla(142,80%,45%,0.1)",
@@ -84,7 +84,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
           border:"1px solid hsla(192,100%,52%,0.35)",
           borderRadius:7, outline:"none", resize:"none",
           color:"hsl(192,55%,94%)",
-          fontFamily:"'Rajdhani','Segoe UI',sans-serif",
+          fontFamily:"'Exo 2',sans-serif",
           fontSize:13, fontWeight:500, lineHeight:1.55,
           padding:"10px 12px", marginBottom:8,
           transition:"border-color .15s, box-shadow .15s"
@@ -94,7 +94,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
       />
 
       {/* hint */}
-      <div style={{fontFamily:"'Orbitron',monospace",fontSize:7,letterSpacing:"0.14em",
+      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:7,letterSpacing:"0.14em",
         color:"hsla(192,80%,55%,0.4)",marginBottom:8}}>
         💬 RESPONSE WILL ALSO BE SENT AS A DIRECT MESSAGE TO @{(ticket.reporter||"user").toUpperCase()}
       </div>
@@ -106,7 +106,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
           disabled={!text.trim() || sending || done}
           style={{
             flex:1, padding:"8px 0", borderRadius:7, cursor: text.trim()?"pointer":"not-allowed",
-            fontFamily:"'Orbitron',monospace", fontSize:9, fontWeight:800, letterSpacing:"0.18em",
+            fontFamily:"'Orbitron',sans-serif", fontSize:9, fontWeight:800, letterSpacing:"0.18em",
             display:"flex", alignItems:"center", justifyContent:"center", gap:7,
             border: done
               ? "1px solid hsla(142,90%,55%,0.55)"
@@ -138,7 +138,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
           <button onClick={()=>setOpen(false)}
             style={{
               padding:"8px 14px", borderRadius:7, cursor:"pointer",
-              fontFamily:"'Orbitron',monospace", fontSize:8, fontWeight:700, letterSpacing:"0.12em",
+              fontFamily:"'Orbitron',sans-serif", fontSize:8, fontWeight:700, letterSpacing:"0.12em",
               border:"1px solid hsla(192,40%,22%,0.3)",
               background:"transparent", color:"hsla(192,80%,55%,0.4)",
               transition:"all .15s"
@@ -511,7 +511,7 @@ Respond ONLY with valid JSON (no markdown):
   };
 
   return (
-    <div style={{minHeight:"100vh",overflow:"hidden",background:"hsl(220,55%,6%)",position:"relative",fontFamily:"'Outfit',-apple-system,sans-serif"}}>
+    <div style={{minHeight:"100vh",overflow:"hidden",background:"hsl(205,80%,4%)",position:"relative",fontFamily:"'Exo 2',-apple-system,sans-serif"}}>
       <CyberBackground/>
 
       {/* ─── NAV ─── */}
@@ -522,10 +522,10 @@ Respond ONLY with valid JSON (no markdown):
             <Shield style={{width:16,height:16,color:"white"}}/>
           </div>
           <div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(220,240,255,0.96)"}}>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(220,240,255,0.96)"}}>
               Nexus<span style={{color:"hsl(200,100%,68%)",marginLeft:4}}>BIMS</span>
             </div>
-            <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"rgba(80,150,220,0.45)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(80,150,220,0.45)",letterSpacing:"0.06em"}}>BIOMETRIC PLATFORM</div>
           </div>
         </div>
 
@@ -533,14 +533,14 @@ Respond ONLY with valid JSON (no markdown):
           {([{l:"Online",H:158},{l:"Secured",H:200},{l:"AES-256",H:36}] as const).map(({l,H},i)=>(
             <div key={l} style={{display:"flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:99,background:`hsla(${H},80%,50%,0.08)`,border:`1px solid hsla(${H},80%,50%,0.22)`}}>
               <div className="status-dot" style={{background:`hsl(${H},90%,58%)`,boxShadow:`0 0 5px hsl(${H},90%,55%)`,animationDelay:`${i*0.8}s`}}/>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:`hsla(${H},60%,70%,0.7)`}}>{l}</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:`hsla(${H},60%,70%,0.7)`}}>{l}</span>
             </div>
           ))}
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
           <button onClick={()=>setShowSupport(true)}
-            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",fontFamily:"'Outfit',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(140,195,255,0.75)",transition:"all .18s"}}
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",fontFamily:"'Exo 2',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(140,195,255,0.75)",transition:"all .18s"}}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,120,255,0.14)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Headphones style={{width:12,height:12}}/><span className="nav-support-text">Support</span>
@@ -550,30 +550,30 @@ Respond ONLY with valid JSON (no markdown):
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,120,255,0.14)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Bell style={{width:13,height:13}}/>
-            {notifCount>0 && <span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,100%,68%)",border:"1.5px solid hsl(220,55%,6%)"}}/>}
+            {notifCount>0 && <span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,100%,68%)",border:"1.5px solid hsl(205,80%,4%)"}}/>}
           </button>
           <button onClick={()=>setShowDM(v=>!v)}
             style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(140,185,255,0.65)",transition:"all .18s"}}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,120,255,0.14)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <MessageSquare style={{width:13,height:13}}/>
-            {dmUnread>0 && <span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,70%)",border:"1.5px solid hsl(220,55%,6%)"}}/>}
+            {dmUnread>0 && <span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,70%)",border:"1.5px solid hsl(205,80%,4%)"}}/>}
           </button>
           <div style={{width:1,height:20,background:"rgba(255,255,255,0.1)",margin:"0 2px"}}/>
           <button onClick={()=>setShowUserMenu(v=>!v)}
             style={{display:"flex",alignItems:"center",gap:8,padding:"4px 10px 4px 4px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",transition:"all .18s"}}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,120,255,0.1)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
-            <div style={{width:24,height:24,borderRadius:"50%",background:`${RC[RU]}22`,border:`2px solid ${RC[RU]}55`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:700,color:RC[RU]}}>
+            <div style={{width:24,height:24,borderRadius:"50%",background:`${RC[RU]}22`,border:`2px solid ${RC[RU]}55`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,color:RC[RU]}}>
               {(currentUser?.username||"?")[0].toUpperCase()}
             </div>
             <div>
-              <div style={{fontFamily:"'Outfit',sans-serif",fontSize:11,fontWeight:600,color:"rgba(210,235,255,0.92)",lineHeight:1.2}}>{currentUser?.username||"user"}</div>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:RC[RU],letterSpacing:"0.05em",lineHeight:1}}>{(currentUser?.role||"analyst").toUpperCase()}</div>
+              <div style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:600,color:"rgba(210,235,255,0.92)",lineHeight:1.2}}>{currentUser?.username||"user"}</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:RC[RU],letterSpacing:"0.05em",lineHeight:1}}>{(currentUser?.role||"analyst").toUpperCase()}</div>
             </div>
           </button>
           <button onClick={()=>{doLogout();window.location.href="/login";}}
-            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",background:"transparent",border:"1px solid rgba(200,60,60,0.25)",fontFamily:"'Outfit',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(220,80,80,0.6)",transition:"all .18s"}}
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:99,cursor:"pointer",background:"transparent",border:"1px solid rgba(200,60,60,0.25)",fontFamily:"'Exo 2',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(220,80,80,0.6)",transition:"all .18s"}}
             onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,110,110,0.95)";e.currentTarget.style.background="rgba(200,50,50,0.12)";}}
             onMouseLeave={e=>{e.currentTarget.style.color="rgba(220,80,80,0.6)";e.currentTarget.style.background="transparent";}}>
             <LogOut style={{width:11,height:11}}/> Logout
@@ -587,12 +587,12 @@ Respond ONLY with valid JSON (no markdown):
               exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.16}}
               style={{position:"absolute",top:58,right:16,minWidth:175,zIndex:60,padding:"8px 0",borderRadius:14,background:"rgba(4,12,32,0.97)",border:"1px solid rgba(40,120,255,0.25)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(30px)"}}>
               <div style={{padding:"8px 14px 7px",borderBottom:"1px solid rgba(40,120,255,0.12)",marginBottom:4}}>
-                <div style={{fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,color:"rgba(210,235,255,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"rgba(80,150,230,0.5)",marginTop:2}}>@{currentUser?.username}</div>
+                <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,color:"rgba(210,235,255,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(80,150,230,0.5)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
               {[{label:"My Profile",path:"/profile"},{label:"Settings",path:"/settings"}].map(({label,path})=>(
                 <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}}
-                  style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Outfit',sans-serif",fontSize:12.5,color:"rgba(120,185,245,0.6)",transition:"all .14s"}}
+                  style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Exo 2',sans-serif",fontSize:12.5,color:"rgba(120,185,245,0.6)",transition:"all .14s"}}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(40,120,255,0.1)";e.currentTarget.style.color="rgba(180,225,255,0.95)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(120,185,245,0.6)";}}>
                   {label}
@@ -609,7 +609,7 @@ Respond ONLY with valid JSON (no markdown):
 
           {/* Title */}
           <div style={{textAlign:"center" as const}}>
-            <h1 style={{fontFamily:"'Syne',sans-serif",fontSize:"clamp(15px,2.2vw,24px)",fontWeight:800,letterSpacing:"0.1em",color:"rgba(220,245,255,0.98)",textTransform:"uppercase" as const,margin:"0 0 6px"}}>
+            <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(15px,2.2vw,24px)",fontWeight:800,letterSpacing:"0.1em",color:"rgba(220,245,255,0.98)",textTransform:"uppercase" as const,margin:"0 0 6px"}}>
               Biometric Identity Scanner
             </h1>
             <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
@@ -618,7 +618,7 @@ Respond ONLY with valid JSON (no markdown):
                 transition={{duration:isScanning?0.45:2.2,repeat:Infinity}}
                 style={{display:"inline-block",width:6,height:6,borderRadius:"50%",background:scanColor,boxShadow:`0 0 10px ${scanGlow}`,flexShrink:0}}
               />
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:9.5,letterSpacing:"0.14em",color:`${scanColor}cc`,textTransform:"uppercase" as const}}>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,letterSpacing:"0.14em",color:`${scanColor}cc`,textTransform:"uppercase" as const}}>
                 {isScanning?"SCANNING…":isMatch?"IDENTITY VERIFIED":isNoMatch?"NO MATCH FOUND":"SYSTEM READY"}
               </span>
             </div>
@@ -721,7 +721,7 @@ Respond ONLY with valid JSON (no markdown):
                   filter:`drop-shadow(0 0 24px ${scanGlow}) drop-shadow(0 0 48px ${scanGlow}55)`}}/>
               </motion.div>
 
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
                 letterSpacing:"0.28em",color:`${scanColor}80`,textTransform:"uppercase" as const}}>
                 {isScanning?"SCANNING…":isMatch?"VERIFIED":isNoMatch?"NO MATCH":"PLACE FINGER"}
               </span>
@@ -740,7 +740,7 @@ Respond ONLY with valid JSON (no markdown):
             onClick={handleScan} disabled={!isIdle}
             whileHover={isIdle?{scale:1.015,y:-2}:{}} whileTap={isIdle?{scale:0.98}:{}}
             style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,
-              padding:"13px 48px",borderRadius:14,fontFamily:"'Syne',sans-serif",fontSize:15,fontWeight:700,
+              padding:"13px 48px",borderRadius:14,fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:700,
               letterSpacing:"0.1em",textTransform:"uppercase" as const,
               color:isIdle?"white":isScanning?"rgba(255,165,40,0.92)":isMatch?"hsl(158,80%,68%)":"hsl(354,85%,72%)",
               background:isIdle
@@ -792,12 +792,12 @@ Respond ONLY with valid JSON (no markdown):
                   <div style={{width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",background:`hsla(${hue},80%,55%,0.14)`,border:`1px solid hsla(${hue},80%,62%,0.32)`,borderRadius:8,boxShadow:`0 0 12px hsla(${hue},80%,55%,0.2)`}}>
                     <ShapeIcon shape={shape} hue={hue} size={16}/>
                   </div>
-                  <span style={{fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,color:"rgba(220,245,255,0.95)",letterSpacing:"0.025em"}}>{label}</span>
+                  <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,color:"rgba(220,245,255,0.95)",letterSpacing:"0.025em"}}>{label}</span>
                   {osint && (
                     <span style={{fontSize:7.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"hsla(270,80%,55%,0.22)",border:"1px solid hsla(270,80%,65%,0.38)",color:"hsl(270,80%,78%)",letterSpacing:"0.06em"}}>OSINT</span>
                   )}
                 </div>
-                <span style={{fontFamily:"'Outfit',sans-serif",fontSize:10.5,color:"rgba(140,210,240,0.62)",lineHeight:1.35,position:"relative" as const}}>{sub}</span>
+                <span style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,210,240,0.62)",lineHeight:1.35,position:"relative" as const}}>{sub}</span>
               </motion.button>
             ))}
           </div>
@@ -835,23 +835,23 @@ Respond ONLY with valid JSON (no markdown):
               style={{position:"absolute",top:52,right:0,bottom:0,width:340,borderRadius:0,overflow:"auto",padding:"14px 12px"}}
               onClick={e=>e.stopPropagation()}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,paddingBottom:9,borderBottom:"1px solid rgba(0,145,220,0.14)"}}>
-                <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"rgba(0,215,255,0.75)"}}>NOTIFICATIONS</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"rgba(0,215,255,0.75)"}}>NOTIFICATIONS</span>
                 <button onClick={()=>setShowNotif(false)} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(0,160,220,0.42)"}}><X style={{width:13,height:13}}/></button>
               </div>
               {tickets.length===0 && (
-                <div style={{textAlign:"center" as const,padding:"28px 0",fontFamily:"'DM Mono',monospace",fontSize:10,color:"rgba(0,135,185,0.35)"}}>No notifications</div>
+                <div style={{textAlign:"center" as const,padding:"28px 0",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"rgba(0,135,185,0.35)"}}>No notifications</div>
               )}
               {tickets.map((t:any)=>(
                 <div key={t.id} style={{marginBottom:7,padding:"9px 11px",borderRadius:8,background:"rgba(8,20,50,0.8)",border:"1px solid rgba(40,120,255,0.15)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(0,215,255,0.75)"}}>{t.issue||t.issueCode}</span>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:7.5,color:"rgba(0,145,200,0.42)"}}>{t.id}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:"rgba(0,215,255,0.75)"}}>{t.issue||t.issueCode}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,color:"rgba(0,145,200,0.42)"}}>{t.id}</span>
                   </div>
-                  <p style={{fontFamily:"'Outfit',sans-serif",fontSize:10.5,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.description}</p>
+                  <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.description}</p>
                   {t.adminResponse && (
                     <div style={{padding:"5px 8px",borderRadius:6,marginTop:5,background:"rgba(40,120,255,0.08)",border:"1px solid rgba(40,120,255,0.15)"}}>
-                      <div style={{fontFamily:"'DM Mono',monospace",fontSize:7.5,fontWeight:600,color:"rgba(255,140,0,0.55)",letterSpacing:"0.1em",marginBottom:2,textTransform:"uppercase" as const}}>Response</div>
-                      <p style={{fontFamily:"'Outfit',sans-serif",fontSize:10,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.adminResponse}</p>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,fontWeight:600,color:"rgba(255,140,0,0.55)",letterSpacing:"0.1em",marginBottom:2,textTransform:"uppercase" as const}}>Response</div>
+                      <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:10,color:"rgba(140,200,240,0.65)",lineHeight:1.5,margin:0}}>{t.adminResponse}</p>
                     </div>
                   )}
                   {userIsAdmin && (
@@ -884,8 +884,8 @@ Respond ONLY with valid JSON (no markdown):
               style={{width:"100%",maxWidth:560,maxHeight:"80vh",overflowY:"auto",borderRadius:18,background:"linear-gradient(160deg,rgba(6,16,44,0.98),rgba(3,10,30,0.99))",border:"1px solid rgba(100,80,255,0.3)",borderTop:"2px solid rgba(120,100,255,0.55)",boxShadow:"0 32px 80px rgba(0,0,0,0.9)",padding:"20px 22px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                 <div>
-                  <div style={{fontFamily:"'Syne',sans-serif",fontSize:16,fontWeight:800,color:"rgba(220,210,255,0.96)"}}>Deep Search</div>
-                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"rgba(140,120,255,0.55)",marginTop:2,letterSpacing:"0.08em"}}>OSINT INTELLIGENCE QUERY</div>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:800,color:"rgba(220,210,255,0.96)"}}>Deep Search</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(140,120,255,0.55)",marginTop:2,letterSpacing:"0.08em"}}>OSINT INTELLIGENCE QUERY</div>
                 </div>
                 <button onClick={()=>setShowDeepSearch(false)} style={{width:30,height:30,borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(200,190,255,0.6)"}}>
                   <X style={{width:14,height:14}}/>
@@ -894,7 +894,7 @@ Respond ONLY with valid JSON (no markdown):
               <div style={{display:"flex",gap:6,marginBottom:14}}>
                 {(["name","username","email","phone"] as const).map(t=>(
                   <button key={t} onClick={()=>setDsType(t)}
-                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?"rgba(120,100,255,0.6)":"rgba(255,255,255,0.1)"}`,background:dsType===t?"rgba(100,80,255,0.18)":"rgba(255,255,255,0.04)",color:dsType===t?"rgba(200,185,255,0.95)":"rgba(140,130,200,0.5)",transition:"all .16s"}}>
+                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?"rgba(120,100,255,0.6)":"rgba(255,255,255,0.1)"}`,background:dsType===t?"rgba(100,80,255,0.18)":"rgba(255,255,255,0.04)",color:dsType===t?"rgba(200,185,255,0.95)":"rgba(140,130,200,0.5)",transition:"all .16s"}}>
                     {t}
                   </button>
                 ))}
@@ -904,28 +904,28 @@ Respond ONLY with valid JSON (no markdown):
                   value={dsInput} onChange={e=>setDsInput(e.target.value)}
                   onKeyDown={e=>{if(e.key==="Enter")handleDeepSearch();}}
                   placeholder={dsType==="name"?"Full name…":dsType==="username"?"@username…":dsType==="email"?"email@domain.com":"Phone number…"}
-                  style={{flex:1,padding:"10px 14px",borderRadius:10,background:"rgba(255,255,255,0.07)",border:"1.5px solid rgba(100,80,255,0.28)",outline:"none",color:"rgba(220,215,255,0.95)",fontFamily:"'Outfit',sans-serif",fontSize:13}}
+                  style={{flex:1,padding:"10px 14px",borderRadius:10,background:"rgba(255,255,255,0.07)",border:"1.5px solid rgba(100,80,255,0.28)",outline:"none",color:"rgba(220,215,255,0.95)",fontFamily:"'Exo 2',sans-serif",fontSize:13}}
                 />
                 <button onClick={handleDeepSearch} disabled={dsLoading||!dsInput.trim()}
-                  style={{padding:"10px 18px",borderRadius:10,cursor:dsLoading||!dsInput.trim()?"not-allowed":"pointer",background:"linear-gradient(135deg,hsl(260,80%,55%),hsl(280,80%,65%))",border:"0",color:"white",fontFamily:"'Syne',sans-serif",fontSize:13,fontWeight:700,opacity:dsLoading||!dsInput.trim()?0.5:1}}>
+                  style={{padding:"10px 18px",borderRadius:10,cursor:dsLoading||!dsInput.trim()?"not-allowed":"pointer",background:"linear-gradient(135deg,hsl(260,80%,55%),hsl(280,80%,65%))",border:"0",color:"white",fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,opacity:dsLoading||!dsInput.trim()?0.5:1}}>
                   {dsLoading?"…":"Search"}
                 </button>
               </div>
               {dsResults && !dsResults.error && dsResults.platforms?.map((p:any)=>(
                 <div key={p.name} style={{marginBottom:12}}>
-                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:700,color:`hsla(${p.color},0.8)`,letterSpacing:"0.1em",marginBottom:6,textTransform:"uppercase" as const}}>{p.icon} {p.name}</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,color:`hsla(${p.color},0.8)`,letterSpacing:"0.1em",marginBottom:6,textTransform:"uppercase" as const}}>{p.icon} {p.name}</div>
                   <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
                     {p.links.slice(0,4).map((lk:any)=>(
                       <a key={lk.url} href={lk.url} target="_blank" rel="noopener noreferrer"
-                        style={{padding:"4px 10px",borderRadius:6,background:`hsla(${p.color},0.1)`,border:`1px solid hsla(${p.color},0.25)`,color:`hsla(${p.color},0.85)`,fontFamily:"'Outfit',sans-serif",fontSize:10.5,textDecoration:"none",cursor:"pointer"}}>
+                        style={{padding:"4px 10px",borderRadius:6,background:`hsla(${p.color},0.1)`,border:`1px solid hsla(${p.color},0.25)`,color:`hsla(${p.color},0.85)`,fontFamily:"'Exo 2',sans-serif",fontSize:10.5,textDecoration:"none",cursor:"pointer"}}>
                         {lk.variant}
                       </a>
                     ))}
                   </div>
                 </div>
               ))}
-              {dsResults?.error && <div style={{textAlign:"center" as const,padding:"20px",color:"rgba(255,100,100,0.7)",fontFamily:"'DM Mono',monospace",fontSize:11}}>Search failed. Try again.</div>}
-              {!dsResults && !dsLoading && <div style={{textAlign:"center" as const,padding:"20px 0",color:"rgba(140,130,200,0.4)",fontFamily:"'DM Mono',monospace",fontSize:10}}>Enter a name, username, email or phone number to begin.</div>}
+              {dsResults?.error && <div style={{textAlign:"center" as const,padding:"20px",color:"rgba(255,100,100,0.7)",fontFamily:"'JetBrains Mono',monospace",fontSize:11}}>Search failed. Try again.</div>}
+              {!dsResults && !dsLoading && <div style={{textAlign:"center" as const,padding:"20px 0",color:"rgba(140,130,200,0.4)",fontFamily:"'JetBrains Mono',monospace",fontSize:10}}>Enter a name, username, email or phone number to begin.</div>}
             </motion.div>
           </motion.div>
         )}

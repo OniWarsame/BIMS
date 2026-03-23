@@ -37,7 +37,7 @@ export default function PageHeader({ title, subtitle, icon, showLogo, rightConte
               <div style={{fontFamily:"'Syne',system-ui,sans-serif",fontSize:14,fontWeight:800,letterSpacing:"0.04em",color:"rgba(210,235,255,0.95)"}}>
                 Nexus<span style={{color:"hsl(218,100%,70%)",marginLeft:4}}>BIMS</span>
               </div>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"rgba(80,140,220,0.4)",letterSpacing:"0.06em",marginTop:1}}>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(80,140,220,0.4)",letterSpacing:"0.06em",marginTop:1}}>
                 BIOMETRIC PLATFORM
               </div>
             </div>
@@ -58,7 +58,7 @@ export default function PageHeader({ title, subtitle, icon, showLogo, rightConte
             )}
             <div style={{minWidth:0}}>
               <div style={{fontFamily:"'Syne',system-ui,sans-serif",fontSize:14,fontWeight:700,letterSpacing:"0.02em",color:"rgba(210,235,255,0.95)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{title}</div>
-              {subtitle && <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"rgba(80,140,220,0.42)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,letterSpacing:"0.05em"}}>{subtitle}</div>}
+              {subtitle && <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(80,140,220,0.42)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const,letterSpacing:"0.05em"}}>{subtitle}</div>}
             </div>
           </div>
         )}
