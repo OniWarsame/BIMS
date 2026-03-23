@@ -5,6 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/bims-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BIMS — Biometric Identity Management System</title>
+    <style>
+      /* FORCE best.jpg as background — guaranteed regardless of JS/canvas */
+      html, body {
+        margin: 0; padding: 0;
+        min-height: 100vh;
+        background-color: #020e18;
+        background-image: url('/best.jpg');
+        background-size: cover;
+        background-position: center center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+      }
+      #root {
+        min-height: 100vh;
+        background: transparent;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

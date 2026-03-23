@@ -515,59 +515,60 @@ Respond ONLY with valid JSON (no markdown):
       <CyberBackground/>
 
       {/* ─── NAV ─── */}
-      <div className="fixed top-0 left-0 right-0 w-full z-[9999] h-[54px] flex items-center justify-between px-5 border-b"
-        style={{background:"rgba(4,12,22,0.96)",borderColor:"rgba(48,186,216,0.2)",backdropFilter:"blur(40px)"}}>
-
-        {/* BIMS — LEFT */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{background:"radial-gradient(circle at 35% 35%,rgba(25,150,192,0.3),rgba(0,40,160,0.2))",border:"1.5px solid rgba(50,190,218,0.5)",boxShadow:"0 0 16px rgba(48,186,216,0.35)"}}>
-            <Shield style={{width:15,height:15,color:"hsl(192,68%,70%)"}}/>
+      <div style={{
+        position:"fixed",
+        top:0, left:0, right:0,
+        width:"100%",
+        height:54,
+        zIndex:9999,
+        background:"rgba(2,8,18,0.88)",
+        borderBottom:"1px solid rgba(50,185,215,0.20)",
+        backdropFilter:"blur(6px)",
+      }}>
+        {/* BIMS — hard left */}
+        <div style={{position:"absolute",left:20,top:0,bottom:0,display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:32,height:32,borderRadius:"50%",background:"radial-gradient(circle,rgba(30,130,200,0.4),rgba(10,50,100,0.2))",border:"1.5px solid rgba(50,190,220,0.55)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <Shield style={{width:14,height:14,color:"hsl(192,68%,72%)"}}/>
           </div>
-          <div>
-            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:900,letterSpacing:"0.12em",color:"rgba(200,245,255,0.98)",lineHeight:1,textShadow:"0 0 20px rgba(50,190,218,0.5)"}}>BIMS</div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:"rgba(0,185,230,0.4)",letterSpacing:"0.1em",textTransform:"uppercase" as const,marginTop:2}}>Biometric Identity Management System</div>
+          <div style={{lineHeight:1}}>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,letterSpacing:"0.12em",color:"rgba(210,242,248,0.98)",textShadow:"0 0 20px rgba(50,185,215,0.5)"}}>BIMS</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:"rgba(50,185,215,0.42)",letterSpacing:"0.1em",textTransform:"uppercase" as const,marginTop:3}}>Biometric Identity Management System</div>
           </div>
         </div>
 
-        {/* BUTTONS — RIGHT, using ml-auto to push to far right */}
-        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-
-          <button onClick={()=>setShowSupport(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-            style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,200,255,0.75)",fontFamily:"'Exo 2',sans-serif",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
+        {/* ALL BUTTONS — hard right */}
+        <div style={{position:"absolute",right:16,top:0,bottom:0,display:"flex",alignItems:"center",gap:5}}>
+          {/* Support */}
+          <button onClick={()=>setShowSupport(true)} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,205,230,0.75)",fontFamily:"'Exo 2',sans-serif",fontSize:11.5,fontWeight:500,transition:"all .18s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.16)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
-            <Headphones style={{width:12,height:12}}/><span>Support</span>
+            <Headphones style={{width:12,height:12}}/> Support
           </button>
 
-          <button onClick={()=>setShowNotif(v=>!v)}
-            className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all"
-            style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,190,255,0.7)",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
+          {/* Bell */}
+          <button onClick={()=>setShowNotif(v=>!v)} style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(140,205,230,0.72)",transition:"all .18s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.16)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Bell style={{width:13,height:13}}/>
-            {notifCount>0&&<span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{background:"hsl(218,100%,68%)"}}/>}
+            {notifCount>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,95%,65%)",border:"2px solid rgba(2,8,18,1)"}}/>}
           </button>
 
-          <button onClick={()=>setShowDM(v=>!v)}
-            className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all"
-            style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",color:"rgba(140,190,255,0.7)",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
+          {/* DM */}
+          <button onClick={()=>setShowDM(v=>!v)} style={{position:"relative",width:32,height:32,borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(140,205,230,0.72)",transition:"all .18s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.16)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <MessageSquare style={{width:13,height:13}}/>
-            {dmUnread>0&&<span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{background:"hsl(270,80%,70%)"}}/>}
+            {dmUnread>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,68%)",border:"2px solid rgba(2,8,18,1)"}}/>}
           </button>
 
-          <div className="w-px h-5 mx-1" style={{background:"rgba(255,255,255,0.15)"}}/>
+          {/* Divider */}
+          <div style={{width:1,height:22,background:"rgba(255,255,255,0.14)",margin:"0 2px"}}/>
 
-          <button onClick={()=>setShowUserMenu(v=>!v)}
-            className="flex items-center gap-1.5 pl-1 pr-3 py-1 rounded-full transition-all"
-            style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(25,150,192,0.18)";}}
+          {/* Role chip */}
+          <button onClick={()=>setShowUserMenu(v=>!v)} style={{display:"flex",alignItems:"center",gap:6,padding:"3px 11px 3px 3px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",transition:"all .18s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.16)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
-            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black"
-              style={{background:RC[RU]+"33",border:"2px solid "+RC[RU]+"88",color:RC[RU],fontFamily:"'Orbitron',sans-serif"}}>
+            <div style={{width:26,height:26,borderRadius:"50%",background:RC[RU]+"28",border:"2px solid "+RC[RU]+"70",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:900,color:RC[RU]}}>
               {(currentUser?.role||"analyst")[0].toUpperCase()}
             </div>
             <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,color:RC[RU],letterSpacing:"0.1em"}}>
@@ -575,11 +576,10 @@ Respond ONLY with valid JSON (no markdown):
             </span>
           </button>
 
-          <button onClick={()=>{doLogout();window.location.href="/login";}}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all text-xs font-medium"
-            style={{background:"transparent",border:"1px solid rgba(200,55,55,0.3)",color:"rgba(220,75,75,0.7)",fontFamily:"'Exo 2',sans-serif",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.color="rgba(255,100,100,0.95)";e.currentTarget.style.background="rgba(200,40,40,0.15)";}}
-            onMouseLeave={e=>{e.currentTarget.style.color="rgba(220,75,75,0.7)";e.currentTarget.style.background="transparent";}}>
+          {/* Logout */}
+          <button onClick={()=>{doLogout();window.location.href="/login";}} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:99,cursor:"pointer",background:"transparent",border:"1px solid rgba(200,55,55,0.30)",color:"rgba(218,75,75,0.72)",fontFamily:"'Exo 2',sans-serif",fontSize:11.5,fontWeight:500,transition:"all .18s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(200,40,40,0.16)";e.currentTarget.style.color="rgba(255,100,100,0.95)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(218,75,75,0.72)";}}>
             <LogOut style={{width:11,height:11}}/> Logout
           </button>
         </div>
@@ -588,18 +588,15 @@ Respond ONLY with valid JSON (no markdown):
         <AnimatePresence>
           {showUserMenu&&(
             <motion.div initial={{opacity:0,y:-8,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.15}}
-              className="fixed top-[58px] right-4 min-w-[176px] z-[60] py-2 rounded-2xl"
-              style={{background:"rgba(4,14,24,0.97)",border:"1px solid rgba(44,178,212,0.2)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(30px)"}}>
-              <div className="px-3.5 pb-1.5 mb-1 border-b" style={{borderColor:"rgba(44,178,212,0.1)"}}>
-                <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,color:"rgba(200,245,255,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
-                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,170,220,0.45)",marginTop:2}}>@{currentUser?.username}</div>
+              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.97)",border:"1px solid rgba(50,185,215,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(20px)"}}>
+              <div style={{padding:"8px 14px 8px",borderBottom:"1px solid rgba(50,185,215,0.12)",marginBottom:4}}>
+                <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:11,fontWeight:700,color:"rgba(210,242,248,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(50,185,215,0.45)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
               {[{label:"My Profile",path:"/profile"},{label:"Settings",path:"/settings"}].map(({label,path})=>(
-                <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}}
-                  className="w-full text-left px-3.5 py-1.5 text-[12.5px] transition-all block"
-                  style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'Exo 2',sans-serif",color:"rgba(100,185,245,0.65)"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(30,155,195,0.1)";e.currentTarget.style.color="rgba(180,230,255,0.95)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(100,185,245,0.65)";}}>
+                <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}} style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Exo 2',sans-serif",fontSize:12.5,color:"rgba(100,188,218,0.65)",transition:"all .14s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.1)";e.currentTarget.style.color="rgba(185,232,248,0.95)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="rgba(100,188,218,0.65)";}}>
                   {label}
                 </button>
               ))}
