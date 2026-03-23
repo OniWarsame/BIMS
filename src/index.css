@@ -1,291 +1,426 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
- ═══════════════════════════════════════════════════════════════════
-   BIMS — BIOMETRIC INTELLIGENCE DESIGN SYSTEM
-   Inspired by bio_theme.jpg: Deep navy + electric cyan + amber orange
+ ═══════════════════════════════════════════════════════════════════════
+   BIMS  —  iOS-inspired Biometric Intelligence Design System
    
-   Image palette:
-     Deep navy bg:   rgb(3,8,22)  / hsl(220,76%,5%)
-     Electric cyan:  hsl(200,100%,65%)  primary glow
-     Amber orange:   hsl(30,100%,60%)   secondary accent (DNA/fingerprint)
-     Bright cyan:    hsl(192,100%,52%)  interactive
+   Visual DNA from bio_theme.jpg:
+   ● Deep navy background:   rgb(5,10,35) / rgb(3,8,22)
+   ● Electric cyan:          hsl(200,100%,60%) — primary brand
+   ● Warm amber/orange:      hsl(30,100%,60%)  — secondary accent (DNA/fingerprint)
+   ● Bright white-blue:      hsl(195,80%,95%)  — text
+   ● Panel surfaces:         rgba(8,16,48,0.82) — deep translucent blue
    
-   Fonts: Rajdhani (body) · Orbitron (HUD) · IBM Plex Mono (data)
- ═══════════════════════════════════════════════════════════════════
+   iOS Library Aesthetic:
+   ● Frosted glass surfaces with real blur
+   ● SF-style rounded rectangles (radius 16-24px)
+   ● Subtle inner shadows + glow halos
+   ● Smooth spring animations
+   ● Pill-shaped badges and tags
+   ● Crisp 1pt borders with opacity
+   ● System font weights (300–700)
+   ● Icon containers: circular with gradient fills
+ ═══════════════════════════════════════════════════════════════════════
 */
 
 @layer base {
   :root {
-    --background:          215 76% 4%;
-    --foreground:          200 80% 92%;
-    --card:                215 70% 5%;
-    --card-foreground:     200 70% 90%;
-    --popover:             215 70% 5%;
-    --popover-foreground:  200 70% 90%;
-    --primary:             200 100% 60%;
-    --primary-foreground:  215 76% 4%;
-    --secondary:           215 55% 9%;
-    --secondary-foreground:200 55% 70%;
-    --muted:               215 60% 7%;
-    --muted-foreground:    210 25% 40%;
-    --accent:              30  100% 60%;
-    --accent-foreground:   215 76% 4%;
-    --destructive:         0   85% 62%;
-    --destructive-foreground:200 80% 92%;
-    --border:              215 55% 11%;
-    --input:               215 70% 5%;
-    --ring:                200 100% 60%;
-    --radius:              0.5rem;
+    /* Shadcn tokens */
+    --background:          215 80% 5%;
+    --foreground:          195 80% 95%;
+    --card:                220 75% 7%;
+    --card-foreground:     195 70% 93%;
+    --popover:             220 75% 6%;
+    --popover-foreground:  195 70% 93%;
+    --primary:             200 100% 56%;
+    --primary-foreground:  220 80% 5%;
+    --secondary:           215 60% 11%;
+    --secondary-foreground:200 55% 75%;
+    --muted:               215 60% 8%;
+    --muted-foreground:    210 30% 45%;
+    --accent:              30  100% 58%;
+    --accent-foreground:   220 80% 5%;
+    --destructive:         0   88% 62%;
+    --destructive-foreground: 195 80% 95%;
+    --border:              215 55% 14%;
+    --input:               218 70% 6%;
+    --ring:                200 100% 56%;
+    --radius:              1rem;
 
-    /* ── Bio-theme exact tokens ── */
-    --cyan:        hsl(200,100%,65%);
-    --cyan-dim:    hsla(200,100%,60%,0.45);
-    --amber:       hsl(30,100%,60%);
-    --amber-dim:   hsla(30,100%,55%,0.45);
-    --navy:        rgb(3,8,22);
-    --navy-panel:  hsla(215,76%,5%,0.88);
-    --navy-glass:  hsla(215,76%,4%,0.82);
-    --navy-deep:   hsla(215,76%,3%,0.96);
+    /* ── Brand palette from bio_theme.jpg ── */
+    --bio-navy:      rgb(5,10,35);
+    --bio-navy-deep: rgb(3,6,20);
+    --bio-cyan:      hsl(200,100%,58%);
+    --bio-cyan-glow: hsla(200,100%,58%,0.55);
+    --bio-cyan-dim:  hsla(200,100%,58%,0.18);
+    --bio-orange:    hsl(30,100%,60%);
+    --bio-orange-glow: hsla(30,100%,58%,0.5);
+    --bio-orange-dim:  hsla(30,100%,58%,0.15);
+    --bio-white:     hsl(195,80%,95%);
+    --bio-text:      hsl(200,60%,88%);
+    --bio-text-dim:  hsla(200,50%,75%,0.5);
 
-    --border-cyan:      hsla(200,100%,60%,0.38);
-    --border-cyan-dim:  hsla(200,100%,60%,0.18);
-    --border-amber:     hsla(30,100%,55%,0.4);
+    /* iOS glass panel */
+    --glass-bg:      rgba(8,18,52,0.78);
+    --glass-bg-hvy:  rgba(5,12,38,0.92);
+    --glass-bg-lite: rgba(12,24,65,0.65);
+    --glass-border:  rgba(0,160,255,0.16);
+    --glass-top:     rgba(0,200,255,0.35);
 
-    --glow-cyan:   0 0 20px hsla(200,100%,60%,0.5), 0 0 45px hsla(200,100%,60%,0.18);
-    --glow-amber:  0 0 18px hsla(30,100%,60%,0.5),  0 0 40px hsla(30,100%,55%,0.18);
-    --glow-green:  0 0 16px hsla(140,100%,50%,0.5), 0 0 35px hsla(140,100%,50%,0.18);
+    /* Glows */
+    --glow-cyan:   0 0 20px hsla(200,100%,58%,0.55), 0 0 50px hsla(200,100%,55%,0.22), 0 0 100px hsla(200,100%,52%,0.08);
+    --glow-orange: 0 0 18px hsla(30,100%,58%,0.5),   0 0 45px hsla(30,100%,55%,0.2),   0 0 90px hsla(30,100%,52%,0.07);
+    --glow-soft:   0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+    --inner-glow:  inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.2);
   }
 }
 
 @layer base {
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
+
   body {
-    font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
-    font-weight: 500;
-    background: rgb(3,8,22);
-    color: hsl(200,80%,92%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    font-weight: 400;
+    background: var(--bio-navy-deep);
+    color: var(--bio-white);
     font-size: 14px;
     cursor: none !important;
-    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   *, *::before, *::after { cursor: none !important; }
+
   ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: rgb(2,6,16); }
-  ::-webkit-scrollbar-thumb { background: hsla(200,100%,60%,0.28); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: hsla(200,100%,60%,0.5); }
+  ::-webkit-scrollbar-track { background: rgba(3,6,20,0.9); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,180,255,0.28); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,200,255,0.5); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PANELS  — Biometric HUD card (inspired by image panels)
-   Deep navy glass with cyan top border + inner shimmer
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   iOS FROSTED GLASS CARD  —  The hero component
+   Inspired by iOS Control Center & Notification panels
+═══════════════════════════════════════════════════════════════ */
 .bio-card {
-  background: var(--navy-panel);
-  border: 1px solid var(--border-cyan-dim);
-  border-top: 2px solid var(--border-cyan);
-  border-radius: 3px;
-  backdrop-filter: blur(24px) saturate(1.5);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-top: 1px solid rgba(0,200,255,0.28);
+  border-radius: 20px;
+  backdrop-filter: blur(28px) saturate(1.8) brightness(1.06);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.06);
+  box-shadow:
+    0 24px 64px rgba(0,0,0,0.55),
+    0 8px 24px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -1px 0 rgba(0,0,0,0.15);
   position: relative;
   overflow: hidden;
 }
+
+/* Top shimmer line — iOS glass reflection */
 .bio-card::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg,
-    hsla(200,100%,60%,0.05) 0%,
-    transparent 50%,
-    hsla(30,100%,55%,0.02) 100%);
-  pointer-events: none; z-index: 0;
-}
-.bio-card::after {
   content: '';
   position: absolute;
   top: 0; left: 8%; right: 8%; height: 1px;
-  background: linear-gradient(90deg, transparent, hsla(200,100%,60%,0.55), transparent);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,200,255,0.5) 30%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(0,200,255,0.5) 70%,
+    transparent 100%
+  );
+  pointer-events: none; z-index: 1;
+}
+
+/* Inner gradient */
+.bio-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(
+    ellipse at 30% 0%,
+    rgba(0,160,255,0.06) 0%,
+    transparent 60%
+  );
+  border-radius: inherit;
   pointer-events: none;
 }
 
-/* Corner brackets — exactly like image panel corners */
+/* Corner brackets (bio_theme.jpg corner style) */
 .bio-corners { position: relative; }
 .bio-corners::before, .bio-corners::after {
   content: ''; position: absolute;
   width: 16px; height: 16px; pointer-events: none;
+  border-color: rgba(0,200,255,0.55); border-style: solid;
 }
-.bio-corners::before {
-  top: 0; left: 0;
-  border-top: 2px solid hsla(200,100%,65%,0.65);
-  border-left: 2px solid hsla(200,100%,65%,0.65);
-}
-.bio-corners::after {
-  bottom: 0; right: 0;
-  border-bottom: 2px solid hsla(200,100%,65%,0.65);
-  border-right: 2px solid hsla(200,100%,65%,0.65);
-}
+.bio-corners::before { top: 2px; left: 2px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.bio-corners::after  { bottom: 2px; right: 2px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
 
-/* ═══════════════════════════════════════════════════════════
-   CARD SURFACE — inner panels
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   CARD SURFACE  —  inner panels (slightly lighter)
+═══════════════════════════════════════════════════════════════ */
 .card-surface {
-  background: var(--navy-glass);
-  border: 1px solid var(--border-cyan-dim);
-  border-top: 1.5px solid var(--border-cyan);
-  border-radius: 3px;
-  backdrop-filter: blur(20px);
+  background: var(--glass-bg-lite);
+  border: 1px solid rgba(0,160,255,0.14);
+  border-top: 1px solid rgba(0,200,255,0.22);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.06);
   position: relative; overflow: hidden;
 }
 .card-surface::before {
   content: '';
   position: absolute;
-  top: 0; left: 12%; right: 12%; height: 1px;
-  background: linear-gradient(90deg, transparent, hsla(200,100%,60%,0.38), transparent);
+  top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,200,255,0.3), transparent);
   pointer-events: none;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   INPUTS — Bio terminal field style
-   Matching image's clean data-entry aesthetic
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   iOS INPUTS  —  Frosted pill fields
+   Inspired by iOS search bars and text fields
+═══════════════════════════════════════════════════════════════ */
 .input-cyber {
   width: 100%;
-  padding: 9px 14px;
-  border-radius: 3px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12.5px; font-weight: 400;
-  letter-spacing: 0.03em;
-  color: hsl(200,80%,92%);
-  background: hsla(215,76%,4%,0.85);
-  border: 1px solid hsla(200,100%,60%,0.22);
-  border-bottom: 1.5px solid hsla(200,100%,60%,0.35);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: rgba(220,245,255,0.92);
+  background: rgba(0,30,80,0.55);
+  border: 1px solid rgba(0,160,255,0.22);
   outline: none;
-  transition: all 0.18s ease;
-  backdrop-filter: blur(8px);
-  position: relative;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
 .input-cyber:focus {
-  background: hsla(215,76%,5%,0.95);
-  border-color: hsla(200,100%,65%,0.6);
-  border-bottom-color: hsla(200,100%,65%,0.85);
-  box-shadow: 0 2px 0 hsla(200,100%,60%,0.2),
-              0 0 0 3px hsla(200,100%,60%,0.08),
-              0 0 22px hsla(200,100%,60%,0.1);
-  color: hsl(200,85%,96%);
+  background: rgba(0,40,100,0.7);
+  border-color: rgba(0,200,255,0.6);
+  box-shadow:
+    0 0 0 3px rgba(0,180,255,0.12),
+    0 0 20px rgba(0,160,255,0.15),
+    inset 0 2px 4px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  color: rgba(235,250,255,0.97);
+  transform: translateY(-1px);
 }
 .input-cyber::placeholder {
-  color: hsla(200,100%,60%,0.22);
-  font-style: italic;
+  color: rgba(100,175,220,0.35);
+  font-style: normal;
 }
 
 select.input-cyber {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='hsla(200,100%,60%,0.6)' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,180,255,0.55)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 34px; cursor: pointer;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
 }
-select.input-cyber option { background: rgb(3,8,22); color: hsl(200,80%,92%); }
+select.input-cyber option {
+  background: rgb(5,12,40);
+  color: rgba(200,240,255,0.92);
+}
 
 .textarea-cyber {
-  width: 100%; padding: 9px 14px;
-  border-radius: 3px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px; font-weight: 400; line-height: 1.65;
-  color: hsl(200,80%,92%);
-  background: hsla(215,76%,4%,0.85);
-  border: 1px solid hsla(200,100%,60%,0.22);
-  border-bottom: 1.5px solid hsla(200,100%,60%,0.35);
-  outline: none; resize: none;
-  transition: all 0.18s ease;
-  backdrop-filter: blur(8px);
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: rgba(220,245,255,0.92);
+  background: rgba(0,30,80,0.55);
+  border: 1px solid rgba(0,160,255,0.22);
+  outline: none;
+  resize: vertical;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.28);
 }
 .textarea-cyber:focus {
-  background: hsla(215,76%,5%,0.95);
-  border-color: hsla(200,100%,65%,0.6);
-  border-bottom-color: hsla(200,100%,65%,0.8);
-  box-shadow: 0 2px 0 hsla(200,100%,60%,0.18), 0 0 0 3px hsla(200,100%,60%,0.08);
+  background: rgba(0,40,100,0.7);
+  border-color: rgba(0,200,255,0.6);
+  box-shadow: 0 0 0 3px rgba(0,180,255,0.12), inset 0 2px 4px rgba(0,0,0,0.22);
 }
-.textarea-cyber::placeholder { color: hsla(200,100%,60%,0.22); font-style: italic; }
+.textarea-cyber::placeholder { color: rgba(100,175,220,0.35); }
 
-/* ═══════════════════════════════════════════════════════════
-   BUTTONS — HUD-style bio-scanner buttons
-   Inspired by image panel indicators
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   iOS BUTTONS  —  Glassy pill buttons with spring press
+═══════════════════════════════════════════════════════════════ */
 .btn-bio {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 9px 22px;
-  border-radius: 3px;
-  font-family: 'Orbitron', monospace;
-  font-size: 9.5px; font-weight: 700;
-  letter-spacing: 0.2em; text-transform: uppercase;
-  color: hsl(200,100%,68%);
-  background: hsla(200,100%,60%,0.08);
-  border: 1px solid hsla(200,100%,60%,0.42);
-  box-shadow: 0 0 20px hsla(200,100%,60%,0.18), inset 0 1px 0 hsla(200,100%,65%,0.08);
-  text-shadow: 0 0 12px hsla(200,100%,60%,0.7);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 24px;
+  border-radius: 14px;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(0,230,255,0.95);
+  background: linear-gradient(
+    145deg,
+    rgba(0,120,200,0.22) 0%,
+    rgba(0,80,160,0.14) 100%
+  );
+  border: 1px solid rgba(0,200,255,0.4);
+  box-shadow:
+    0 4px 20px rgba(0,0,0,0.4),
+    0 0 20px rgba(0,160,255,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.15);
   cursor: pointer; position: relative; overflow: hidden;
-  transition: all 0.2s ease; white-space: nowrap;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
 }
 .btn-bio::before {
   content: '';
-  position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
-  background: linear-gradient(90deg, transparent, hsla(200,100%,65%,0.14), transparent);
-  transition: left 0.55s ease;
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+  border-radius: 14px 14px 0 0;
+  pointer-events: none;
+}
+.btn-bio::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,200,255,0.1), transparent);
+  transition: left 0.6s ease;
 }
 .btn-bio:hover {
-  background: hsla(200,100%,60%,0.18);
-  border-color: hsla(200,100%,70%,0.7);
-  box-shadow: 0 0 32px hsla(200,100%,60%,0.38), inset 0 1px 0 hsla(200,100%,70%,0.12);
-  color: hsl(200,100%,80%);
-  transform: translateY(-1px);
+  background: linear-gradient(145deg, rgba(0,160,240,0.32) 0%, rgba(0,100,200,0.22) 100%);
+  border-color: rgba(0,220,255,0.65);
+  box-shadow:
+    0 6px 28px rgba(0,0,0,0.45),
+    var(--glow-cyan),
+    inset 0 1px 0 rgba(255,255,255,0.14);
+  color: rgba(0,245,255,1);
+  transform: translateY(-2px) scale(1.01);
 }
-.btn-bio:hover::before { left: 130%; }
-.btn-bio:active { transform: translateY(0) scale(0.98); }
+.btn-bio:hover::after { left: 150%; }
+.btn-bio:active { transform: translateY(0) scale(0.97); }
 
+/* Ghost button */
 .btn-ghost {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 11px; border-radius: 3px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 10px;
   font-family: 'Orbitron', monospace;
-  font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em;
-  color: hsl(200,100%,65%);
-  background: hsla(200,100%,60%,0.08);
-  border: 1px solid hsla(200,100%,60%,0.38);
-  box-shadow: 0 0 16px hsla(200,100%,60%,0.18);
-  cursor: pointer; transition: all 0.15s;
+  font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(0,200,255,0.7);
+  background: rgba(0,100,180,0.1);
+  border: 1px solid rgba(0,180,255,0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  cursor: pointer; transition: all 0.16s ease;
 }
 .btn-ghost:hover {
-  background: hsla(200,100%,60%,0.18);
-  box-shadow: 0 0 24px hsla(200,100%,60%,0.35);
+  background: rgba(0,140,220,0.18);
+  border-color: rgba(0,210,255,0.45);
+  color: rgba(0,230,255,0.9);
+  box-shadow: 0 0 16px rgba(0,180,255,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
+/* Cyan pill button */
 .btn-cyan {
-  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 7px 18px; border-radius: 3px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 20px; border-radius: 12px;
   font-family: 'Orbitron', monospace;
-  font-size: 9.5px; font-weight: 700; letter-spacing: 0.18em;
-  color: hsl(200,100%,68%);
-  background: hsla(200,100%,60%,0.08);
-  border: 1.5px solid hsla(200,100%,65%,0.65);
-  box-shadow: 0 0 18px hsla(200,100%,60%,0.22);
-  cursor: pointer; transition: all 0.18s;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(0,230,255,0.92);
+  background: linear-gradient(135deg, rgba(0,120,200,0.2) 0%, rgba(0,80,160,0.12) 100%);
+  border: 1px solid rgba(0,200,255,0.42);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 16px rgba(0,160,255,0.12),
+              inset 0 1px 0 rgba(255,255,255,0.08);
+  cursor: pointer; transition: all 0.18s ease;
 }
 .btn-cyan:hover {
-  background: hsla(200,100%,60%,0.2);
-  box-shadow: 0 0 30px hsla(200,100%,60%,0.42);
+  background: linear-gradient(135deg, rgba(0,160,240,0.28) 0%, rgba(0,100,200,0.18) 100%);
+  border-color: rgba(0,220,255,0.6);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4), var(--glow-cyan);
+  transform: translateY(-1px);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   NAV HEADER — transparent overlay, matches image panel borders
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   iOS ICON CONTAINERS  —  Unique per-feature icons
+   Each feature gets a distinct gradient + glyph
+═══════════════════════════════════════════════════════════════ */
+
+/* Generic icon shell */
+.icon-shell {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 14px;
+  position: relative; overflow: hidden;
+  flex-shrink: 0;
+}
+.icon-shell::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(145deg, rgba(255,255,255,0.15) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Register icon — fingerprint/cyan */
+.icon-register {
+  background: linear-gradient(145deg, hsl(195,100%,30%), hsl(210,100%,22%));
+  box-shadow: 0 4px 16px rgba(0,160,220,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+  border: 1px solid rgba(0,200,255,0.35);
+}
+
+/* Database icon — deep blue/teal */
+.icon-database {
+  background: linear-gradient(145deg, hsl(205,100%,28%), hsl(215,100%,20%));
+  box-shadow: 0 4px 16px rgba(0,140,220,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  border: 1px solid rgba(0,180,255,0.3);
+}
+
+/* Search/OSINT icon — purple */
+.icon-search {
+  background: linear-gradient(145deg, hsl(265,80%,38%), hsl(275,80%,28%));
+  box-shadow: 0 4px 16px rgba(120,60,230,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+  border: 1px solid rgba(160,100,255,0.35);
+}
+
+/* Users icon — orange/amber from bio_theme.jpg */
+.icon-users {
+  background: linear-gradient(145deg, hsl(28,100%,38%), hsl(20,100%,28%));
+  box-shadow: 0 4px 16px rgba(220,100,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,140,0,0.35);
+}
+
+/* Reports icon — green */
+.icon-reports {
+  background: linear-gradient(145deg, hsl(140,80%,24%), hsl(148,80%,17%));
+  box-shadow: 0 4px 16px rgba(0,180,80,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  border: 1px solid rgba(0,220,100,0.3);
+}
+
+/* Create/docs icon — indigo */
+.icon-create {
+  background: linear-gradient(145deg, hsl(235,80%,38%), hsl(245,80%,28%));
+  box-shadow: 0 4px 16px rgba(60,80,220,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+  border: 1px solid rgba(100,130,255,0.35);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAV HEADER  —  iOS translucent bar
+═══════════════════════════════════════════════════════════════ */
 .cyber-header {
-  background: rgba(2,6,16,0.72);
-  border-bottom: 1px solid hsla(200,100%,60%,0.18);
-  box-shadow: 0 1px 0 hsla(200,100%,60%,0.08);
-  backdrop-filter: blur(26px) saturate(1.5);
+  background: rgba(4,10,30,0.82);
+  border-bottom: 1px solid rgba(0,160,255,0.12);
+  backdrop-filter: blur(32px) saturate(2) brightness(1.08);
+  -webkit-backdrop-filter: blur(32px) saturate(2) brightness(1.08);
+  box-shadow: 0 1px 0 rgba(0,200,255,0.08), 0 8px 32px rgba(0,0,0,0.3);
   position: relative;
 }
 .cyber-header::after {
@@ -293,134 +428,225 @@ select.input-cyber option { background: rgb(3,8,22); color: hsl(200,80%,92%); }
   position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
-    hsla(200,100%,60%,0.28) 30%,
-    hsla(200,100%,65%,0.52) 50%,
-    hsla(200,100%,60%,0.28) 70%,
-    transparent 100%);
+    rgba(0,180,255,0.22) 20%,
+    rgba(0,200,255,0.45) 50%,
+    rgba(0,180,255,0.22) 80%,
+    transparent 100%
+  );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CLASSIFIED BANNERS — deep red, matching alert aesthetic
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   CLASSIFIED BANNERS  —  bio_theme.jpg red alert strips
+═══════════════════════════════════════════════════════════════ */
 .nx-classified {
   position: fixed; left: 0; right: 0; z-index: 60; height: 16px;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Orbitron', monospace;
-  font-size: 7px; font-weight: 800; letter-spacing: 0.4em; text-transform: uppercase;
-  color: rgba(255,255,255,0.92);
+  font-size: 6.5px; font-weight: 800; letter-spacing: 0.42em; text-transform: uppercase;
+  color: rgba(255,235,215,0.92);
 }
-.nx-classified.top    { top:0;    background:rgba(140,18,18,0.95); border-bottom:1px solid rgba(255,50,30,0.4); }
-.nx-classified.bottom { bottom:0; background:rgba(140,18,18,0.95); border-top:1px solid rgba(255,50,30,0.4); }
+.nx-classified.top {
+  top: 0;
+  background: linear-gradient(90deg, rgba(120,8,8,0.97), rgba(155,15,15,0.98), rgba(120,8,8,0.97));
+  border-bottom: 1px solid rgba(255,50,30,0.4);
+  box-shadow: 0 2px 20px rgba(180,20,20,0.35);
+}
+.nx-classified.bottom {
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(120,8,8,0.97), rgba(155,15,15,0.98), rgba(120,8,8,0.97));
+  border-top: 1px solid rgba(255,50,30,0.4);
+  box-shadow: 0 -2px 20px rgba(180,20,20,0.35);
+}
 
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    STATUS DOTS
-═══════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 .status-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  animation: sdBlink 2.2s ease-in-out infinite;
+  width: 6px; height: 6px; border-radius: 50%;
+  animation: sdPulse 2.4s ease-in-out infinite;
+  box-shadow: 0 0 6px currentColor;
 }
-@keyframes sdBlink {
+@keyframes sdPulse {
   0%,100% { opacity:1; transform:scale(1); }
-  50%      { opacity:0.2; transform:scale(0.7); }
+  50%      { opacity:0.25; transform:scale(0.65); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCANNER PULSE — amber orange (like fingerprint panel)
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   SCANNER ANIMATION  —  amber fingerprint from bio_theme.jpg
+═══════════════════════════════════════════════════════════════ */
 .scanner-pulse {
-  animation: scanPulse 1.2s ease-in-out infinite;
+  animation: scanRing 1.2s ease-in-out infinite;
 }
-@keyframes scanPulse {
-  0%,100% { box-shadow:0 0 0 0 hsla(30,100%,60%,0),   inset 0 0 22px hsla(30,100%,55%,0.04); }
-  50%      { box-shadow:0 0 0 5px hsla(30,100%,60%,0), inset 0 0 48px hsla(30,100%,55%,0.14); }
+@keyframes scanRing {
+  0%,100% {
+    box-shadow: 0 0 0 0 hsla(30,100%,58%,0.0), inset 0 0 24px hsla(30,100%,55%,0.06);
+  }
+  50% {
+    box-shadow: 0 0 0 8px hsla(30,100%,58%,0.0), inset 0 0 55px hsla(30,100%,55%,0.18);
+  }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   UPLOAD ZONE
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   UPLOAD ZONE  —  iOS drag-drop style
+═══════════════════════════════════════════════════════════════ */
 .upload-zone {
   display: flex; align-items: center; justify-content: center;
-  width: 100%; min-height: 44px;
-  border: 1.5px dashed hsla(200,100%,60%,0.28);
-  border-radius: 3px;
-  background: hsla(215,76%,4%,0.5);
+  width: 100%; min-height: 46px;
+  border: 1.5px dashed rgba(0,170,230,0.28);
+  border-radius: 12px;
+  background: rgba(0,25,70,0.38);
   backdrop-filter: blur(8px);
-  transition: all 0.18s; position: relative; overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative; overflow: hidden;
 }
 .upload-zone:hover {
-  border-color: hsla(200,100%,65%,0.55);
-  background: hsla(215,76%,6%,0.65);
-  box-shadow: inset 0 0 18px hsla(200,100%,60%,0.06);
+  border-color: rgba(0,200,255,0.52);
+  background: rgba(0,38,100,0.55);
+  box-shadow: inset 0 0 24px rgba(0,180,255,0.07), 0 0 20px rgba(0,160,255,0.08);
+  transform: scale(1.005);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    TEXT UTILITIES
-═══════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 .text-label {
   display: block;
   font-family: 'Orbitron', monospace;
   font-size: 7.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-  color: hsla(200,100%,60%,0.42);
-  margin-bottom: 5px;
-}
-.glow-text {
-  text-shadow: 0 0 24px hsla(200,100%,65%,0.55), 0 0 55px hsla(200,100%,60%,0.2);
-}
-.check-row { display: flex; align-items: center; gap: 8px; }
-.check-row label {
-  font-family: 'Orbitron', monospace;
-  font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-  color: hsla(200,100%,60%,0.48); cursor: pointer;
-}
-.page-header-bar {
-  position: sticky; top: 0; z-index: 20;
-  background: rgba(2,6,16,0.72);
-  border-bottom: 1px solid hsla(200,100%,60%,0.18);
-  box-shadow: 0 1px 0 hsla(200,100%,60%,0.08);
-  backdrop-filter: blur(26px);
+  color: rgba(0,180,255,0.4); margin-bottom: 6px;
 }
 
-/* ═══════════════════════════════════════════════════════════
+.glow-text {
+  text-shadow:
+    0 0 24px rgba(0,200,255,0.55),
+    0 0 50px rgba(0,160,220,0.22),
+    0 0 100px rgba(0,120,200,0.1);
+}
+
+.check-row { display: flex; align-items: center; gap: 9px; }
+.check-row label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+  color: rgba(0,190,255,0.55); cursor: pointer;
+}
+
+.page-header-bar {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(4,10,30,0.82);
+  border-bottom: 1px solid rgba(0,160,255,0.12);
+  backdrop-filter: blur(32px) saturate(2);
+  -webkit-backdrop-filter: blur(32px) saturate(2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    RESPONSIVE
-═══════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
   .nav-status-pills, .nav-support-text { display: none !important; }
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    ANIMATIONS
-═══════════════════════════════════════════════════════════ */
-@keyframes spin         { to { transform: rotate(360deg); } }
-@keyframes fadeIn       { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
-@keyframes glowPulse    { 0%,100% { box-shadow:var(--glow-cyan); } 50% { box-shadow:0 0 36px hsla(200,100%,65%,0.7),0 0 70px hsla(200,100%,60%,0.25); } }
-@keyframes amberPulse   { 0%,100% { box-shadow:var(--glow-amber); } 50% { box-shadow:0 0 34px hsla(30,100%,65%,0.65),0 0 65px hsla(30,100%,55%,0.22); } }
-@keyframes scanBeam     { 0% { top:2%; } 100% { top:98%; } }
-@keyframes dataScroll   { 0% { transform:translateX(-100%); } 100% { transform:translateX(200%); } }
+═══════════════════════════════════════════════════════════════ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fadeSlide {
+  from { opacity:0; transform:translateY(10px) scale(0.98); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes glowCyan {
+  0%,100% { box-shadow: 0 0 16px rgba(0,200,255,0.4), inset 0 1px 0 rgba(255,255,255,0.08); }
+  50%     { box-shadow: var(--glow-cyan), inset 0 1px 0 rgba(255,255,255,0.12); }
+}
+@keyframes glowOrange {
+  0%,100% { box-shadow: 0 0 14px rgba(255,140,0,0.35); }
+  50%     { box-shadow: var(--glow-orange); }
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+@keyframes floatUp {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-4px); }
+}
 
-.animate-spin       { animation: spin 0.8s linear infinite; }
-.animate-fadeIn     { animation: fadeIn 0.28s ease-out forwards; }
-.glow-pulse         { animation: glowPulse 2.8s ease-in-out infinite; }
-.amber-pulse        { animation: amberPulse 2.8s ease-in-out infinite; }
+.animate-spin      { animation: spin 1s linear infinite; }
+.animate-fadeSlide { animation: fadeSlide 0.32s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.glow-cyan         { animation: glowCyan 3s ease-in-out infinite; }
+.glow-orange       { animation: glowOrange 3s ease-in-out infinite; }
+.float-up          { animation: floatUp 3s ease-in-out infinite; }
 
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    FONT CLASSES
-═══════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 .font-hud     { font-family: 'Orbitron', monospace; }
 .font-mono    { font-family: 'IBM Plex Mono', monospace; }
-.font-display { font-family: 'Rajdhani', 'Segoe UI', sans-serif; }
+.font-display { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
 
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
+   iOS-STYLE SEGMENTED CONTROL  (for tabs)
+═══════════════════════════════════════════════════════════════ */
+.seg-control {
+  display: inline-flex;
+  background: rgba(0,20,60,0.5);
+  border: 1px solid rgba(0,150,220,0.18);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+  backdrop-filter: blur(12px);
+}
+.seg-tab {
+  padding: 6px 16px;
+  border-radius: 10px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px; font-weight: 600;
+  color: rgba(0,190,255,0.5);
+  background: transparent;
+  border: none; cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.seg-tab.active {
+  background: rgba(0,140,220,0.22);
+  color: rgba(0,225,255,0.92);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PILL BADGES
+═══════════════════════════════════════════════════════════════ */
+.badge-cyan {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  background: rgba(0,160,255,0.14);
+  border: 1px solid rgba(0,200,255,0.3);
+  color: rgba(0,220,255,0.88);
+}
+.badge-orange {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  background: rgba(255,130,0,0.12);
+  border: 1px solid rgba(255,160,0,0.28);
+  color: rgba(255,180,50,0.9);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PRINT
-═══════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 @media print {
   canvas, .nx-classified { display: none !important; }
   body { background:#fff !important; color:#111 !important; cursor:auto !important; }
   .bio-card, .card-surface {
     background:#fff !important; border:1px solid #ccc !important;
     backdrop-filter:none !important; box-shadow:none !important;
+    border-radius: 4px !important;
   }
   .input-cyber, .textarea-cyber {
     background:#f5f5f5 !important; color:#111 !important;
     border:1px solid #ccc !important; box-shadow:none !important;
+    border-radius: 4px !important;
   }
 }
