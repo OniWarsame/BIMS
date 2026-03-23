@@ -27,7 +27,7 @@ export default function CyberBackground() {
 
     // ── Load image ───────────────────────────────────────────
     const img = new Image();
-    img.src = "/best.jpg";
+    img.src = "/xxxxx.jpg";
     let imgReady = false;
     img.onload  = () => { imgReady = true; };
     img.onerror = () => { imgReady = false; };
