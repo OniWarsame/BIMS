@@ -115,10 +115,10 @@ export default function CyberBackground() {
 
       /* 2 — Dark atmospheric overlay with iris tint */
       const iris = ctx.createRadialGradient(W*.5,H*.48,0,W*.5,H*.48,W*.52);
-      iris.addColorStop(0,`rgba(0,180,255,${0.06+0.03*Math.sin(T*0.7)})`);
-      iris.addColorStop(0.4,"rgba(0,80,160,0.04)");
+      iris.addColorStop(0,`rgba(0,180,255,${0.03+0.01*Math.sin(T*0.7)})`);
+      iris.addColorStop(0.4,"rgba(0,80,160,0.01)");
       iris.addColorStop(1,"transparent");
-      ctx.fillStyle="rgba(0,5,18,0.62)"; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle="rgba(0,5,18,0.18)"; ctx.fillRect(0,0,W,H);
       ctx.fillStyle=iris; ctx.fillRect(0,0,W,H);
 
       /* 3 — Neural nodes */
@@ -264,7 +264,7 @@ export default function CyberBackground() {
 
       /* 9 — Edge vignette */
       const vg=ctx.createRadialGradient(W/2,H/2,W*0.2,W/2,H/2,W*0.9);
-      vg.addColorStop(0,"transparent"); vg.addColorStop(1,"rgba(0,3,14,0.82)");
+      vg.addColorStop(0,"transparent"); vg.addColorStop(1,"rgba(0,3,14,0.28)");
       ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
       raf=requestAnimationFrame(draw);
