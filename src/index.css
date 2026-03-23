@@ -1,53 +1,77 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════════
-   BIMS  —  SOVEREIGN INTELLIGENCE TERMINAL
-   Aesthetic: Clean military-grade intelligence terminal.
-   Flat edges, sharp geometry, precision spacing, confident glows.
-   Fonts: Rajdhani (display) · Orbitron (hud/mono) · JetBrains Mono (data)
-   Palette: Deep Space #010912 · Laser Cyan #00E5FF · Signal Green #00FFA3
-             Amber Alert #FF8A00 · Blood Red #FF2222
-═══════════════════════════════════════════════════════════════ */
+/*
+ ═══════════════════════════════════════════════════════════════════
+   BIMS  —  Design System extracted from Index.tsx
+   
+   Exact colors, fonts, and style patterns from the uploaded Index.tsx:
+   
+   Background:   hsl(215,55%,4%)   — deep navy
+   Primary:      hsl(192,100%,52%) — electric cyan
+   Secondary:    hsl(185,100%,62%) — lighter teal
+   Amber:        hsl(38,85%,62%)   — warm amber (scanner/fingerprint)
+   Success:      hsl(140,100%,50%) — neon green
+   Error:        hsl(0,90%,68%)    — red
+   Text:         hsl(192,55%,94%)  — near-white cyan
+   
+   Fonts:  Rajdhani (display body)  |  Orbitron (HUD/labels)  |  IBM Plex Mono (data)
+   Panels: hsla(215,55%,4-5%,0.82-0.97)
+   Borders: hsla(192,100%,52%,0.18-0.45)
+   Glows:  box-shadow with hsla(192,100%,52%) / hsla(185,100%,55%)
+ ═══════════════════════════════════════════════════════════════════
+*/
 
 @layer base {
   :root {
-    --background:         220 100% 3%;
-    --foreground:         195 75% 91%;
-    --card:               215 90% 4%;
-    --card-foreground:    195 65% 89%;
-    --popover:            215 90% 4%;
-    --popover-foreground: 195 65% 89%;
-    --primary:            192 100% 50%;
-    --primary-foreground: 220 100% 5%;
-    --secondary:          215 75% 7%;
-    --secondary-foreground:192 50% 68%;
-    --muted:              215 75% 5%;
-    --muted-foreground:   210 22% 38%;
-    --accent:             155 100% 50%;
-    --accent-foreground:  220 100% 5%;
-    --destructive:        0   90% 56%;
-    --destructive-foreground:195 80% 92%;
-    --border:             210 65% 7%;
-    --input:              215 85% 4%;
-    --ring:               192 100% 50%;
-    --radius:             0rem;
+    /* Shadcn tokens */
+    --background:          215 55% 4%;
+    --foreground:          192 55% 94%;
+    --card:                215 55% 5%;
+    --card-foreground:     192 50% 92%;
+    --popover:             215 55% 4%;
+    --popover-foreground:  192 50% 92%;
+    --primary:             192 100% 52%;
+    --primary-foreground:  215 55% 4%;
+    --secondary:           215 45% 9%;
+    --secondary-foreground:192 50% 70%;
+    --muted:               215 50% 7%;
+    --muted-foreground:    210 25% 40%;
+    --accent:              185 100% 55%;
+    --accent-foreground:   215 55% 4%;
+    --destructive:         0   90% 68%;
+    --destructive-foreground:192 55% 94%;
+    --border:              215 50% 12%;
+    --input:               215 60% 5%;
+    --ring:                192 100% 52%;
+    --radius:              0.5rem;
 
-    /* ── Design Tokens ── */
-    --cyan:    #00e5ff;
-    --green:   #00ffa3;
-    --amber:   #ff8a00;
-    --red:     #ff2222;
-    --void:    #010912;
-    --panel:   rgba(1,12,32,0.82);
-    --panel-strong: rgba(0,8,24,0.92);
+    /* ── Brand tokens (from Index.tsx exact values) ── */
+    --c-cyan:     hsl(192,100%,52%);
+    --c-teal:     hsl(185,100%,62%);
+    --c-teal-dim: hsla(185,100%,55%,0.45);
+    --c-amber:    hsl(38,85%,62%);
+    --c-green:    hsl(140,100%,50%);
+    --c-red:      hsl(0,90%,68%);
+    --c-text:     hsl(192,55%,94%);
+    --c-text-dim: hsla(192,80%,75%,0.55);
+    --c-navy:     hsl(215,55%,4%);
 
-    --glow-cyan:  0 0 12px rgba(0,229,255,0.6), 0 0 30px rgba(0,180,255,0.25);
-    --glow-green: 0 0 12px rgba(0,255,163,0.55), 0 0 28px rgba(0,200,130,0.2);
-    --glow-amber: 0 0 12px rgba(255,138,0,0.55), 0 0 28px rgba(255,100,0,0.2);
+    --panel-bg:     hsla(215,55%,4%,0.92);
+    --panel-bg-hvy: hsla(215,58%,5%,0.97);
+    --panel-bg-lit: hsla(215,55%,6%,0.82);
+
+    --border-cyan:     hsla(192,100%,52%,0.38);
+    --border-cyan-dim: hsla(192,100%,52%,0.18);
+    --border-teal:     hsla(185,100%,55%,0.35);
+
+    --glow-cyan:   0 0 18px hsla(192,100%,52%,0.55), 0 0 40px hsla(192,100%,52%,0.2);
+    --glow-teal:   0 0 16px hsla(185,100%,55%,0.5),  0 0 36px hsla(185,100%,55%,0.18);
+    --glow-amber:  0 0 16px hsla(38,85%,62%,0.5),    0 0 36px hsla(38,85%,55%,0.18);
+    --glow-green:  0 0 14px hsla(140,100%,50%,0.55), 0 0 32px hsla(140,100%,50%,0.2);
   }
 }
 
@@ -55,345 +79,350 @@
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
     font-weight: 500;
-    background: var(--void);
-    color: rgba(175,230,255,0.9);
+    background: hsl(215,55%,4%);
+    color: hsl(192,55%,94%);
     font-size: 14px;
     cursor: none !important;
     @apply antialiased;
   }
   *, *::before, *::after { cursor: none !important; }
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: rgba(0,6,18,0.9); }
-  ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.22); border-radius: 1px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.45); }
+
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: hsl(215,55%,3%); }
+  ::-webkit-scrollbar-thumb { background: hsla(192,100%,52%,0.25); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsla(192,100%,52%,0.48); }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PANEL  —  flat-edged intelligence card
-   Left accent bar + precise border + inner glow strip
+   PANELS  —  Exact Index.tsx panel style
+   background: hsla(215,55%,4-5%,0.82-0.97)
+   border: 1px solid hsla(192,100%,52%,0.18-0.45)
+   border-top: 2px solid hsla(192,100%,52%,0.4-0.55)
+   backdrop-filter: blur(20-24px)
 ═══════════════════════════════════════════════════════════════ */
 .bio-card {
-  background: var(--panel);
-  border: 1px solid rgba(0,180,255,0.15);
-  border-left: 3px solid rgba(0,229,255,0.55);
-  backdrop-filter: blur(28px) saturate(1.6) brightness(1.04);
+  background: var(--panel-bg);
+  border: 1px solid var(--border-cyan-dim);
+  border-top: 2px solid var(--border-cyan);
+  border-radius: 12px;
+  backdrop-filter: blur(22px) saturate(1.4);
   position: relative;
   overflow: hidden;
-  border-radius: 0;
 }
-/* top glow strip */
+/* Inner shimmer — Index.tsx uses inner gradients on panels */
 .bio-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg,
-    rgba(0,229,255,0.7) 0%,
-    rgba(0,200,255,0.2) 60%,
-    transparent 100%);
-  pointer-events: none; z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    hsla(192,100%,52%,0.04) 0%,
+    transparent 55%,
+    hsla(185,100%,55%,0.02) 100%
+  );
+  border-radius: inherit;
+  pointer-events: none; z-index: 0;
 }
-/* inner ambient */
+/* Top glow line (Index uses this pattern on scanner box) */
 .bio-card::after {
   content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(160deg,
-    rgba(0,160,255,0.04) 0%,
-    transparent 50%,
-    rgba(0,255,163,0.015) 100%);
+  position: absolute;
+  top: 0; left: 12%; right: 12%; height: 1px;
+  background: linear-gradient(90deg, transparent, hsla(192,100%,52%,0.5), transparent);
   pointer-events: none;
 }
 
-/* Corner brackets — just two, top-left / bottom-right */
+/* Corner brackets — Index.tsx bio-corners pattern */
+.bio-corners { position: relative; }
 .bio-corners::before, .bio-corners::after {
   content: ''; position: absolute;
   width: 14px; height: 14px; pointer-events: none;
-  border-color: rgba(0,229,255,0.65); border-style: solid;
+  border-color: hsla(192,100%,52%,0.55); border-style: solid;
 }
-.bio-corners::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
-.bio-corners::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+.bio-corners::before { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; border-radius: 2px 0 0 0; }
+.bio-corners::after  { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; border-radius: 0 0 2px 0; }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD SURFACE  —  inner content panels
+   CARD SURFACE — lighter inner panels
 ═══════════════════════════════════════════════════════════════ */
 .card-surface {
-  background: var(--panel-strong);
-  border: 1px solid rgba(0,160,220,0.12);
-  border-left: 2px solid rgba(0,200,255,0.28);
-  border-top: 1px solid rgba(0,200,255,0.22);
-  backdrop-filter: blur(22px);
+  background: var(--panel-bg-lit);
+  border: 1px solid var(--border-cyan-dim);
+  border-top: 1.5px solid var(--border-cyan);
+  border-radius: 10px;
+  backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
 }
 .card-surface::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; width: 45%; height: 1px;
-  background: linear-gradient(90deg, rgba(0,200,255,0.4), transparent);
+  top: 0; left: 18%; right: 18%; height: 1px;
+  background: linear-gradient(90deg, transparent, hsla(192,100%,52%,0.35), transparent);
   pointer-events: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   INPUTS  —  clean flat terminal fields
+   INPUTS  —  Index.tsx input style
+   background: hsla(215,55%,4%,0.92)
+   border: 1px solid hsla(192,100%,52%,0.35)
+   borderRadius: 7px
+   color: hsl(192,55%,94%)
+   font: Rajdhani
 ═══════════════════════════════════════════════════════════════ */
 .input-cyber {
   width: 100%;
-  padding: 9px 13px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
-  font-weight: 400;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: 0.02em;
-  color: rgba(175,238,255,0.92);
-  background: rgba(0,12,34,0.7);
-  border: 0;
-  border-bottom: 2px solid rgba(0,170,220,0.3);
-  border-left: 2px solid rgba(0,170,220,0.12);
+  color: hsl(192,55%,94%);
+  background: hsla(215,55%,4%,0.88);
+  border: 1px solid hsla(192,100%,52%,0.28);
   outline: none;
-  transition: all 0.18s ease;
-  border-radius: 0;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
   backdrop-filter: blur(8px);
 }
 .input-cyber:focus {
-  background: rgba(0,18,48,0.82);
-  border-bottom-color: rgba(0,229,255,0.8);
-  border-left-color: rgba(0,229,255,0.4);
-  color: rgba(210,250,255,0.98);
-  box-shadow:
-    0 2px 0 rgba(0,229,255,0.15),
-    0 6px 20px rgba(0,200,255,0.1),
-    inset 0 1px 0 rgba(0,200,255,0.04);
+  border-color: hsla(192,100%,58%,0.7);
+  box-shadow: 0 0 0 3px hsla(192,100%,52%,0.12), 0 0 16px hsla(192,100%,52%,0.1);
+  background: hsla(215,55%,5%,0.95);
+  color: hsl(192,60%,96%);
 }
 .input-cyber::placeholder {
-  color: rgba(0,160,210,0.28);
-  font-style: normal;
-  font-size: 11.5px;
+  color: hsla(192,80%,55%,0.28);
+  font-style: italic;
 }
 
 /* Select */
 select.input-cyber {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='rgba(0,200,255,0.55)' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='hsla(192,100%,52%,0.6)' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  padding-right: 32px;
+  padding-right: 34px;
   cursor: pointer;
 }
 select.input-cyber option {
-  background: rgb(0,8,22); color: rgba(175,235,255,0.92);
+  background: hsl(215,55%,5%);
+  color: hsl(192,55%,94%);
 }
 
 /* Textarea */
 .textarea-cyber {
   width: 100%;
-  padding: 9px 13px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.7;
-  color: rgba(175,238,255,0.92);
-  background: rgba(0,12,34,0.7);
-  border: 0;
-  border-bottom: 2px solid rgba(0,170,220,0.3);
-  border-left: 2px solid rgba(0,170,220,0.12);
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: hsl(192,55%,94%);
+  background: hsla(215,55%,4%,0.92);
+  border: 1px solid hsla(192,100%,52%,0.35);
   outline: none;
-  resize: vertical;
-  transition: all 0.18s ease;
-  border-radius: 0;
+  resize: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
   backdrop-filter: blur(8px);
 }
 .textarea-cyber:focus {
-  background: rgba(0,18,48,0.82);
-  border-bottom-color: rgba(0,229,255,0.75);
-  border-left-color: rgba(0,229,255,0.38);
-  box-shadow: 0 2px 0 rgba(0,229,255,0.12), 0 6px 18px rgba(0,200,255,0.08);
+  border-color: hsla(192,100%,58%,0.7);
+  box-shadow: 0 0 0 3px hsla(192,100%,52%,0.12);
 }
-.textarea-cyber::placeholder { color: rgba(0,160,210,0.28); }
+.textarea-cyber::placeholder {
+  color: hsla(192,80%,55%,0.28);
+  font-style: italic;
+}
 
 /* ═══════════════════════════════════════════════════════════════
-   BUTTONS  —  sharp flat with left-accent stripe
+   BUTTONS  —  Index.tsx button patterns
+   Primary: border hsla(192,100%,52%,0.38), bg hsla(192,100%,52%,0.08)
+   Hover:   bg hsla(192,100%,52%,0.18), shadow var(--glow-cyan)
 ═══════════════════════════════════════════════════════════════ */
 .btn-bio {
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 7px; padding: 9px 22px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 22px;
+  border-radius: 9px;
   font-family: 'Orbitron', monospace;
-  font-size: 9.5px; font-weight: 700;
-  letter-spacing: 0.22em; text-transform: uppercase;
-  color: rgba(0,235,255,0.9);
-  background: rgba(0,130,190,0.1);
-  border: 0;
-  border-top: 1px solid rgba(0,220,255,0.45);
-  border-right: 1px solid rgba(0,200,255,0.18);
-  border-bottom: 1px solid rgba(0,180,255,0.18);
-  border-left: 3px solid rgba(0,229,255,0.7);
-  position: relative; overflow: hidden; cursor: pointer;
-  transition: all 0.18s ease;
-  white-space: nowrap;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: hsl(192,100%,68%);
+  background: hsla(192,100%,52%,0.08);
+  border: 1px solid hsla(192,100%,52%,0.38);
+  box-shadow: 0 0 18px hsla(192,100%,52%,0.18);
+  text-shadow: 0 0 10px hsla(192,100%,55%,0.65);
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: all 0.18s ease; white-space: nowrap;
 }
-/* shimmer sweep */
+/* shimmer sweep — Index uses this pattern */
 .btn-bio::before {
   content: '';
-  position: absolute;
-  top: 0; left: -80%; width: 55%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.1), transparent);
+  position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, hsla(192,100%,52%,0.12), transparent);
   transition: left 0.55s ease;
 }
 .btn-bio:hover {
-  background: rgba(0,180,240,0.18);
-  border-left-color: rgba(0,255,200,0.85);
-  border-top-color: rgba(0,255,220,0.6);
-  color: rgba(0,255,235,0.97);
-  box-shadow: var(--glow-cyan);
-  transform: translateX(1px);
+  background: hsla(192,100%,52%,0.18);
+  border-color: hsla(192,100%,58%,0.65);
+  box-shadow: 0 0 28px hsla(192,100%,52%,0.38);
+  color: hsl(192,100%,80%);
+  transform: translateY(-1px);
 }
 .btn-bio:hover::before { left: 130%; }
-.btn-bio:active { transform: translateX(0) scale(0.99); }
+.btn-bio:active { transform: translateY(0) scale(0.98); }
 
-/* Ghost */
+/* Ghost — Index nav buttons */
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 11px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
-  color: rgba(0,195,255,0.42);
-  background: transparent;
-  border: 1px solid rgba(0,170,220,0.18);
-  cursor: pointer; transition: all 0.14s;
+  padding: 4px 10px; border-radius: 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+  color: hsl(192,100%,68%);
+  background: hsla(192,100%,52%,0.08);
+  border: 1px solid hsla(192,100%,52%,0.38);
+  box-shadow: 0 0 18px hsla(192,100%,52%,0.2);
+  cursor: pointer; transition: all 0.15s;
 }
 .btn-ghost:hover {
-  background: rgba(0,170,220,0.08);
-  border-color: rgba(0,210,255,0.38);
-  color: rgba(0,225,255,0.75);
+  background: hsla(192,100%,52%,0.18);
+  box-shadow: 0 0 28px hsla(192,100%,52%,0.38);
 }
 
 /* Cyan utility */
 .btn-cyan {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 7px 17px;
+  padding: 7px 18px; border-radius: 8px;
   font-family: 'Orbitron', monospace;
-  font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
-  color: rgba(0,228,255,0.88);
-  background: rgba(0,200,255,0.08);
-  border: 1px solid rgba(0,200,255,0.38);
-  border-left: 2px solid rgba(0,229,255,0.6);
-  cursor: pointer; transition: all 0.16s;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em;
+  color: hsl(192,100%,68%);
+  background: hsla(192,100%,52%,0.08);
+  border: 1.5px solid hsla(192,100%,58%,0.65);
+  box-shadow: 0 0 18px hsla(192,100%,52%,0.25);
+  cursor: pointer; transition: all 0.18s;
 }
 .btn-cyan:hover {
-  background: rgba(0,200,255,0.18);
-  border-left-color: rgba(0,255,200,0.8);
-  box-shadow: var(--glow-cyan);
-  color: rgba(0,255,230,0.95);
+  background: hsla(192,100%,52%,0.22);
+  box-shadow: 0 0 28px hsla(192,100%,52%,0.45);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   NAV HEADER
+   NAV HEADER  —  from Index.tsx
+   background: transparent with borderBottom: 1px solid hsla(178,60%,40%,0.22)
+   boxShadow: 0 1px 0 hsla(185,100%,52%,0.08)
 ═══════════════════════════════════════════════════════════════ */
 .cyber-header {
-  background: rgba(0,5,16,0.9);
-  border-bottom: 1px solid rgba(0,160,220,0.1);
-  backdrop-filter: blur(32px) saturate(1.9);
+  background: transparent;
+  border-bottom: 1px solid hsla(178,60%,40%,0.22);
+  box-shadow: 0 1px 0 hsla(185,100%,52%,0.08);
+  backdrop-filter: blur(24px) saturate(1.5);
   position: relative;
 }
 .cyber-header::after {
   content: '';
   position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg,
-    rgba(0,229,255,0.5) 0%,
-    rgba(0,229,255,0.15) 35%,
-    transparent 100%);
+    transparent 0%,
+    hsla(192,100%,52%,0.3) 30%,
+    hsla(185,100%,55%,0.45) 50%,
+    hsla(192,100%,52%,0.3) 70%,
+    transparent 100%
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CLASSIFIED BANNERS
+   CLASSIFIED BANNERS  —  Index.tsx top/bottom bars
+   background: rgba(140,18,18,0.95)
 ═══════════════════════════════════════════════════════════════ */
 .nx-classified {
-  position: fixed; left: 0; right: 0; z-index: 60;
-  height: 16px;
+  position: fixed; left: 0; right: 0; z-index: 60; height: 15px;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Orbitron', monospace;
-  font-size: 6.5px; font-weight: 700; letter-spacing: 0.42em;
-  text-transform: uppercase; color: rgba(255,230,210,0.88);
+  font-size: 7px; font-weight: 800; letter-spacing: 0.4em; text-transform: uppercase;
+  color: rgba(255,255,255,0.92);
 }
 .nx-classified.top {
   top: 0;
-  background: linear-gradient(90deg, rgb(90,5,5), rgb(120,10,10), rgb(90,5,5));
-  border-bottom: 1px solid rgba(255,50,30,0.45);
+  background: rgba(140,18,18,0.95);
+  border-bottom: 1px solid rgba(255,40,40,0.35);
 }
 .nx-classified.bottom {
   bottom: 0;
-  background: linear-gradient(90deg, rgb(90,5,5), rgb(120,10,10), rgb(90,5,5));
-  border-top: 1px solid rgba(255,50,30,0.45);
+  background: rgba(140,18,18,0.95);
+  border-top: 1px solid rgba(255,40,40,0.35);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   STATUS DOTS
+   STATUS DOTS  —  Index.tsx animated dots
 ═══════════════════════════════════════════════════════════════ */
 .status-dot {
   width: 5px; height: 5px; border-radius: 50%;
-  animation: sdPulse 2.4s ease-in-out infinite;
+  animation: sdPulse 2.2s ease-in-out infinite;
 }
 @keyframes sdPulse {
-  0%,100% { opacity:1; } 50% { opacity:0.25; }
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.2; transform:scale(0.72); }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SCANNER PULSE  (fingerprint scanner state)
+   SCANNER  —  Index.tsx scanner-pulse animation
 ═══════════════════════════════════════════════════════════════ */
 .scanner-pulse {
-  animation: sRing 1.15s ease-in-out infinite;
+  animation: scannerPulse 1.2s ease-in-out infinite;
 }
-@keyframes sRing {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,130,0,0.0), inset 0 0 22px rgba(255,120,0,0.05); }
-  50%      { box-shadow: 0 0 0 4px rgba(255,120,0,0.0), inset 0 0 44px rgba(255,120,0,0.16); }
+@keyframes scannerPulse {
+  0%,100% { box-shadow: 0 0 0 0 hsla(38,85%,62%,0.0), inset 0 0 25px hsla(38,85%,55%,0.05); }
+  50%      { box-shadow: 0 0 0 6px hsla(38,85%,62%,0.0), inset 0 0 50px hsla(38,85%,55%,0.14); }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   UPLOAD ZONE
+   UPLOAD ZONE  —  Index.tsx upload-zone
 ═══════════════════════════════════════════════════════════════ */
 .upload-zone {
   display: flex; align-items: center; justify-content: center;
   width: 100%; min-height: 44px;
-  border: 1px dashed rgba(0,170,220,0.25);
-  border-left: 2px solid rgba(0,200,255,0.22);
-  background: rgba(0,14,40,0.45);
+  border: 1.5px dashed hsla(192,100%,52%,0.3);
+  border-radius: 9px;
+  background: hsla(215,55%,4%,0.5);
   backdrop-filter: blur(8px);
-  transition: all 0.18s;
-  position: relative; overflow: hidden;
+  transition: all 0.18s; position: relative; overflow: hidden;
 }
 .upload-zone:hover {
-  border-color: rgba(0,210,255,0.48);
-  border-left-color: rgba(0,229,255,0.6);
-  background: rgba(0,22,58,0.58);
-  box-shadow: inset 0 0 18px rgba(0,200,255,0.05);
+  border-color: hsla(192,100%,58%,0.55);
+  background: hsla(215,55%,6%,0.65);
+  box-shadow: inset 0 0 20px hsla(192,100%,52%,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   UTILITY CLASSES
+   TEXT UTILITIES
 ═══════════════════════════════════════════════════════════════ */
 .text-label {
   display: block;
   font-family: 'Orbitron', monospace;
-  font-size: 7px; font-weight: 700; letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(0,175,220,0.4); margin-bottom: 5px;
+  font-size: 7.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: hsla(192,100%,52%,0.4);
+  margin-bottom: 5px;
 }
 
 .glow-text {
-  text-shadow: 0 0 22px rgba(0,200,255,0.5), 0 0 50px rgba(0,155,220,0.18);
+  text-shadow: 0 0 22px hsla(185,100%,55%,0.55), 0 0 50px hsla(192,100%,52%,0.2);
 }
 
-.check-row { display: flex; align-items: center; gap: 9px; }
+.check-row { display: flex; align-items: center; gap: 8px; }
 .check-row label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
-  color: rgba(0,185,255,0.45); text-transform: uppercase; cursor: pointer;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: hsla(192,100%,52%,0.48); cursor: pointer;
 }
 
 .page-header-bar {
-  position: sticky; top: 0; z-index: 30;
-  background: rgba(0,4,15,0.92);
-  border-bottom: 1px solid rgba(0,160,220,0.1);
-  backdrop-filter: blur(32px) saturate(2);
+  position: sticky; top: 0; z-index: 20;
+  background: transparent;
+  border-bottom: 1px solid hsla(178,60%,40%,0.22);
+  box-shadow: 0 1px 0 hsla(185,100%,52%,0.08);
+  backdrop-filter: blur(24px);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -404,28 +433,35 @@ select.input-cyber option {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ANIMATIONS
+   ANIMATIONS  —  from Index.tsx (spin used for scan loader)
 ═══════════════════════════════════════════════════════════════ */
-@keyframes spin          { to { transform: rotate(360deg); } }
-@keyframes fadeUp        { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-@keyframes slideRight    { from { transform:translateX(-6px); opacity:0; } to { transform:translateX(0); opacity:1; } }
-@keyframes glowPulse     { 0%,100% { box-shadow:var(--glow-cyan); } 50% { box-shadow:0 0 28px rgba(0,229,255,0.8),0 0 60px rgba(0,180,255,0.35); } }
-@keyframes borderFlow {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes glowPulse {
+  0%,100% { box-shadow: 0 0 16px hsla(192,100%,52%,0.35); }
+  50%     { box-shadow: 0 0 32px hsla(192,100%,52%,0.65), 0 0 60px hsla(192,100%,52%,0.2); }
+}
+@keyframes borderGlow {
+  0%,100% { border-color: hsla(192,100%,52%,0.38); }
+  50%     { border-color: hsla(192,100%,58%,0.72); }
 }
 
-.animate-spin     { animation: spin 1s linear infinite; }
-.animate-fadeUp   { animation: fadeUp 0.28s ease-out forwards; }
-.animate-slideR   { animation: slideRight 0.25s ease-out forwards; }
-.glow-pulse       { animation: glowPulse 2.8s ease-in-out infinite; }
+.animate-spin     { animation: spin 0.8s linear infinite; }
+.animate-fadeIn   { animation: fadeIn 0.28s ease-out forwards; }
+.glow-pulse       { animation: glowPulse 2.6s ease-in-out infinite; }
+.border-glow      { animation: borderGlow 2s ease-in-out infinite; }
 
 /* ═══════════════════════════════════════════════════════════════
-   FONT CLASSES
+   FONT CLASSES  —  from Index.tsx font stack
 ═══════════════════════════════════════════════════════════════ */
 .font-hud     { font-family: 'Orbitron', monospace; }
-.font-mono    { font-family: 'JetBrains Mono', monospace; }
-.font-display { font-family: 'Rajdhani', system-ui, sans-serif; }
+.font-mono    { font-family: 'IBM Plex Mono', monospace; }
+.font-display { font-family: 'Rajdhani', 'Segoe UI', sans-serif; }
 
 /* ═══════════════════════════════════════════════════════════════
    PRINT
