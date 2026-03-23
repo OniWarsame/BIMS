@@ -827,7 +827,6 @@ Respond ONLY with valid JSON (no markdown):
 
         </motion.div>
       </div>
-    </div>
 
       {/* Modals */}
       <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)} currentUser={currentUser}/>
