@@ -3,8 +3,9 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig({
+  base: "/BIMS/",
   server: {
-    host: "0.0.0.0",
+    host: "::",
     port: 8080,
     hmr: { overlay: false },
   },
