@@ -64,7 +64,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
     <button onClick={()=>{ setOpen(true); setText(isEdit ? (ticket.adminResponse||"") : ""); }}
       style={{
         fontFamily:"'Orbitron',monospace", fontSize:8, fontWeight:700, letterSpacing:"0.14em",
-        padding:"5px 12px", borderRadius:6, cursor:"pointer", border:"none",
+        padding:"5px 12px", borderRadius:6, cursor:"pointer",
         border:`1px solid ${isEdit?"hsla(192,100%,52%,0.4)":"hsla(142,80%,50%,0.55)"}`,
         background:isEdit?"hsla(192,100%,52%,0.08)":"hsla(142,80%,45%,0.1)",
         color:isEdit?"hsl(192,100%,72%)":"hsl(142,80%,68%)",
