@@ -518,7 +518,7 @@ Respond ONLY with valid JSON (no markdown):
       <div style={{
         position:"fixed",top:0,left:0,right:0,zIndex:40,height:52,
         display:"flex",alignItems:"center",
-        justifyContent:"space-between",
+        justifyContent:"flex-start",
         padding:"0 24px",
         background:"rgba(2,6,22,0.90)",
         borderBottom:"1px solid rgba(0,180,255,0.14)",
@@ -551,7 +551,7 @@ Respond ONLY with valid JSON (no markdown):
         </div>
 
         {/* ── RIGHT: Support + Notif + DM + Role + Logout ── */}
-        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:"auto"}}>
 
           {/* Support */}
           <button onClick={()=>setShowSupport(true)}
