@@ -687,7 +687,7 @@ Respond ONLY with valid JSON (no markdown):
               position:"relative" as const, overflow:"hidden",
             }}>
             {/* Shimmer */}
-            {isIdle&&<motion.div style={{position:"absolute",top:0,left:"-70%",width:"40%",height:"100%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)",transform:"skewX(-14deg)"}} animate={{left:["−70%","130%"]}} transition={{duration:2.5,repeat:Infinity,repeatDelay:1.5}}/>}
+            {isIdle&&<motion.div style={{position:"absolute",top:0,left:"-70%",width:"40%",height:"100%",background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)",transform:"skewX(-14deg)"}} animate={{left:["-70%","130%"]}} transition={{duration:2.5,repeat:Infinity,repeatDelay:1.5}}/>}
             {isScanning
               ? <><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid ${scanColor}55`,borderTopColor:scanColor,animation:"spin .7s linear infinite"}}/> SCANNING...</>
               : <><Fingerprint style={{width:19,height:19}}/> INITIATE SCAN</>}
