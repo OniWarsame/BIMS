@@ -515,10 +515,10 @@ Respond ONLY with valid JSON (no markdown):
       <CyberBackground/>
 
       {/* ─── NAV ─── */}
-      <div style={{position:"fixed",top:0,left:0,right:0,width:"100%",zIndex:40,height:52,background:"rgba(2,6,22,0.92)",borderBottom:"1px solid rgba(0,180,255,0.15)",backdropFilter:"blur(40px)",boxSizing:"border-box" as const}}>
+      <div style={{position:"fixed",top:0,left:0,right:0,width:"100vw",zIndex:9999,height:54,background:"rgba(1,4,16,0.96)",borderBottom:"2px solid rgba(0,190,255,0.25)",backdropFilter:"blur(40px)",boxSizing:"border-box" as const}}>
 
         {/* BIMS — absolute left */}
-        <div style={{position:"absolute",left:24,top:0,height:52,display:"flex",alignItems:"center",gap:10}}>
+        <div style={{position:"absolute",left:20,top:0,height:54,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:32,height:32,borderRadius:"50%",background:"radial-gradient(circle at 35% 35%,rgba(0,140,255,0.3),rgba(0,40,160,0.2))",border:"1.5px solid rgba(0,200,255,0.5)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 16px rgba(0,190,255,0.35)"}}>
             <Shield style={{width:15,height:15,color:"hsl(195,100%,70%)"}}/>
           </div>
@@ -529,7 +529,7 @@ Respond ONLY with valid JSON (no markdown):
         </div>
 
         {/* ALL BUTTONS — absolute right */}
-        <div style={{position:"absolute",right:20,top:0,height:52,display:"flex",alignItems:"center",gap:5}}>
+        <div style={{position:"absolute",right:16,top:0,height:54,display:"flex",alignItems:"center",gap:5}}>
 
           <button onClick={()=>setShowSupport(true)}
             style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:99,cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",fontFamily:"'Exo 2',sans-serif",fontSize:11.5,fontWeight:500,color:"rgba(140,200,255,0.75)",transition:"all .18s"}}
@@ -598,7 +598,7 @@ Respond ONLY with valid JSON (no markdown):
       </div>
 
       {/* ─── MAIN CONTENT ─── */}
-      <div style={{position:"fixed",top:52,left:0,right:0,bottom:0,zIndex:2,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"12px 20px",overflow:"hidden"}}>
+      <div style={{position:"fixed",top:54,left:0,right:0,bottom:0,zIndex:2,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"12px 20px",overflow:"hidden"}}>
         <div style={{width:"100%",maxWidth:660,display:"flex",flexDirection:"column" as const,alignItems:"center",gap:16}}>
 
           {/* Title */}
@@ -1110,7 +1110,7 @@ export default Index;      {/* ─── NAV ─── */}
       </nav>
 
       {/* ─── MAIN CONTENT ─── */}
-      <div style={{position:"fixed",top:52,left:0,right:0,bottom:0,zIndex:2,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"12px 20px",overflow:"hidden"}}>
+      <div style={{position:"fixed",top:54,left:0,right:0,bottom:0,zIndex:2,display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",padding:"12px 20px",overflow:"hidden"}}>
         <div style={{width:"100%",maxWidth:660,display:"flex",flexDirection:"column" as const,alignItems:"center",gap:16}}>
 
           {/* Title */}
