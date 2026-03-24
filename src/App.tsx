@@ -16,6 +16,16 @@ import Create from "./pages/Create.tsx";
 import Settings from "./pages/Settings.tsx";
 import Profile from "./pages/Profile.tsx";
 
+const queryClient = new QueryClient();
+
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  if (!isLoggedIn()) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -23,12 +33,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public */}
           <Route path="/login" element={<Login />} />
-          {/* Protected */}
-          <Route path="/"         element={<RequireAuth><Index /></RequireAuth>} />
-          <Route path="/register" element={<RequireAuth><Registration /></RequireAuth>} />
-          <Route path="/database" element={<RequireAuth><DatabasePage /></RequireAuth>} />
+          <Route path="/"          element={<RequireAuth><Index /></RequireAuth>} />
+          <Route path="/register"  element={<RequireAuth><Registration /></RequireAuth>} />
+          <Route path="/database"  element={<RequireAuth><DatabasePage /></RequireAuth>} />
           <Route path="/result/:id" element={<RequireAuth><ResultPage /></RequireAuth>} />
           <Route path="/users"     element={<RequireAuth><UserManagement /></RequireAuth>} />
           <Route path="/reports"   element={<RequireAuth><Reports /></RequireAuth>} />
