@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Fingerprint, AlertTriangle, CheckCircle, ChevronDown, ChevronUp, Headphones } from "lucide-react";
 import CyberBackground from "@/components/CyberBackground";
 import TechSupportModal from "@/components/TechSupportModal";
+import { doLogin, doLogout, getUsers, getCurrentUser, isLoggedIn, isAdmin, isOwner, saveUsers,
+  type UserRole, type BIMSUser, ROLE_COLORS, ROLE_LABELS } from "@/lib/auth";
 export type { UserRole, BIMSUser } from "@/lib/auth";
 export { ROLE_COLORS, ROLE_LABELS, getUsers, saveUsers, isLoggedIn, getCurrentUser, isAdmin, isOwner, doLogin, doLogout } from "@/lib/auth";
 
