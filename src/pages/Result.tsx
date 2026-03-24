@@ -9,7 +9,7 @@ import {
 import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
 import { getRecords, updateRecord, unlockDatabase, type BiometricRecord } from "@/lib/biometric-store";
-import { getCurrentUser, getUsers, ROLE_COLORS, ROLE_LABELS } from "@/pages/Login";
+import { getCurrentUser, getUsers, ROLE_COLORS, ROLE_LABELS } from "@/lib/auth";
 
 /* ── Edit form helpers ── */
 const inputStyle = {

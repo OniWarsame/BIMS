@@ -6,7 +6,7 @@ import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
 import { getRecords, type BiometricRecord } from "@/lib/biometric-store";
 import { buildDoc } from "@/lib/docBuilder";
-import { getCurrentUser } from "@/pages/Login";
+import { getCurrentUser } from "@/lib/auth";
 
 type DocCategory = "cv"|"contract"|"birth"|"personal"|"notary"|"visa";
 

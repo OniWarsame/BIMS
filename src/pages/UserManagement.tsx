@@ -7,10 +7,7 @@ import {
 } from "lucide-react";
 import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
-import {
-  getUsers, saveUsers, getCurrentUser, isAdmin,
-  type BIMSUser, type UserRole
-} from "@/pages/Login";
+import { getUsers, saveUsers, getCurrentUser, isAdmin, type BIMSUser, type UserRole } from "@/lib/auth";
 import { getRecords } from "@/lib/biometric-store";
 
 const genId = () => "usr_" + Math.random().toString(36).slice(2, 10);

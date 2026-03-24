@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Lock, Globe, Eye, EyeOff, Check } from "lucide-react";
 import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
-import { getCurrentUser, getUsers, saveUsers } from "@/pages/Login";
+import { getCurrentUser, getUsers, saveUsers } from "@/lib/auth";
 
 
 const LANGUAGES = [

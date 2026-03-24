@@ -8,23 +8,13 @@ import Registration from "./pages/Registration.tsx";
 import DatabasePage from "./pages/Database.tsx";
 import ResultPage from "./pages/Result.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Login, { isLoggedIn } from "./pages/Login.tsx";
+import Login from "@/pages/Login";
+import { isLoggedIn } from "@/lib/auth";
 import UserManagement from "./pages/UserManagement.tsx";
 import Reports from "./pages/Reports.tsx";
 import Create from "./pages/Create.tsx";
 import Settings from "./pages/Settings.tsx";
 import Profile from "./pages/Profile.tsx";
-
-const queryClient = new QueryClient();
-
-/* ── Auth guard: redirects to /login if not authenticated ── */
-const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  if (!isLoggedIn()) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-  return <>{children}</>;
-};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

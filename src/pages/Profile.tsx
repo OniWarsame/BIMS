@@ -4,7 +4,7 @@ import { ArrowLeft, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
-import { getCurrentUser, getUsers, ROLE_COLORS, ROLE_LABELS } from "@/pages/Login";
+import { getCurrentUser, getUsers, ROLE_COLORS, ROLE_LABELS } from "@/lib/auth";
 import { getRecords, type BiometricRecord } from "@/lib/biometric-store";
 
 export default function Profile() {

@@ -7,7 +7,7 @@ import CyberBackground from "@/components/CyberBackground";
 import TechSupportModal from "@/components/TechSupportModal";
 import DirectMessagePanel, { unreadCount } from "@/components/DirectMessagePanel";
 import { generateFingerprintHash, getRecords } from "@/lib/biometric-store";
-import { doLogout, getCurrentUser, isAdmin } from "@/pages/Login";
+import { doLogout, getCurrentUser, isAdmin } from "@/lib/auth";
 
 /* ── Admin reply inline box ── */
 const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp: string) => void; isEdit?: boolean }) => {

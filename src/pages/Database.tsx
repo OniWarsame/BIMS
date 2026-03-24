@@ -14,7 +14,7 @@ import {
   lockDatabase, getAccessLogs, clearLogs, exportDatabase,
   getStorageInfo, deleteRecord, updateRecord, type BiometricRecord
 } from "@/lib/biometric-store";
-import { getCurrentUser } from "@/pages/Login";
+import { getCurrentUser } from "@/lib/auth";
 
 /* ── Attachment viewer ── */
 const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:boolean;onClose:()=>void}) => (

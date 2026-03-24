@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import CyberBackground from "@/components/CyberBackground";
 import PageFooter from "@/components/PageFooter";
 import { addRecord, generateId, generateFingerprintHash, type BiometricRecord, type AlumniRecord } from "@/lib/biometric-store";
-import { getUsers, saveUsers, type UserRole, ROLE_LABELS } from "@/pages/Login";
+import { getUsers, saveUsers, type UserRole, ROLE_LABELS } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const RELATION_OPTIONS = ["Spouse","Parent","Sibling","Child","Grandparent","Aunt/Uncle","Cousin","Guardian","Friend","Other"];

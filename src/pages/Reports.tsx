@@ -5,7 +5,7 @@ import { ArrowLeft, FileText, Users, Database, Activity, Clock, Shield, AlertTri
 import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
 import { getAccessLogs, getRecords, clearLogs, getStorageInfo, type AccessLog } from "@/lib/biometric-store";
-import { getUsers, getCurrentUser } from "@/pages/Login";
+import { getUsers, getCurrentUser } from "@/lib/auth";
 
 const ACTION_META: Record<string, { label: string; color: string; icon: string }> = {
   DATABASE_UNLOCKED:      { label:"Database Unlocked",       color:"#4ade80", icon:"🔓" },
