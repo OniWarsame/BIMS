@@ -7,6 +7,29 @@ import PageHeader from "@/components/PageHeader";
 import { getCurrentUser, getUsers, saveUsers } from "@/pages/Login";
 
 
+const LANGUAGES = [
+  {code:"en",label:"English",          flag:"🇬🇧",rtl:false},
+  {code:"so",label:"Somali — Soomaali",flag:"🇸🇴",rtl:false},
+  {code:"ar",label:"Arabic — العربية", flag:"🇸🇦",rtl:true },
+  {code:"fr",label:"French — Français",flag:"🇫🇷",rtl:false},
+  {code:"sw",label:"Swahili — Kiswahili",flag:"🇰🇪",rtl:false},
+  {code:"am",label:"Amharic — አማርኛ",  flag:"🇪🇹",rtl:false},
+  {code:"ha",label:"Hausa",            flag:"🇳🇬",rtl:false},
+  {code:"de",label:"German — Deutsch", flag:"🇩🇪",rtl:false},
+  {code:"zh",label:"Chinese — 中文",   flag:"🇨🇳",rtl:false},
+  {code:"es",label:"Spanish — Español",flag:"🇪🇸",rtl:false},
+];
+
+function applyLang(code:string){
+  const isRtl=LANGUAGES.find(l=>l.code===code)?.rtl??false;
+  localStorage.setItem("bims_lang",code);
+  document.documentElement.lang=code;
+  document.documentElement.dir=isRtl?"rtl":"ltr";
+  document.body.style.direction=isRtl?"rtl":"ltr";
+  window.dispatchEvent(new Event("bims_lang_change"));
+}
+
+
 /* ── Real-time UI translation strings ── */
 const T: Record<string, Record<string, string>> = {
   settings:       {en:"SETTINGS",          so:"GOOBAHA",           ar:"الإعدادات",       fr:"PARAMÈTRES",      sw:"MIPANGILIO",      am:"ቅንብሮች",         ha:"SAITUNA",         de:"EINSTELLUNGEN",   zh:"设置",          es:"CONFIGURACIÓN"},
@@ -52,6 +75,7 @@ export default function Settings() {
 
   const selectLang = (code:string) => {
     setLang(code);
+    applyLang(code);
     setSaved(true);
     setTimeout(()=>setSaved(false), 2500);
   };

@@ -934,9 +934,9 @@ Respond ONLY with valid JSON (no markdown):
                 </button>
               </div>
               <div style={{display:"flex",gap:6,marginBottom:14}}>
-                {(["name","username","email","phone"] as const).map(t=>(
+                {(["name","username","email","phone","face"] as const).map(t=>(
                   <button key={t} onClick={()=>setDsType(t)}
-                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?"rgba(120,100,255,0.6)":"rgba(255,255,255,0.1)"}`,background:dsType===t?"rgba(100,80,255,0.18)":"rgba(255,255,255,0.04)",color:dsType===t?"rgba(200,185,255,0.95)":"rgba(140,130,200,0.5)",transition:"all .16s"}}>
+                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?(t==="face"?"rgba(0,210,255,0.7)":"rgba(120,100,255,0.6)"):"rgba(255,255,255,0.1)"}`,background:dsType===t?(t==="face"?"rgba(0,180,240,0.18)":"rgba(100,80,255,0.18)"):"rgba(255,255,255,0.04)",color:dsType===t?(t==="face"?"rgba(0,225,255,0.95)":"rgba(200,185,255,0.95)"):"rgba(140,130,200,0.5)",transition:"all .16s"}}>
                     {t}
                   </button>
                 ))}
