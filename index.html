@@ -26,396 +26,284 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-// ═══════════════════════════════════════════════════════
-//  BIMS BIOMETRIC CANVAS — runs standalone, no imports
-//  Fingerprint panel (left) + DNA helix (right) + Eye iris (centre)
-//  Precision reticle mouse cursor
-// ═══════════════════════════════════════════════════════
-(function() {
-  const canvas = document.getElementById('bims-canvas');
-  const ctx = canvas.getContext('2d');
-  let T = 0, raf = 0;
-  const M = {x:-999,y:-999,px:-999,py:-999,click:false};
-  const SM = {x:-999,y:-999};
+(function(){
+  const cv=document.getElementById('bims-canvas');
+  if(!cv)return;
+  const x=cv.getContext('2d');
+  let T=0,raf=0,dnaT=0,scanY=0;
+  const M={x:-999,y:-999,px:-999,py:-999,down:false};
+  const SM={x:-999,y:-999};
+  const RINGS=[],SPARKS=[];
 
-  window.addEventListener('mousemove', e=>{M.px=M.x;M.py=M.y;M.x=e.clientX;M.y=e.clientY;},{passive:true});
-  window.addEventListener('mousedown', ()=>{M.click=true;setTimeout(()=>M.click=false,250);});
+  window.addEventListener('mousemove',e=>{M.px=M.x;M.py=M.y;M.x=e.clientX;M.y=e.clientY;},{passive:true});
+  window.addEventListener('mousedown',()=>{M.down=true;setTimeout(()=>M.down=false,220);});
   window.addEventListener('mouseleave',()=>{M.x=-999;M.y=-999;});
-  window.addEventListener('resize', ()=>{canvas.width=innerWidth;canvas.height=innerHeight;init();});
+  window.addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight;init();});
 
-  // Load the eye image
-  const IMG = new Image();
-  let imgOK = false;
-  IMG.onload = ()=>imgOK=true;
-  IMG.src = '/eye.jpg';
+  const IMG=new Image(); let imgOK=false;
+  IMG.onload=()=>imgOK=true;
+  IMG.src='/fb.jpg';
 
-  const CY=(a)=>`rgba(0,210,255,${a})`;
-  const GO=(a)=>`rgba(255,190,30,${a})`;
-  const GN=(a)=>`rgba(0,255,140,${a})`;
-
-  // State
-  let NODES=[], TRACES=[], MOTES=[];
-  const RINGS=[], SPARKS=[];
-  let IW=0,IH=0,IOffX=0,IOffY=0,IRot=0;
-  let fpScan=0, dnaT=0;
+  let nodes=[],traces=[],motes=[];
 
   function init(){
-    const W=canvas.width, H=canvas.height;
-    IW=Math.min(W,H)*0.40; IH=Math.min(W,H)*0.26;
-
-    NODES=Array.from({length:44},(_,i)=>{
-      const x=40+Math.random()*(W-80), y=40+Math.random()*(H-80);
-      return {x,y,ox:x,oy:y,vx:0,vy:0,r:i<8?3.5+Math.random()*2:1.2+Math.random()*2,
-        hue:[193,42,145,270,165][Math.floor(Math.random()*5)],phase:Math.random()*Math.PI*2};
+    const W=cv.width,H=cv.height;
+    nodes=Array.from({length:50},(_,i)=>{
+      const nx=30+Math.random()*(W-60),ny=30+Math.random()*(H-60);
+      return{x:nx,y:ny,ox:nx,oy:ny,vx:0,vy:0,r:i<10?3+Math.random()*2.5:1+Math.random()*2,
+        hue:[193,42,165,145,270][i%5],phase:Math.random()*Math.PI*2};
     });
-
-    TRACES=Array.from({length:32},()=>{
-      const pts=[]; let cx=Math.random()*W, cy=Math.random()*H;
-      pts.push({x:cx,y:cy});
-      for(let s=0;s<3+Math.floor(Math.random()*4);s++){
-        Math.random()>.5?(cx+=(Math.random()-.5)*180):(cy+=(Math.random()-.5)*150);
-        pts.push({x:cx,y:cy});
+    traces=Array.from({length:38},()=>{
+      const pts=[];let px=Math.random()*W,py=Math.random()*H;
+      pts.push({x:px,y:py});
+      for(let s=0;s<2+Math.floor(Math.random()*5);s++){
+        Math.random()>.5?(px+=(Math.random()-.5)*190):(py+=(Math.random()-.5)*160);
+        pts.push({x:Math.max(0,Math.min(W,px)),y:Math.max(0,Math.min(H,py))});
       }
-      return {pts,hue:[193,42,165,270,145][Math.floor(Math.random()*5)],alpha:.06+Math.random()*.11,flow:Math.random()};
+      return{pts,hue:[193,42,165,270,145][Math.floor(Math.random()*5)],alpha:.05+Math.random()*.1,flow:Math.random()};
     });
-
-    MOTES=Array.from({length:60},()=>({
+    motes=Array.from({length:65},()=>({
       x:Math.random()*W,y:Math.random()*H,
-      vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.14,
-      r:.5+Math.random()*1.3,life:Math.random()*Math.PI*2
+      vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.15,
+      r:.4+Math.random()*1.3,life:Math.random()*Math.PI*2,gold:Math.random()<.25
     }));
   }
 
-  function drawFP(W,H){
-    fpScan=(fpScan+1.3)%(H*.55);
-    const pw=Math.min(170,W*.13), ph=pw*1.35;
-    const px=24, py=H/2-ph/2;
-    const cx=px+pw/2, cy=py+ph*.44, r=pw*.35;
-    ctx.save();
-    // Panel bg
-    const bg=ctx.createLinearGradient(px,py,px,py+ph);
-    bg.addColorStop(0,'rgba(0,12,30,.78)'); bg.addColorStop(1,'rgba(0,5,18,.85)');
-    ctx.fillStyle=bg; ctx.beginPath(); ctx.roundRect(px,py,pw,ph,10); ctx.fill();
-    // Fingerprint arcs
-    for(let i=1;i<=9;i++){
-      const rr=r*(i/9), h=145+i*8;
-      ctx.beginPath(); ctx.arc(cx,cy+r*.08,rr,Math.PI*.06+i*.022,Math.PI*.94-i*.022);
-      ctx.strokeStyle=`hsla(${h},90%,58%,${.10+i*.055})`; ctx.lineWidth=.9; ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx,cy-r*.08,rr,Math.PI*1.06+i*.022,Math.PI*1.94-i*.022);
-      ctx.strokeStyle=`hsla(${h},80%,48%,${.07+i*.04})`; ctx.lineWidth=.7; ctx.stroke();
-    }
-    // Scan line
-    const sy=py+ph*.07+fpScan;
-    const sg=ctx.createLinearGradient(0,sy-3,0,sy+3);
-    sg.addColorStop(0,'transparent'); sg.addColorStop(.5,GN(.85)); sg.addColorStop(1,'transparent');
-    ctx.fillStyle=sg; ctx.fillRect(px+4,sy-3,pw-8,6);
-    // Centre dot
-    ctx.save(); ctx.shadowBlur=12; ctx.shadowColor=GN(1);
-    ctx.beginPath(); ctx.arc(cx,cy,4.5,0,Math.PI*2);
-    ctx.fillStyle=GN(.9); ctx.fill(); ctx.shadowBlur=0; ctx.restore();
-    // Progress bar
-    const pct=fpScan/(H*.55);
-    ctx.fillStyle='rgba(0,20,10,.6)'; ctx.fillRect(px+8,py+ph-16,pw-16,5);
-    const pg=ctx.createLinearGradient(px+8,0,px+8+(pw-16)*pct,0);
-    pg.addColorStop(0,GN(.9)); pg.addColorStop(1,CY(.8));
-    ctx.fillStyle=pg; ctx.fillRect(px+8,py+ph-16,(pw-16)*pct,5);
-    // Border
-    ctx.save(); ctx.shadowBlur=14; ctx.shadowColor=GN(.8);
-    ctx.strokeStyle=GN(.6); ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.roundRect(px,py,pw,ph,10); ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
-    // Brackets
-    const bs=13;
-    [[px,py,1,1],[px+pw,py,-1,1],[px+pw,py+ph,-1,-1],[px,py+ph,1,-1]].forEach(([bx,by,sx,sy2])=>{
-      ctx.strokeStyle=GN(.95); ctx.lineWidth=1.8;
-      ctx.beginPath(); ctx.moveTo(bx+sx*bs,by); ctx.lineTo(bx,by); ctx.lineTo(bx,by+sy2*bs); ctx.stroke();
-    });
-    // Label
-    ctx.font="bold 7px 'Courier New',monospace"; ctx.textAlign='center';
-    ctx.fillStyle=GN(.75); ctx.fillText('FINGERPRINT SCAN',cx,py-7);
-    ctx.fillStyle=GN(.5+.4*Math.abs(Math.sin(T*3))); ctx.fillText('● SCANNING',cx,py+ph+13);
-    ctx.restore();
-  }
-
-  function drawDNA(W,H){
-    dnaT+=.022;
-    const pw=Math.min(160,W*.12), ph=H*.60;
-    const px=W-pw-24, py=H/2-ph/2, cx=px+pw/2;
-    ctx.save();
-    const bg=ctx.createLinearGradient(px,py,px,py+ph);
-    bg.addColorStop(0,'rgba(0,8,26,.76)'); bg.addColorStop(1,'rgba(0,4,16,.82)');
-    ctx.fillStyle=bg; ctx.beginPath(); ctx.roundRect(px,py,pw,ph,10); ctx.fill();
-    // Helix
-    const steps=55;
-    for(let i=0;i<steps;i++){
-      const prog=i/steps, y=py+14+prog*(ph-28);
-      const ang=prog*Math.PI*4.5+dnaT, amp=pw*.27;
-      const x1=cx+Math.cos(ang)*amp, x2=cx+Math.cos(ang+Math.PI)*amp;
-      const t2=.5+.5*Math.sin(ang*1.5), hue=193+t2*80;
-      ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y);
-      ctx.strokeStyle=`hsla(${hue},100%,60%,${.12+t2*.22})`; ctx.lineWidth=.9; ctx.stroke();
-      const bright=Math.abs(Math.cos(ang));
-      if(bright>.45){
-        ctx.save(); ctx.shadowBlur=7; ctx.shadowColor=`hsla(${hue},100%,70%,.9)`;
-        ctx.beginPath(); ctx.arc(x1,y,2.5*bright,0,Math.PI*2);
-        ctx.fillStyle=`hsla(${hue},100%,72%,${.6+bright*.35})`; ctx.fill();
-        ctx.beginPath(); ctx.arc(x2,y,2.5*bright,0,Math.PI*2);
-        ctx.fillStyle=`hsla(${hue+40},100%,72%,${.6+bright*.35})`; ctx.fill();
-        ctx.shadowBlur=0; ctx.restore();
-      }
-    }
-    // Border
-    ctx.save(); ctx.shadowBlur=12; ctx.shadowColor=CY(.7);
-    ctx.strokeStyle=CY(.5); ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.roundRect(px,py,pw,ph,10); ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
-    // Brackets
-    const bs=13;
-    [[px,py,1,1],[px+pw,py,-1,1],[px+pw,py+ph,-1,-1],[px,py+ph,1,-1]].forEach(([bx,by,sx,sy2])=>{
-      ctx.strokeStyle=CY(.9); ctx.lineWidth=1.8;
-      ctx.beginPath(); ctx.moveTo(bx+sx*bs,by); ctx.lineTo(bx,by); ctx.lineTo(bx,by+sy2*bs); ctx.stroke();
-    });
-    ctx.font="bold 7px 'Courier New',monospace"; ctx.textAlign='center';
-    ctx.fillStyle=CY(.75); ctx.fillText('DNA SEQUENCE',cx,py-7);
-    ctx.fillStyle=CY(.5+.4*Math.abs(Math.sin(T*2.2+1))); ctx.fillText('● ANALYSING',cx,py+ph+13);
-    ctx.restore();
-  }
-
-  function drawIris(W,H){
-    const CX=W*.5,CY=H*.5;
-    const breath=Math.sin(T*.52)*.022;
-    const iw=IW*(1+breath), ih=IH*(1+breath*.8);
-    IRot+=.0013;
-    if(M.x>0){IOffX+=(((M.x-CX)/W)*26-IOffX)*.04; IOffY+=(((M.y-CY)/H)*18-IOffY)*.04;}
-    // Halo
-    const halo=ctx.createRadialGradient(CX,CY,iw*.5,CX,CY,iw*1.6);
-    halo.addColorStop(0,CY(.09+.04*Math.sin(T*.9)));
-    halo.addColorStop(.5,CY(.03)); halo.addColorStop(1,'transparent');
-    ctx.fillStyle=halo; ctx.beginPath(); ctx.ellipse(CX,CY,iw*1.6,ih*1.6,0,0,Math.PI*2); ctx.fill();
-    // Image
-    if(imgOK){
-      ctx.save();
-      ctx.beginPath(); ctx.ellipse(CX,CY,iw,ih,0,0,Math.PI*2); ctx.clip();
-      const sc=(iw*2.3)/IMG.width;
-      ctx.drawImage(IMG,CX-IMG.width*sc/2+IOffX,CY-IMG.height*sc/2+IOffY,IMG.width*sc,IMG.height*sc);
-      const vig=ctx.createRadialGradient(CX,CY,iw*.4,CX,CY,iw);
-      vig.addColorStop(0,'transparent'); vig.addColorStop(.65,'rgba(0,4,14,.08)'); vig.addColorStop(1,'rgba(0,4,14,.82)');
-      ctx.fillStyle=vig; ctx.fillRect(0,0,W,H); ctx.restore();
-    }
-    // Fibers
-    ctx.save();
-    ctx.beginPath(); ctx.ellipse(CX,CY,iw*.97,ih*.97,0,0,Math.PI*2); ctx.clip();
-    for(let i=0;i<55;i++){
-      const ang=(i/55)*Math.PI*2+IRot, jit=Math.sin(T*.4+i*.8)*.04;
-      const r1=Math.min(iw,ih)*.33, r2=Math.min(iw,ih)*.87;
-      ctx.beginPath();
-      ctx.moveTo(CX+Math.cos(ang+jit)*r1,CY+Math.sin(ang+jit)*r1*(ih/iw));
-      ctx.lineTo(CX+Math.cos(ang)*r2,CY+Math.sin(ang)*r2*(ih/iw));
-      ctx.strokeStyle=`hsla(${i%3===0?42:193},100%,65%,${.052+.032*Math.sin(T*.6+i)})`;
-      ctx.lineWidth=.5; ctx.stroke();
-    }
-    ctx.restore();
-    // Border
-    const bp=.5+.5*Math.sin(T*.72);
-    ctx.save(); ctx.shadowBlur=26+12*bp; ctx.shadowColor=CY(.85);
-    ctx.strokeStyle=CY(.58+.28*bp); ctx.lineWidth=2.2;
-    ctx.beginPath(); ctx.ellipse(CX,CY,iw,ih,0,0,Math.PI*2); ctx.stroke();
-    ctx.shadowBlur=0; ctx.restore();
-    // Pulse rings
-    for(let i=0;i<3;i++){
-      const ph=(T*.38+i*2.1)%(Math.PI*2);
-      const pr=iw*(1.05+.24*(ph/(Math.PI*2)));
-      const pa=Math.max(0,.18*(1-ph/(Math.PI*2)));
-      ctx.beginPath(); ctx.ellipse(CX,CY,pr,pr*(ih/iw),0,0,Math.PI*2);
-      ctx.strokeStyle=CY(pa); ctx.lineWidth=.85; ctx.stroke();
-    }
-    // Eyelid arcs
-    ctx.beginPath(); ctx.ellipse(CX,CY-ih*.14,iw*1.06,ih*1.12,0,Math.PI+.07,Math.PI*2-.07);
-    ctx.strokeStyle=CY(.055); ctx.lineWidth=.6; ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(CX,CY+ih*.14,iw*1.06,ih*1.12,0,.07,Math.PI-.07);
-    ctx.strokeStyle=CY(.055); ctx.lineWidth=.6; ctx.stroke();
-  }
-
-  function drawMouse(W,H){
-    if(M.x<0) return;
-    SM.x=SM.x<0?M.x:SM.x+(M.x-SM.x)*.1;
-    SM.y=SM.y<0?M.y:SM.y+(M.y-SM.y)*.1;
-    const cx=SM.x,cy=SM.y;
-    const CX=W*.5,CY=H*.5;
-    const inside=Math.hypot((cx-CX)/IW,(cy-CY)/IH)<.88;
-    const spd=Math.hypot(M.x-M.px,M.y-M.py);
-    const hot=spd>1.5;
-    const col=inside?CY:GO;
-    // Bloom
-    const bl=ctx.createRadialGradient(cx,cy,0,cx,cy,52);
-    bl.addColorStop(0,inside?CY(hot?.14:.08):GO(hot?.12:.07));
-    bl.addColorStop(1,'transparent');
-    ctx.fillStyle=bl; ctx.beginPath(); ctx.arc(cx,cy,52,0,Math.PI*2); ctx.fill();
-    // Outer rotating arc
-    ctx.save(); ctx.translate(cx,cy); ctx.rotate(T*1.9+spd*.06);
-    ctx.beginPath(); ctx.arc(0,0,30,0,Math.PI*1.5);
-    ctx.strokeStyle=col(.55+.22*Math.sin(T*2.5)); ctx.lineWidth=1.7; ctx.stroke();
-    const ec=Math.PI*1.5;
-    ctx.save(); ctx.shadowBlur=6; ctx.shadowColor=col(1);
-    ctx.beginPath(); ctx.arc(Math.cos(ec)*30,Math.sin(ec)*30,2.5,0,Math.PI*2);
-    ctx.fillStyle=col(.9); ctx.fill(); ctx.shadowBlur=0; ctx.restore();
-    ctx.restore();
-    // Inner counter-arc
-    ctx.save(); ctx.translate(cx,cy); ctx.rotate(-T*1.4);
-    ctx.beginPath(); ctx.arc(0,0,19,Math.PI*.3,Math.PI*1.8);
-    ctx.strokeStyle=col(.38+.18*Math.sin(T*3)); ctx.lineWidth=1.0; ctx.stroke();
-    ctx.restore();
-    // Diamond
-    const ds=11;
-    ctx.save(); ctx.shadowBlur=7; ctx.shadowColor=col(.8);
-    ctx.strokeStyle=col(.72); ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.moveTo(cx,cy-ds); ctx.lineTo(cx+ds*.65,cy); ctx.lineTo(cx,cy+ds); ctx.lineTo(cx-ds*.65,cy);
-    ctx.closePath(); ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
-    // Centre dot
-    ctx.save(); ctx.shadowBlur=hot?16:10; ctx.shadowColor=hot?GN(1):col(.9);
-    ctx.beginPath(); ctx.arc(cx,cy,hot?3.8:2.8,0,Math.PI*2);
-    ctx.fillStyle=hot?GN(.96):`rgba(200,240,255,.95)`; ctx.fill();
-    ctx.shadowBlur=0; ctx.restore();
-    // 4 ticks
-    const arm=12,gap=7;
-    ctx.strokeStyle=col(hot?.8:.52); ctx.lineWidth=hot?1.4:1;
-    [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{
-      ctx.beginPath(); ctx.moveTo(cx+dx*gap,cy+dy*gap); ctx.lineTo(cx+dx*(gap+arm),cy+dy*(gap+arm)); ctx.stroke();
-    });
-    // Coordinates
-    if(hot){
-      ctx.font="6.5px 'Courier New',monospace"; ctx.textAlign='left';
-      ctx.fillStyle=col(.65);
-      ctx.fillText(`X:${String(Math.floor(cx)).padStart(4,'0')}`,cx+44,cy-2);
-      ctx.fillText(`Y:${String(Math.floor(cy)).padStart(4,'0')}`,cx+44,cy+10);
-    }
-  }
-
   function draw(){
-    T+=.016;
-    const W=canvas.width, H=canvas.height;
-    const CX=W*.5,CY=H*.5;
-    // Void
-    ctx.fillStyle='#000610'; ctx.fillRect(0,0,W,H);
-    // Ambient
-    const amb=ctx.createRadialGradient(CX,CY,0,CX,CY,W*.7);
-    amb.addColorStop(0,'rgba(0,18,44,.58)'); amb.addColorStop(.4,'rgba(0,10,28,.26)'); amb.addColorStop(1,'transparent');
-    ctx.fillStyle=amb; ctx.fillRect(0,0,W,H);
-    // Motes
-    for(const mo of MOTES){
-      mo.x+=mo.vx; mo.y+=mo.vy; mo.life+=.007;
-      if(mo.x<0)mo.x=W; if(mo.x>W)mo.x=0; if(mo.y<0)mo.y=H; if(mo.y>H)mo.y=0;
-      const a=.28+.28*Math.sin(mo.life);
-      ctx.beginPath(); ctx.arc(mo.x,mo.y,mo.r,0,Math.PI*2);
-      ctx.fillStyle=((mo.life*3|0)%5===0)?GO(a*.5):CY(a*.27); ctx.fill();
+    T+=.016;dnaT+=.018;
+    const W=cv.width,H=cv.height,CX=W/2,CY=H/2;
+
+    // void
+    x.fillStyle='#000814';x.fillRect(0,0,W,H);
+
+    // fingerprint image — centre stage
+    if(imgOK){
+      const iw=Math.min(W*.62,680),ih=iw*(IMG.height/IMG.width);
+      const ix=CX-iw/2,iy=CY-ih/2;
+
+      // outer halo
+      const halo=x.createRadialGradient(CX,CY,iw*.1,CX,CY,iw*.85);
+      halo.addColorStop(0,'rgba(0,180,255,0.20)');
+      halo.addColorStop(.5,'rgba(0,80,180,0.08)');
+      halo.addColorStop(1,'transparent');
+      x.fillStyle=halo;x.fillRect(ix-100,iy-100,iw+200,ih+200);
+
+      // image
+      x.save();
+      x.globalAlpha=.70+.12*Math.sin(T*.4);
+      x.beginPath();x.roundRect(ix,iy,iw,ih,16);x.clip();
+      x.drawImage(IMG,ix,iy,iw,ih);
+      // shimmer
+      const sh=x.createLinearGradient(ix,iy,ix+iw,iy+ih);
+      sh.addColorStop(0,'transparent');
+      sh.addColorStop(.45+.12*Math.sin(T*.3),'rgba(0,200,255,.05)');
+      sh.addColorStop(1,'transparent');
+      x.fillStyle=sh;x.fillRect(ix,iy,iw,ih);
+      x.restore();
+
+      // border
+      const bp=.5+.5*Math.sin(T*.7);
+      x.save();x.shadowBlur=28+14*bp;x.shadowColor=`rgba(0,200,255,${.65+.22*bp})`;
+      x.strokeStyle=`rgba(0,210,255,${.32+.22*bp})`;x.lineWidth=2;
+      x.beginPath();x.roundRect(ix,iy,iw,ih,16);x.stroke();
+      x.shadowBlur=0;x.restore();
+
+      // scan beam
+      scanY=(scanY+1.5)%(ih+24);
+      const sy=iy-4+scanY;
+      const sg=x.createLinearGradient(ix,sy-7,ix,sy+7);
+      sg.addColorStop(0,'transparent');sg.addColorStop(.4,'rgba(0,255,150,0.60)');
+      sg.addColorStop(.6,'rgba(0,255,150,0.60)');sg.addColorStop(1,'transparent');
+      x.fillStyle=sg;x.fillRect(ix+2,sy-7,iw-4,14);
+
+      // corner brackets
+      const bs=26;
+      [[ix,iy,1,1],[ix+iw,iy,-1,1],[ix+iw,iy+ih,-1,-1],[ix,iy+ih,1,-1]].forEach(([bx,by,sx2,sy2])=>{
+        x.save();x.shadowBlur=14;x.shadowColor='rgba(0,220,255,1)';
+        x.strokeStyle='rgba(0,220,255,.92)';x.lineWidth=2.5;
+        x.beginPath();x.moveTo(bx+sx2*bs,by);x.lineTo(bx,by);x.lineTo(bx,by+sy2*bs);x.stroke();
+        x.shadowBlur=0;x.restore();
+      });
+      // corner dots
+      [[ix,iy],[ix+iw,iy],[ix+iw,iy+ih],[ix,iy+ih]].forEach(([bx,by],i)=>{
+        const pa=.5+.5*Math.sin(T*2+i);
+        x.save();x.shadowBlur=10;x.shadowColor='rgba(0,220,255,.9)';
+        x.beginPath();x.arc(bx,by,4,0,Math.PI*2);
+        x.fillStyle=`rgba(0,220,255,${pa})`;x.fill();x.shadowBlur=0;x.restore();
+      });
+
+      // labels
+      const sp=.5+.5*Math.sin(T*3);
+      x.font="bold 11px 'Courier New',monospace";
+      x.textAlign='left';x.fillStyle=`rgba(0,255,140,${.55+.4*sp})`;
+      x.fillText('● BIOMETRIC SCAN ACTIVE',ix+8,iy-13);
+      x.textAlign='right';x.fillStyle='rgba(0,200,255,.6)';
+      x.fillText(Math.floor((scanY/(ih+24))*100)+'%',ix+iw-8,iy-13);
     }
-    // Traces + photons
-    for(const tr of TRACES){
+
+    // ambient
+    const amb=x.createRadialGradient(CX,CY,0,CX,CY,W*.8);
+    amb.addColorStop(0,'rgba(0,18,50,.32)');amb.addColorStop(.5,'rgba(0,10,30,.14)');amb.addColorStop(1,'transparent');
+    x.fillStyle=amb;x.fillRect(0,0,W,H);
+
+    // motes
+    for(const m of motes){
+      m.x+=m.vx;m.y+=m.vy;m.life+=.007;
+      if(m.x<0)m.x=W;if(m.x>W)m.x=0;if(m.y<0)m.y=H;if(m.y>H)m.y=0;
+      const a=.2+.2*Math.sin(m.life);
+      x.beginPath();x.arc(m.x,m.y,m.r,0,Math.PI*2);
+      x.fillStyle=m.gold?`rgba(255,190,30,${a*.55})`:`rgba(0,200,255,${a*.32})`;x.fill();
+    }
+
+    // traces + photons
+    for(const tr of traces){
       tr.flow=(tr.flow+.0022)%1;
-      ctx.beginPath(); ctx.moveTo(tr.pts[0].x,tr.pts[0].y);
-      for(let i=1;i<tr.pts.length;i++) ctx.lineTo(tr.pts[i].x,tr.pts[i].y);
-      ctx.strokeStyle=`hsla(${tr.hue},100%,58%,${tr.alpha})`; ctx.lineWidth=.65; ctx.stroke();
-      for(const pt of tr.pts){
-        ctx.beginPath(); ctx.arc(pt.x,pt.y,1.3,0,Math.PI*2);
-        ctx.fillStyle=`hsla(${tr.hue},100%,68%,${tr.alpha*1.8})`; ctx.fill();
-      }
-      const total=tr.pts.slice(1).reduce((acc,p,i)=>acc+Math.hypot(p.x-tr.pts[i].x,p.y-tr.pts[i].y),0);
-      let tgt=tr.flow*total,walked=0;
+      x.beginPath();x.moveTo(tr.pts[0].x,tr.pts[0].y);
+      for(let i=1;i<tr.pts.length;i++)x.lineTo(tr.pts[i].x,tr.pts[i].y);
+      x.strokeStyle=`hsla(${tr.hue},100%,58%,${tr.alpha})`;x.lineWidth=.6;x.stroke();
+      for(const p of tr.pts){x.beginPath();x.arc(p.x,p.y,1.2,0,Math.PI*2);x.fillStyle=`hsla(${tr.hue},100%,70%,${tr.alpha*1.7})`;x.fill();}
+      const tot=tr.pts.slice(1).reduce((a,p,i)=>a+Math.hypot(p.x-tr.pts[i].x,p.y-tr.pts[i].y),0);
+      let tgt=tr.flow*tot,wlk=0;
       for(let i=1;i<tr.pts.length;i++){
         const seg=Math.hypot(tr.pts[i].x-tr.pts[i-1].x,tr.pts[i].y-tr.pts[i-1].y);
-        if(walked+seg>=tgt){
-          const t2=(tgt-walked)/seg;
+        if(wlk+seg>=tgt){
+          const t2=(tgt-wlk)/seg;
           const px2=tr.pts[i-1].x+t2*(tr.pts[i].x-tr.pts[i-1].x);
           const py2=tr.pts[i-1].y+t2*(tr.pts[i].y-tr.pts[i-1].y);
-          ctx.save(); ctx.shadowBlur=9; ctx.shadowColor=`hsla(${tr.hue},100%,80%,1)`;
-          ctx.beginPath(); ctx.arc(px2,py2,2.1,0,Math.PI*2);
-          ctx.fillStyle=`hsla(${tr.hue},100%,88%,.95)`; ctx.fill();
-          ctx.shadowBlur=0; ctx.restore(); break;
-        }
-        walked+=seg;
+          x.save();x.shadowBlur=10;x.shadowColor=`hsla(${tr.hue},100%,80%,1)`;
+          x.beginPath();x.arc(px2,py2,2.2,0,Math.PI*2);
+          x.fillStyle=`hsla(${tr.hue},100%,90%,.95)`;x.fill();x.shadowBlur=0;x.restore();break;
+        }wlk+=seg;
       }
     }
-    // Dot grid
-    for(let gx=0;gx<W;gx+=42){for(let gy=0;gy<H;gy+=42){
-      const hue=42+((gx*.2+gy*.15+T*14)%30);
-      const a=.026+.016*Math.sin(T*.45+gx*.04+gy*.03);
-      ctx.beginPath(); ctx.arc(gx,gy,.68,0,Math.PI*2);
-      ctx.fillStyle=`hsla(${hue},100%,62%,${a})`; ctx.fill();
-    }}
-    // Nodes
-    for(const n of NODES){
-      n.phase+=.011;
-      const pulse=.5+.5*Math.sin(n.phase);
-      if(M.x>0){const dx=M.x-n.x,dy=M.y-n.y,d=Math.hypot(dx,dy);if(d<190&&d>.5){const f=.019*(1-d/190);n.vx+=dx/d*f;n.vy+=dy/d*f;}}
-      n.vx+=(n.ox-n.x)*.013; n.vy+=(n.oy-n.y)*.013; n.vx*=.87; n.vy*=.87; n.x+=n.vx; n.y+=n.vy;
-      const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r*3.5);
-      g.addColorStop(0,`hsla(${n.hue},100%,65%,${pulse*.27})`); g.addColorStop(1,'transparent');
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(n.x,n.y,n.r*3.5,0,Math.PI*2); ctx.fill();
-      ctx.save(); ctx.shadowBlur=n.r>3?13:6; ctx.shadowColor=`hsla(${n.hue},100%,70%,.9)`;
-      ctx.beginPath(); ctx.arc(n.x,n.y,n.r*(.88+.14*pulse),0,Math.PI*2);
-      ctx.strokeStyle=`hsla(${n.hue},100%,70%,${.44+.42*pulse})`; ctx.lineWidth=n.r>3?1.3:.9; ctx.stroke();
-      ctx.shadowBlur=0; ctx.restore();
+
+    // dot grid
+    for(let gx=0;gx<W;gx+=44)for(let gy=0;gy<H;gy+=44){
+      const a=.02+.014*Math.sin(T*.4+gx*.04+gy*.03);
+      x.beginPath();x.arc(gx,gy,.65,0,Math.PI*2);
+      x.fillStyle=`hsla(193,100%,62%,${a})`;x.fill();
     }
-    // Node connections
-    for(let i=0;i<NODES.length;i++){for(let j=i+1;j<NODES.length;j++){
-      const d=Math.hypot(NODES[i].x-NODES[j].x,NODES[i].y-NODES[j].y);
-      if(d>135)continue;
-      ctx.beginPath(); ctx.moveTo(NODES[i].x,NODES[i].y); ctx.lineTo(NODES[j].x,NODES[j].y);
-      ctx.strokeStyle=CY((1-d/135)*.09); ctx.lineWidth=.5; ctx.stroke();
-    }}
-    // Left panel
-    drawFP(W,H);
-    // Right panel
-    drawDNA(W,H);
-    // Centre iris
-    drawIris(W,H);
-    // Mouse
-    drawMouse(W,H);
-    // Click effects
-    if(M.click&&M.x>0){
-      const ins=Math.hypot((M.x-CX)/IW,(M.y-CY)/IH)<.88;
-      for(let i=0;i<4;i++) RINGS.push({x:M.x,y:M.y,r:5,max:65+i*28,a:.9-i*.18,hue:ins?193:42});
-      for(let i=0;i<16;i++){
-        const ang=Math.random()*Math.PI*2,s=1.5+Math.random()*4.5;
-        SPARKS.push({x:M.x,y:M.y,vx:Math.cos(ang)*s,vy:Math.sin(ang)*s,age:0,life:32+Math.random()*42,hue:[193,42,145,270][Math.floor(Math.random()*4)]});
+
+    // nodes
+    for(const n of nodes){
+      n.phase+=.012;const pulse=.5+.5*Math.sin(n.phase);
+      if(M.x>0){const dx=M.x-n.x,dy=M.y-n.y,d=Math.hypot(dx,dy);if(d<175&&d>.5){const f=.018*(1-d/175);n.vx+=dx/d*f;n.vy+=dy/d*f;}}
+      n.vx+=(n.ox-n.x)*.013;n.vy+=(n.oy-n.y)*.013;n.vx*=.87;n.vy*=.87;n.x+=n.vx;n.y+=n.vy;
+      const g=x.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r*3.5);
+      g.addColorStop(0,`hsla(${n.hue},100%,65%,${pulse*.24})`);g.addColorStop(1,'transparent');
+      x.fillStyle=g;x.beginPath();x.arc(n.x,n.y,n.r*3.5,0,Math.PI*2);x.fill();
+      x.save();x.shadowBlur=n.r>2.5?12:5;x.shadowColor=`hsla(${n.hue},100%,72%,.9)`;
+      x.beginPath();x.arc(n.x,n.y,n.r*(.85+.15*pulse),0,Math.PI*2);
+      x.strokeStyle=`hsla(${n.hue},100%,72%,${.4+.4*pulse})`;x.lineWidth=n.r>2.5?1.3:.9;x.stroke();
+      x.shadowBlur=0;x.restore();
+    }
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      const d=Math.hypot(nodes[i].x-nodes[j].x,nodes[i].y-nodes[j].y);
+      if(d>128)continue;
+      x.beginPath();x.moveTo(nodes[i].x,nodes[i].y);x.lineTo(nodes[j].x,nodes[j].y);
+      x.strokeStyle=`rgba(0,200,255,${(1-d/128)*.08})`;x.lineWidth=.5;x.stroke();
+    }
+
+    // global scan line
+    const gsY=((T*.018)%1)*H;
+    const gsl=x.createLinearGradient(0,gsY-1,0,gsY+1);
+    gsl.addColorStop(0,'transparent');gsl.addColorStop(.5,'rgba(0,200,255,.011)');gsl.addColorStop(1,'transparent');
+    x.fillStyle=gsl;x.fillRect(0,gsY-1,W,2);
+
+    // corner brackets
+    [[16,16,1,1],[W-16,16,-1,1],[W-16,H-16,-1,-1],[16,H-16,1,-1]].forEach(([cx2,cy2,sx2,sy2],i)=>{
+      const h2=i%2===0?193:42,sz=22;
+      x.strokeStyle=`hsla(${h2},100%,65%,.28)`;x.lineWidth=1.4;
+      x.beginPath();x.moveTo(cx2+sx2*sz,cy2);x.lineTo(cx2,cy2);x.lineTo(cx2,cy2+sy2*sz);x.stroke();
+      const pa=.28+.28*Math.sin(T*1.5+i);
+      x.save();x.shadowBlur=8;x.shadowColor=`hsla(${h2},100%,72%,.8)`;
+      x.beginPath();x.arc(cx2,cy2,2.8,0,Math.PI*2);
+      x.fillStyle=`hsla(${h2},100%,76%,${pa})`;x.fill();x.shadowBlur=0;x.restore();
+    });
+
+    // mouse reticle
+    if(M.x>0){
+      SM.x=SM.x<0?M.x:SM.x+(M.x-SM.x)*.09;
+      SM.y=SM.y<0?M.y:SM.y+(M.y-SM.y)*.09;
+      const cx=SM.x,cy=SM.y;
+      const spd=Math.hypot(M.x-M.px,M.y-M.py),hot=spd>1.8;
+      let onImg=false;
+      if(imgOK){const iw=Math.min(W*.62,680),ih=iw*(IMG.height/IMG.width),ix=CX-iw/2,iy=CY-ih/2;onImg=cx>=ix&&cx<=ix+iw&&cy>=iy&&cy<=iy+ih;}
+      const col=a=>onImg?`rgba(0,255,140,${a})`:`rgba(0,200,255,${a})`;
+
+      // bloom
+      const bl=x.createRadialGradient(cx,cy,0,cx,cy,50);
+      bl.addColorStop(0,col(hot?.16:.08));bl.addColorStop(1,'transparent');
+      x.fillStyle=bl;x.beginPath();x.arc(cx,cy,50,0,Math.PI*2);x.fill();
+
+      // outer arc
+      x.save();x.translate(cx,cy);x.rotate(T*2+spd*.05);
+      x.beginPath();x.arc(0,0,28,0,Math.PI*1.55);
+      x.strokeStyle=col(.58+.22*Math.sin(T*2.5));x.lineWidth=1.8;x.stroke();
+      const ec=Math.PI*1.55;
+      x.save();x.shadowBlur=6;x.shadowColor=col(1);
+      x.beginPath();x.arc(Math.cos(ec)*28,Math.sin(ec)*28,2.2,0,Math.PI*2);
+      x.fillStyle=col(.9);x.fill();x.shadowBlur=0;x.restore();x.restore();
+
+      // inner arc
+      x.save();x.translate(cx,cy);x.rotate(-T*1.5);
+      x.beginPath();x.arc(0,0,18,Math.PI*.25,Math.PI*1.75);
+      x.strokeStyle=col(.38+.18*Math.sin(T*3.2));x.lineWidth=1.1;x.stroke();x.restore();
+
+      // diamond
+      x.save();x.shadowBlur=8;x.shadowColor=col(.8);
+      x.strokeStyle=col(.72);x.lineWidth=1.3;x.beginPath();
+      x.moveTo(cx,cy-10);x.lineTo(cx+6,cy);x.lineTo(cx,cy+10);x.lineTo(cx-6,cy);x.closePath();x.stroke();
+      x.shadowBlur=0;x.restore();
+
+      // centre dot
+      x.save();x.shadowBlur=hot?18:10;x.shadowColor=hot?'rgba(0,255,140,1)':col(.9);
+      x.beginPath();x.arc(cx,cy,hot?4:2.8,0,Math.PI*2);
+      x.fillStyle=hot?'rgba(0,255,140,.98)':'rgba(200,240,255,.96)';x.fill();x.shadowBlur=0;x.restore();
+
+      // ticks
+      x.strokeStyle=col(hot?.85:.55);x.lineWidth=hot?1.5:1.1;
+      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{
+        x.beginPath();x.moveTo(cx+dx*6,cy+dy*6);x.lineTo(cx+dx*17,cy+dy*17);x.stroke();
+      });
+
+      if(hot){
+        x.font="6.5px 'Courier New',monospace";x.textAlign='left';
+        x.fillStyle=col(.7);
+        x.fillText('X:'+String(Math.floor(cx)).padStart(4,'0'),cx+42,cy-3);
+        x.fillText('Y:'+String(Math.floor(cy)).padStart(4,'0'),cx+42,cy+9);
+        x.fillStyle=col(.45);x.fillText(onImg?'● SCANNING FP':'● TRACKING',cx+42,cy+22);
+      }
+    }
+
+    // click effects
+    if(M.down&&M.x>0){
+      for(let i=0;i<5;i++)RINGS.push({x:M.x,y:M.y,r:4,max:72+i*28,a:.9-i*.16,hue:193+i*16});
+      for(let i=0;i<20;i++){
+        const a=Math.random()*Math.PI*2,s=1.5+Math.random()*5;
+        SPARKS.push({x:M.x,y:M.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,age:0,life:28+Math.random()*45,hue:[193,42,145,270,165][i%5]});
       }
     }
     for(let i=RINGS.length-1;i>=0;i--){
-      const rp=RINGS[i]; rp.r+=3.5; rp.a*=.9;
-      if(rp.r>rp.max||rp.a<.01){RINGS.splice(i,1);continue;}
-      ctx.save(); ctx.shadowBlur=10; ctx.shadowColor=`hsla(${rp.hue},100%,70%,.8)`;
-      ctx.beginPath(); ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);
-      ctx.strokeStyle=`hsla(${rp.hue},100%,72%,${rp.a})`; ctx.lineWidth=1.8; ctx.stroke();
-      ctx.shadowBlur=0; ctx.restore();
+      const r=RINGS[i];r.r+=3.8;r.a*=.89;
+      if(r.r>r.max||r.a<.01){RINGS.splice(i,1);continue;}
+      x.save();x.shadowBlur=12;x.shadowColor=`hsla(${r.hue},100%,72%,.8)`;
+      x.beginPath();x.arc(r.x,r.y,r.r,0,Math.PI*2);
+      x.strokeStyle=`hsla(${r.hue},100%,72%,${r.a})`;x.lineWidth=2;x.stroke();x.shadowBlur=0;x.restore();
     }
     for(let i=SPARKS.length-1;i>=0;i--){
-      const s=SPARKS[i]; s.x+=s.vx; s.y+=s.vy; s.vx*=.96; s.vy*=.96; s.age++;
+      const s=SPARKS[i];s.x+=s.vx;s.y+=s.vy;s.vx*=.95;s.vy*=.95;s.age++;
       if(s.age>=s.life){SPARKS.splice(i,1);continue;}
       const p=s.age/s.life,a=p<.2?p/.2:1-(p-.2)/.8;
-      ctx.beginPath(); ctx.arc(s.x,s.y,2.1*(1-p*.5),0,Math.PI*2);
-      ctx.fillStyle=`hsla(${s.hue},100%,72%,${a*.9})`; ctx.fill();
+      x.beginPath();x.arc(s.x,s.y,2.3*(1-p*.5),0,Math.PI*2);
+      x.fillStyle=`hsla(${s.hue},100%,72%,${a*.9})`;x.fill();
     }
-    // Corner brackets
-    [[14,14,1,1],[innerWidth-14,14,-1,1],[innerWidth-14,innerHeight-14,-1,-1],[14,innerHeight-14,1,-1]].forEach(([x,y,sx,sy2],i)=>{
-      const hue=i%2===0?193:42,s=20;
-      ctx.strokeStyle=`hsla(${hue},100%,62%,.28)`; ctx.lineWidth=1.3;
-      ctx.beginPath(); ctx.moveTo(x+sx*s,y); ctx.lineTo(x,y); ctx.lineTo(x,y+sy2*s); ctx.stroke();
-      const pa=.28+.28*Math.sin(T*1.4+i);
-      ctx.save(); ctx.shadowBlur=7; ctx.shadowColor=`hsla(${hue},100%,72%,.8)`;
-      ctx.beginPath(); ctx.arc(x,y,2.6,0,Math.PI*2);
-      ctx.fillStyle=`hsla(${hue},100%,76%,${pa})`; ctx.fill(); ctx.shadowBlur=0; ctx.restore();
-    });
-    // Scan line
-    const sY=((T*.019)%1)*innerHeight;
-    const sl=ctx.createLinearGradient(0,sY-1,0,sY+1);
-    sl.addColorStop(0,'transparent'); sl.addColorStop(.5,CY(.013)); sl.addColorStop(1,'transparent');
-    ctx.fillStyle=sl; ctx.fillRect(0,sY-1,innerWidth,2);
 
     raf=requestAnimationFrame(draw);
   }
 
-  canvas.width=innerWidth; canvas.height=innerHeight;
+  cv.width=innerWidth;cv.height=innerHeight;
   init();
-  ctx.fillStyle='#000610'; ctx.fillRect(0,0,canvas.width,canvas.height);
   raf=requestAnimationFrame(draw);
 })();
     </script>
