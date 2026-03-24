@@ -121,7 +121,7 @@ export default function UserManagement() {
   const filtered = filter==="all"?users:users.filter(u=>u.role===filter);
 
   const mono:React.CSSProperties = {fontFamily:"'Courier New',monospace"};
-  const inp:React.CSSProperties = {width:"100%",padding:"10px 14px",borderRadius:8,...mono,fontSize:13,color:"#e8dcc8",background:"rgba(8,15,30,0.85)",border:"1.5px solid rgba(203,178,120,0.25)",outline:"none"};
+  const inp:React.CSSProperties = {width:"100%",padding:"10px 14px",borderRadius:8,...mono,fontSize:13,color:"#e8dcc8",background:"rgba(8,15,30,0.72)",border:"1.5px solid rgba(203,178,120,0.25)",outline:"none"};
   const FL = ({label,children}:{label:string;children:React.ReactNode})=>(
     <div>
       <label style={{display:"block",...mono,fontSize:10,fontWeight:700,letterSpacing:"0.18em",color:"rgba(203,178,120,0.7)",marginBottom:6,textTransform:"uppercase" as const}}>{label}</label>
@@ -180,8 +180,8 @@ export default function UserManagement() {
         </div>
 
         {/* Table */}
-        <div style={{borderRadius:16,overflow:"hidden",border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)",marginBottom:24}}>
-          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr auto",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.85)"}}>
+        <div style={{borderRadius:16,overflow:"hidden",border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",marginBottom:24}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr auto",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
             {["USER","ROLE","STATUS","ACTIONS"].map(h=>(
               <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
             ))}
@@ -241,7 +241,7 @@ export default function UserManagement() {
         </div>
 
         {/* Role legend */}
-        <div style={{borderRadius:14,border:"1.5px solid rgba(203,178,120,0.35)",background:"rgba(12,22,45,0.88)",padding:"20px 24px"}}>
+        <div style={{borderRadius:14,border:"1.5px solid rgba(203,178,120,0.35)",background:"rgba(12,22,45,0.78)",padding:"20px 24px"}}>
           <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.6)",marginBottom:16}}>ROLE PERMISSION REFERENCE</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
             {ROLES.map(r=>{
@@ -271,7 +271,7 @@ export default function UserManagement() {
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"36px 16px",overflowY:"auto",background:"rgba(4,8,20,0.82)",backdropFilter:"blur(10px)"}}>
             <motion.div initial={{scale:0.93,y:24}} animate={{scale:1,y:0}} exit={{scale:0.93,y:24}} transition={{type:"spring",damping:24,stiffness:300}}
-              style={{width:"100%",maxWidth:520,borderRadius:20,overflow:"hidden",border:"1px solid rgba(232,200,112,0.35)",background:"linear-gradient(160deg,rgba(14,22,45,0.99) 0%,rgba(8,14,30,0.99) 100%)",boxShadow:"0 0 0 1px rgba(232,200,112,0.08),0 32px 80px rgba(0,0,0,0.9),0 0 60px rgba(232,200,112,0.06)",marginBottom:32}}>
+              style={{width:"100%",maxWidth:520,borderRadius:20,overflow:"hidden",border:"1px solid rgba(232,200,112,0.35)",background:"linear-gradient(160deg,rgba(14,22,45,0.78) 0%,rgba(8,14,30,0.78) 100%)",boxShadow:"0 0 0 1px rgba(232,200,112,0.08),0 32px 80px rgba(0,0,0,0.78),0 0 60px rgba(232,200,112,0.06)",marginBottom:32}}>
 
               {/* Modal Header */}
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"22px 28px 20px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
@@ -333,7 +333,7 @@ export default function UserManagement() {
 
                     {/* Dropdown suggestions */}
                     {!dbMatch && dbMatches.length > 0 && (
-                      <div style={{marginTop:4,borderRadius:10,overflow:"hidden",border:"1px solid rgba(203,178,120,0.28)",background:"rgba(8,15,32,0.98)",boxShadow:"0 8px 24px rgba(0,0,0,0.7)",zIndex:100,position:"relative"}}>
+                      <div style={{marginTop:4,borderRadius:10,overflow:"hidden",border:"1px solid rgba(203,178,120,0.28)",background:"rgba(8,15,32,0.78)",boxShadow:"0 8px 24px rgba(0,0,0,0.7)",zIndex:100,position:"relative"}}>
                         <div style={{padding:"6px 12px 5px",background:"rgba(203,178,120,0.06)",borderBottom:"1px solid rgba(203,178,120,0.14)"}}>
                           <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.18em",color:"rgba(203,178,120,0.5)",fontFamily:"'Courier New',monospace"}}>BIOMETRIC DATABASE — SELECT PERSON</span>
                         </div>
@@ -522,7 +522,7 @@ export default function UserManagement() {
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(4,8,20,0.82)",backdropFilter:"blur(10px)"}}>
             <motion.div initial={{scale:0.92,y:16}} animate={{scale:1,y:0}} exit={{scale:0.92,y:16}}
-              style={{width:"100%",maxWidth:380,padding:32,borderRadius:18,textAlign:"center" as const,background:"rgba(8,15,30,0.98)",border:"1.5px solid rgba(248,113,113,0.45)",boxShadow:"0 0 60px rgba(248,113,113,0.08)"}}>
+              style={{width:"100%",maxWidth:380,padding:32,borderRadius:18,textAlign:"center" as const,background:"rgba(8,15,30,0.78)",border:"1.5px solid rgba(248,113,113,0.45)",boxShadow:"0 0 60px rgba(248,113,113,0.08)"}}>
               <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(248,113,113,0.12)",border:"2px solid rgba(248,113,113,0.4)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
                 <Trash2 size={22} style={{color:"#f87171"}}/>
               </div>
@@ -544,7 +544,7 @@ export default function UserManagement() {
 
       {/* Footer */}
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

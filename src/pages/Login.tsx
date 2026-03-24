@@ -112,11 +112,11 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
           transition={{duration:0.45,ease:[0.16,1,0.3,1]}}
           style={{
             padding:"32px 28px 26px",
-            background:"linear-gradient(160deg,rgba(4,12,38,0.94),rgba(4,10,30,0.97))",
+            background:"linear-gradient(160deg,rgba(4,12,38,0.78),rgba(4,10,30,0.78))",
             border:"1px solid rgba(50,145,255,0.18)",
             borderTop:"2px solid rgba(60,165,255,0.5)",
             borderRadius:20,
-            boxShadow:"0 0 80px rgba(0,0,0,0.85),0 0 40px rgba(0,175,250,0.08),inset 0 1px 0 rgba(50,140,255,0.08)",
+            boxShadow:"0 0 80px rgba(0,0,0,0.72),0 0 40px rgba(0,175,250,0.08),inset 0 1px 0 rgba(50,140,255,0.08)",
             backdropFilter:"blur(30px)",
           }}>
           {children}
@@ -128,7 +128,7 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
         showBackButton={true} onBack={()=>setShowSupport(false)}/>
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
@@ -324,7 +324,7 @@ const LoginScreen = () => {
                   ?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))"
                   :isPreview||isActive
                     ?"radial-gradient(circle at 38% 38%,hsla(185,70%,8%,0.97),hsla(190,70%,3%,0.99))"
-                    :"radial-gradient(circle at 38% 38%,rgba(0,22,28,0.97),rgba(0,10,16,0.99))",
+                    :"radial-gradient(circle at 38% 38%,rgba(0,22,28,0.78),rgba(0,10,16,0.78))",
                 border:`2px solid ${borderCol}`,
                 boxShadow:`0 0 70px ${glowCol}20,inset 0 0 60px rgba(0,0,0,0.5)`,
                 display:"flex",flexDirection:"column" as const,
@@ -410,7 +410,7 @@ const LoginScreen = () => {
               <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
                 style={{borderRadius:14,overflow:"hidden",
                   border:"1px solid rgba(55,155,255,0.35)",
-                  background:"rgba(4,12,32,0.96)",
+                  background:"rgba(0,8,22,0.72)",
                   boxShadow:"0 0 40px rgba(50,145,255,0.14)"}}>
                 {/* Header strip */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",

@@ -44,7 +44,7 @@ const STEPS = [
 const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:boolean;onClose:()=>void}) => (
   <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
     className="fixed inset-0 z-50 flex items-center justify-center p-6"
-    style={{background:"rgba(0,5,14,0.92)",backdropFilter:"blur(16px)"}} onClick={onClose}>
+    style={{background:"rgba(0,5,14,0.78)",backdropFilter:"blur(16px)"}} onClick={onClose}>
     <motion.div initial={{scale:0.92,y:16}} animate={{scale:1,y:0}} exit={{scale:0.92}}
       className="card-surface rounded-xl overflow-hidden max-w-xl w-full"
       style={{border:"1.5px solid hsla(192,100%,55%,0.4)",boxShadow:"0 0 60px hsla(192,100%,55%,0.12)"}}
@@ -56,7 +56,7 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
           <X className="w-4 h-4"/>
         </button>
       </div>
-      <div className="p-5 flex items-center justify-center min-h-40" style={{background:"rgba(0,5,14,0.92)"}}>
+      <div className="p-5 flex items-center justify-center min-h-40" style={{background:"rgba(0,5,14,0.78)"}}>
         {isImg
           ? <img src={src} alt={title} className="max-w-full max-h-80 object-contain rounded-lg"/>
           : <div className="text-center space-y-3">
@@ -715,7 +715,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
       {/* ── SYSTEM ACCESS ACCOUNT ── */}
       <div style={{borderRadius:16,overflow:"hidden",
         border:"2px solid rgba(50,190,218,0.25)",
-        background:"linear-gradient(160deg,rgba(0,5,16,0.96),rgba(3,12,22,0.98))",
+        background:"linear-gradient(160deg,rgba(0,5,16,0.78),rgba(3,12,22,0.78))",
         boxShadow:"0 0 40px rgba(42,180,212,0.08),inset 0 1px 0 rgba(55,196,224,0.08)"}}>
         {/* Header toggle */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -1033,7 +1033,7 @@ const Registration = () => {
       <AnimatePresence>{modal&&<AttachModal {...modal} onClose={()=>setModal(null)}/>}</AnimatePresence>
 
       {/* ── HEADER ── */}
-      <div className="flex items-center justify-between sticky top-0 z-10" style={{padding:"7px 16px",background:"rgba(4,8,16,0.97)",borderBottom:"1px solid rgba(0,160,200,0.12)",backdropFilter:"blur(20px)"}}>
+      <div className="flex items-center justify-between sticky top-0 z-10" style={{padding:"7px 16px",background:"rgba(4,8,16,0.78)",borderBottom:"1px solid rgba(0,160,200,0.12)",backdropFilter:"blur(20px)"}}>
         <div className="flex items-center gap-3">
           <button onClick={()=>navigate("/")} className="w-9 h-9 flex items-center justify-center rounded-lg transition-all" style={{color:"hsl(193,100%,62%)"}}
             onMouseEnter={e=>e.currentTarget.style.background="hsla(192,100%,52%,0.12)"}
@@ -1052,7 +1052,7 @@ const Registration = () => {
       </div>
 
       {/* ── STEP PROGRESS ── */}
-      <div className="sticky z-10" style={{top:"44px",padding:"5px 12px",background:"rgba(4,8,16,0.96)",borderBottom:"1px solid rgba(0,140,180,0.1)",backdropFilter:"blur(16px)"}}>
+      <div className="sticky z-10" style={{top:"44px",padding:"5px 12px",background:"rgba(4,8,16,0.78)",borderBottom:"1px solid rgba(0,140,180,0.1)",backdropFilter:"blur(16px)"}}>
         <div className="flex items-center gap-1 overflow-x-auto max-w-5xl mx-auto pb-1">
           {STEPS.map((s,i)=>{
             const done=i<step, active=i===step;
@@ -1084,7 +1084,7 @@ const Registration = () => {
         <div style={{maxWidth:"680px",margin:"0 auto",padding:"16px 16px"}}>
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{opacity:0,x:24}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-24}} transition={{duration:0.18}}
-              className="card-surface rounded-sm" style={{padding:"18px 22px", boxShadow:"0 0 50px rgba(0,0,0,0.85),inset 0 1px 0 rgba(60,140,255,0.08)", borderColor:"rgba(40,110,255,0.2)", borderTop:"1.5px solid rgba(70,160,255,0.32)"}}>
+              className="card-surface rounded-sm" style={{padding:"18px 22px", boxShadow:"0 0 50px rgba(0,0,0,0.72),inset 0 1px 0 rgba(60,140,255,0.08)", borderColor:"rgba(40,110,255,0.2)", borderTop:"1.5px solid rgba(70,160,255,0.32)"}}>
               {stepProps[step]?.component}
             </motion.div>
           </AnimatePresence>
@@ -1120,7 +1120,7 @@ const Registration = () => {
         </div>
       </div>
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

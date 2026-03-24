@@ -36,7 +36,7 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
           <X className="w-4 h-4 text-primary"/>
         </button>
       </div>
-      <div className="p-5 flex items-center justify-center min-h-48" style={{background:"rgba(4,18,28,0.94)"}}>
+      <div className="p-5 flex items-center justify-center min-h-48" style={{background:"rgba(4,18,28,0.78)"}}>
         {isImg
           ? <img src={src} alt={title} className="max-w-full max-h-96 object-contain rounded-lg" style={{border:"1px solid hsla(185,55%,28%,0.3)"}}/>
           : <div className="text-center space-y-3">
@@ -123,7 +123,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
         {sideLeft.map((item,i)=>(
           <motion.div key={i}
             initial={{opacity:0,x:-24}} animate={{opacity:1,x:0}} transition={{delay:i*0.12}}
-            style={{background:"rgba(0,5,14,0.85)",border:"1px solid rgba(50,190,218,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
+            style={{background:"rgba(0,5,14,0.72)",border:"1px solid rgba(50,190,218,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
             <motion.div animate={{opacity:[0.35,0.7,0.35]}} transition={{duration:2.5+i*0.4,repeat:Infinity,delay:i*0.3}}>
               <div className="flex items-center gap-2">
                 <span style={{fontSize:12}}>{item.icon}</span>
@@ -140,9 +140,9 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
       {/* MAIN CARD */}
       <motion.div initial={{opacity:0,y:28,scale:0.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:0.35}}
         style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,marginTop:56,padding:"32px 28px",textAlign:"center" as const,
-          background:"linear-gradient(160deg,rgba(4,14,26,0.95),rgba(2,10,18,0.98))",
+          background:"linear-gradient(160deg,rgba(4,14,26,0.78),rgba(2,10,18,0.78))",
           border:"1px solid rgba(50,190,218,0.28)",borderTop:"2px solid rgba(56,196,223,0.5)",
-          borderRadius:20,boxShadow:"0 0 80px rgba(50,190,218,0.12),0 24px 64px rgba(0,0,0,0.9)",
+          borderRadius:20,boxShadow:"0 0 80px rgba(50,190,218,0.12),0 24px 64px rgba(0,0,0,0.78)",
           backdropFilter:"blur(30px)"}}>
 
         {/* Corner brackets */}
@@ -175,7 +175,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
               animate={{rotate:[360,0]}} transition={{duration:7,repeat:Infinity,ease:"linear"}}/>
           </svg>
           <div className={scanState==="scanning"?"scanner-pulse":""} style={{width:220,height:220,borderRadius:"50%",
-            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(4,18,32,0.97),rgba(0,5,14,0.99))",
+            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(4,18,32,0.78),rgba(0,5,14,0.78))",
             border:`2px solid ${fpColor}55`,
             boxShadow:`0 0 60px ${glowCol}20,inset 0 0 60px rgba(0,0,0,0.5)`,
             display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:10,
@@ -206,7 +206,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
           {(scanState==="preview"||scanState==="granting") && matchUser && (
             <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}}
               style={{borderRadius:12,overflow:"hidden",border:"1px solid rgba(50,190,218,0.3)",
-                background:"rgba(4,14,26,0.95)",marginBottom:16,textAlign:"left" as const}}>
+                background:"rgba(4,14,26,0.78)",marginBottom:16,textAlign:"left" as const}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
                 padding:"8px 14px",background:"rgba(50,190,218,0.06)",borderBottom:"1px solid rgba(50,190,218,0.15)"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1291,7 +1291,7 @@ Respond ONLY with valid JSON — no markdown:
         </AnimatePresence>
       </div>
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

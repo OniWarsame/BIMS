@@ -399,7 +399,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
                     style={{
                       padding:"22px 20px",
                       borderRadius:16,
-                      background:`linear-gradient(145deg,rgba(4,16,46,0.92),rgba(2,8,30,0.94))`,
+                      background:`linear-gradient(145deg,rgba(4,16,46,0.78),rgba(2,8,30,0.78))`,
                       border:`1px solid ${cat.border.replace("0.8","0.28")}`,
                       borderTop:`2px solid ${cat.border.replace("0.8","0.65")}`,
                       cursor:"pointer",
@@ -585,7 +585,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
         </AnimatePresence>
       </div>
 
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 32px",background:"rgba(8,15,30,0.92)",borderTop:"1px solid rgba(52,211,153,0.2)",...mono,fontSize:11,fontWeight:700}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 32px",background:"rgba(8,15,30,0.78)",borderTop:"1px solid rgba(52,211,153,0.2)",...mono,fontSize:11,fontWeight:700}}>
         <span style={{color:"#6ee7b7"}}>BIMS v1.0 · © 2026&nbsp;<a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"#a7f3d0",textDecoration:"underline"}}>KUMI</a></span>
         <span style={{margin:"0 16px",width:4,height:4,borderRadius:"50%",background:"rgba(52,211,153,0.4)",display:"inline-block"}}/>
         <span style={{color:"hsl(165,80%,65%)"}}>DOCUMENT MODULE</span>

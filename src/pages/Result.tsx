@@ -522,7 +522,7 @@ const ResultPage = () => {
         {showEdit && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-14 overflow-y-auto"
-            style={{background:"rgba(0,5,14,0.92)",backdropFilter:"blur(18px)"}}>
+            style={{background:"rgba(0,5,14,0.78)",backdropFilter:"blur(18px)"}}>
             <motion.div initial={{scale:0.94,y:20}} animate={{scale:1,y:0}} exit={{scale:0.94,y:20}} transition={{duration:0.22}}
               className="card-surface rounded-2xl overflow-hidden w-full max-w-3xl mb-8"
               style={{border:"1.5px solid hsla(33,100%,52%,0.45)",boxShadow:"0 0 80px hsla(33,100%,52%,0.1),0 24px 60px rgba(0,0,0,.8)"}}>
@@ -1162,7 +1162,7 @@ const ResultPage = () => {
       </motion.div>
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

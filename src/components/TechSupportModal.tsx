@@ -111,7 +111,7 @@ export default function TechSupportModal({
               border: "1px solid hsla(192,100%,52%,0.32)",
               borderTop: "2px solid hsla(192,100%,60%,0.55)",
               borderRadius: 12,
-              boxShadow: "0 0 0 1px hsla(192,100%,52%,0.06), 0 0 60px hsla(192,100%,52%,0.14), 0 40px 80px rgba(0,0,0,0.95)",
+              boxShadow: "0 0 0 1px hsla(192,100%,52%,0.06), 0 0 60px hsla(192,100%,52%,0.14), 0 40px 80px rgba(0,0,0,0.78)",
               overflow: "hidden",
             }}
             initial={{ scale:0.94, y:24, opacity:0 }}
@@ -294,7 +294,7 @@ export default function TechSupportModal({
                           <motion.div
                             style={{ position:"absolute", left:0, right:0, top:"calc(100% + 4px)", zIndex:200,
                               background:"hsla(215,55%,5%,0.99)", border:"1px solid hsla(192,100%,52%,0.3)",
-                              borderRadius:8, boxShadow:"0 16px 40px rgba(0,0,0,0.9)", backdropFilter:"blur(20px)",
+                              borderRadius:8, boxShadow:"0 16px 40px rgba(0,0,0,0.78)", backdropFilter:"blur(20px)",
                               overflow:"hidden" }}
                             initial={{ opacity:0, y:-6, scale:0.97 }}
                             animate={{ opacity:1, y:0, scale:1 }}

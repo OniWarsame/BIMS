@@ -136,7 +136,7 @@ export default function Reports() {
 
             {/* Storage */}
             {storage&&(
-              <div style={{padding:"18px 22px",borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)"}}>
+              <div style={{padding:"18px 22px",borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)"}}>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)",marginBottom:14}}>STORAGE INFORMATION</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12}}>
                   {[["TOTAL RECORDS",storage.totalRecords],["TOTAL LOGS",storage.totalLogs],["DB SIZE",storage.dbSize],["LOG SIZE",storage.logSize]].map(([l,v])=>(
@@ -150,8 +150,8 @@ export default function Reports() {
             )}
 
             {/* Recent events */}
-            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)",overflow:"hidden"}}>
-              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.85)"}}>
+            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
+              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
                 <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>RECENT ACTIVITY (LAST 10 EVENTS)</span>
               </div>
               {logs.slice(0,10).map((log,i)=>{
@@ -187,8 +187,8 @@ export default function Reports() {
               })}
             </div>
 
-            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)",overflow:"hidden"}}>
-              <div style={{display:"grid",gridTemplateColumns:"3fr 2fr 2fr 2fr 1fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.85)"}}>
+            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
+              <div style={{display:"grid",gridTemplateColumns:"3fr 2fr 2fr 2fr 1fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
                 {["ACTION","OPERATOR","DATE","TIME","RECORDS"].map(h=>(
                   <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
                 ))}
@@ -226,8 +226,8 @@ export default function Reports() {
 
         {/* ── RECORDS TAB ── */}
         {tab==="records"&&(
-          <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)",overflow:"hidden"}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr 2fr 2fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.85)"}}>
+          <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr 2fr 2fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
               {["#","NAME","ID","NATIONALITY","REGISTERED"].map(h=>(
                 <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
               ))}
@@ -259,8 +259,8 @@ export default function Reports() {
         {/* ── USERS TAB ── */}
         {tab==="users"&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
-            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)",overflow:"hidden"}}>
-              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.85)"}}>
+            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
+              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
                 <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>REGISTERED USERS — {users.length} TOTAL</span>
               </div>
               {users.map((u,i)=>{
@@ -301,8 +301,8 @@ export default function Reports() {
             </div>
 
             {/* Login history */}
-            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.92)",overflow:"hidden"}}>
-              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.85)"}}>
+            <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
+              <div style={{padding:"12px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
                 <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>DATABASE ACCESS HISTORY</span>
               </div>
               {logs.filter(l=>l.action==="DATABASE_UNLOCKED"||l.action==="FAILED_ACCESS_ATTEMPT").slice(0,30).map((log,i)=>{
@@ -327,7 +327,7 @@ export default function Reports() {
 
       {/* Footer */}
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

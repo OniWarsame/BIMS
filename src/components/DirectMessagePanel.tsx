@@ -457,7 +457,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                               <motion.div
                                 style={{position:"absolute",left:0,right:0,top:"calc(100% + 4px)",zIndex:200,
                                   background:"hsla(215,55%,5%,0.99)",border:`1px solid ${CYD(0.3)}`,
-                                  borderRadius:8,boxShadow:"0 16px 40px rgba(0,0,0,0.92)",
+                                  borderRadius:8,boxShadow:"0 16px 40px rgba(0,0,0,0.78)",
                                   overflow:"hidden",maxHeight:220,overflowY:"auto"}}
                                 initial={{opacity:0,y:-5,scale:0.97}} animate={{opacity:1,y:0,scale:1}}
                                 exit={{opacity:0,y:-5}} transition={{duration:0.14}}>

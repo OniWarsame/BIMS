@@ -71,7 +71,7 @@ export default function Settings() {
   }, [lang]);
 
   const mono:React.CSSProperties = {fontFamily:"'Courier New',monospace",direction: isRtl?"rtl":"ltr"};
-  const inp:React.CSSProperties  = {width:"100%",padding:"10px 14px",borderRadius:9,...mono,fontSize:13,color:"#e8dcc8",background:"rgba(8,15,30,0.88)",border:"1.5px solid rgba(203,178,120,0.3)",outline:"none"};
+  const inp:React.CSSProperties  = {width:"100%",padding:"10px 14px",borderRadius:9,...mono,fontSize:13,color:"#e8dcc8",background:"rgba(8,15,30,0.78)",border:"1.5px solid rgba(203,178,120,0.3)",outline:"none"};
 
   const selectLang = (code:string) => {
     setLang(code);
@@ -172,7 +172,7 @@ export default function Settings() {
         {/* ── PASSWORD TAB ── */}
         {tab==="password"&&(
           <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}}>
-            <div style={{padding:"24px",borderRadius:14,border:"1px solid rgba(203,178,120,0.28)",background:"rgba(12,22,45,0.88)",display:"flex",flexDirection:"column" as const,gap:18}}>
+            <div style={{padding:"24px",borderRadius:14,border:"1px solid rgba(203,178,120,0.28)",background:"rgba(12,22,45,0.78)",display:"flex",flexDirection:"column" as const,gap:18}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.2em",color:"rgba(203,178,120,0.55)"}}>{t("changepass",lang)}</div>
               {[
                 {label:t("curpass",lang),val:curPass,set:setCurPass,show:showCur,toggle:()=>setShowCur(v=>!v)},
@@ -201,14 +201,14 @@ export default function Settings() {
         )}
       </div>
 
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 32px",background:"rgba(8,15,30,0.92)",borderTop:"1px solid rgba(203,178,120,0.2)",...mono,fontSize:11,fontWeight:700}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 32px",background:"rgba(8,15,30,0.78)",borderTop:"1px solid rgba(203,178,120,0.2)",...mono,fontSize:11,fontWeight:700}}>
         <span style={{color:"#e8c870"}}>BIMS v1.0 · © 2026&nbsp;<a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"#f0dc90",textDecoration:"underline"}}>KUMI</a></span>
         <span style={{margin:"0 16px",width:4,height:4,borderRadius:"50%",background:"rgba(203,178,120,0.4)",display:"inline-block"}}/>
         <span style={{color:"hsl(195,80%,72%)"}}>{t("settings",lang)}</span>
       </div>
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

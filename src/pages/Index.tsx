@@ -81,7 +81,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
         placeholder="Type your response to the user — this will also be sent as a Direct Message…"
         style={{
           width:"100%", boxSizing:"border-box" as const,
-          background:"rgba(4,18,32,0.92)",
+          background:"rgba(4,18,32,0.78)",
           border:"1px solid hsla(192,100%,52%,0.35)",
           borderRadius:7, outline:"none", resize:"none",
           color:"hsl(192,55%,94%)",
@@ -545,7 +545,7 @@ Respond ONLY with valid JSON (no markdown):
         width:"100%",
         height:54,
         zIndex:9999,
-        background:"rgba(0,5,14,0.88)",
+        background:"rgba(0,5,14,0.78)",
         borderBottom:"1px solid rgba(0,205,248,0.20)",
         backdropFilter:"blur(6px)",
       }}>
@@ -612,7 +612,7 @@ Respond ONLY with valid JSON (no markdown):
         <AnimatePresence>
           {showUserMenu&&(
             <motion.div initial={{opacity:0,y:-8,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.15}}
-              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.97)",border:"1px solid rgba(0,205,248,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(20px)"}}>
+              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.78)",border:"1px solid rgba(0,205,248,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.78)",backdropFilter:"blur(20px)"}}>
               <div style={{padding:"8px 14px 8px",borderBottom:"1px solid rgba(0,205,248,0.12)",marginBottom:4}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:11,fontWeight:700,color:"rgba(210,242,248,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,205,248,0.45)",marginTop:2}}>@{currentUser?.username}</div>
@@ -720,7 +720,7 @@ Respond ONLY with valid JSON (no markdown):
                   ?"radial-gradient(circle at 38% 32%,hsla(158,80%,10%,0.97),hsla(158,80%,3%,0.99))"
                   :isNoMatch
                     ?"radial-gradient(circle at 38% 32%,hsla(354,80%,10%,0.97),hsla(354,80%,3%,0.99))"
-                    :"radial-gradient(circle at 38% 32%,rgba(6,18,52,0.97),rgba(2,8,26,0.99))",
+                    :"radial-gradient(circle at 38% 32%,rgba(6,18,52,0.78),rgba(2,8,26,0.78))",
                 border:`2px solid ${scanColor}55`,
                 boxShadow:`0 0 70px ${scanGlow}25,0 0 120px ${scanGlow}10,inset 0 0 60px rgba(0,0,0,0.6)`,
                 display:"flex",flexDirection:"column" as const,
@@ -811,7 +811,7 @@ Respond ONLY with valid JSON (no markdown):
                 onClick={()=>osint?setShowDeepSearch(true):path?navigate(path):null}
                 style={{display:"flex",flexDirection:"column" as const,alignItems:"flex-start",
                   padding:"14px 15px",
-                  background:"linear-gradient(160deg,rgba(4,18,52,0.94),rgba(2,10,36,0.92))",
+                  background:"linear-gradient(160deg,rgba(4,18,52,0.78),rgba(2,10,36,0.78))",
                   border:`1px solid hsla(${hue},90%,62%,0.18)`,
                   borderTop:`2px solid hsla(${hue},90%,65%,0.45)`,
                   borderRadius:14,cursor:"pointer",
@@ -917,13 +917,13 @@ Respond ONLY with valid JSON (no markdown):
         {showDeepSearch && (
           <motion.div
             initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(1,3,14,0.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}
+            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(1,3,14,0.72)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}
             onClick={()=>setShowDeepSearch(false)}>
             <motion.div
               initial={{scale:0.92,y:20}} animate={{scale:1,y:0}} exit={{scale:0.92,y:20}}
               transition={{type:"spring",stiffness:320,damping:28}}
               onClick={e=>e.stopPropagation()}
-              style={{width:"100%",maxWidth:560,maxHeight:"80vh",overflowY:"auto",borderRadius:18,background:"linear-gradient(160deg,rgba(6,16,44,0.98),rgba(3,10,30,0.99))",border:"1px solid rgba(100,80,255,0.3)",borderTop:"2px solid rgba(120,100,255,0.55)",boxShadow:"0 32px 80px rgba(0,0,0,0.9)",padding:"20px 22px"}}>
+              style={{width:"100%",maxWidth:560,maxHeight:"80vh",overflowY:"auto",borderRadius:18,background:"linear-gradient(160deg,rgba(6,16,44,0.78),rgba(3,10,30,0.78))",border:"1px solid rgba(100,80,255,0.3)",borderTop:"2px solid rgba(120,100,255,0.55)",boxShadow:"0 32px 80px rgba(0,0,0,0.78)",padding:"20px 22px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                 <div>
                   <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:800,color:"rgba(220,210,255,0.96)"}}>Deep Search</div>
@@ -975,7 +975,7 @@ Respond ONLY with valid JSON (no markdown):
 
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>

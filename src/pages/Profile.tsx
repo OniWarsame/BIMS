@@ -45,7 +45,7 @@ export default function Profile() {
       <div style={{flex:1,padding:"28px",position:"relative",zIndex:1,maxWidth:860,width:"100%",margin:"0 auto"}}>
         {/* Account card */}
         <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}
-          style={{padding:"24px",borderRadius:16,border:`2px solid ${roleColor}55`,background:"rgba(12,22,45,0.92)",marginBottom:20,boxShadow:`0 0 40px ${roleColor}18`}}>
+          style={{padding:"24px",borderRadius:16,border:`2px solid ${roleColor}55`,background:"rgba(12,22,45,0.78)",marginBottom:20,boxShadow:`0 0 40px ${roleColor}18`}}>
           <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap" as const}}>
             {rec?.photo
               ? <img src={rec.photo} style={{width:88,height:88,borderRadius:14,objectFit:"cover",border:`3px solid ${roleColor}66`,flexShrink:0}} alt=""/>
@@ -63,7 +63,7 @@ export default function Profile() {
 
         {/* System account credentials */}
         <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.05}}
-          style={{padding:"20px 24px",borderRadius:14,border:"1px solid rgba(203,178,120,0.28)",background:"rgba(12,22,45,0.88)",marginBottom:20}}>
+          style={{padding:"20px 24px",borderRadius:14,border:"1px solid rgba(203,178,120,0.28)",background:"rgba(12,22,45,0.78)",marginBottom:20}}>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)",marginBottom:14}}>SYSTEM ACCOUNT CREDENTIALS</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
             <div style={{padding:"10px 14px",borderRadius:9,background:"rgba(12,22,45,0.7)",border:"1px solid rgba(203,178,120,0.2)"}}>
@@ -122,7 +122,7 @@ export default function Profile() {
       </div>
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.78)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
         <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
