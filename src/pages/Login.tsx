@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -125,7 +126,16 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
       <TechSupportModal open={showSupport} onClose={()=>setShowSupport(false)}
         reporterUsername={undefined} allowManualReporter={true}
         showBackButton={true} onBack={()=>setShowSupport(false)}/>
-    </div>
+    
+      {/* ─── GLOBAL FOOTER ─── */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,14,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+        <span style={{color:"rgba(0,210,255,0.65)"}}>BIMS v1.0</span>
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
+        <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
+        <span style={{color:"rgba(0,210,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
+      </div>
+</div>
   );
 }
 
@@ -375,7 +385,7 @@ const LoginScreen = () => {
                   background:"linear-gradient(110deg,transparent 20%,rgba(255,255,255,0.14) 50%,transparent 80%)"}}
                   animate={{x:["-100%","100%"]}} transition={{duration:2.4,repeat:Infinity,repeatDelay:0.6}}/>
                 <Fingerprint style={{width:18,height:18,flexShrink:0}}/>
-                <span>{isError?"Try Again":"Scan Fingerprint"}</span>
+                <span>{isError?"Try Again":t("login_btn",lang)}</span>
               </motion.button>
             )}
           </motion.div>

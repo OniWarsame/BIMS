@@ -1129,7 +1129,7 @@ const ResultPage = () => {
           );
           const roleColor = ROLE_COLORS[linked.role];
           return (
-            <div className="card-surface rounded-xl p-5" style={{ borderTop:`2px solid hsla(195,100%,50%,0.35)` }}>
+            <div className="card-surface rounded-xl p-5 print:hidden" style={{ borderTop:`2px solid hsla(195,100%,50%,0.35)` }}>
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4" style={{color:"hsl(195,100%,65%)"}}/>
                 <h2 className="font-display text-sm font-bold tracking-widest uppercase" style={{ color:"hsl(195,100%,65%)" }}>SYSTEM ACCESS ACCOUNT</h2>
@@ -1139,11 +1139,11 @@ const ResultPage = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-3 rounded-xl" style={{background:"hsla(195,100%,45%,0.07)",border:"1px solid hsla(195,100%,50%,0.2)"}}>
+                <div className="p-3 rounded-xl print:hidden" style={{background:"hsla(195,100%,45%,0.07)",border:"1px solid hsla(195,100%,50%,0.2)"}}>
                   <p className="font-mono text-[9px] font-bold tracking-[0.18em] mb-1" style={{color:"hsla(195,80%,65%,0.5)"}}>LOGIN USERNAME</p>
                   <p className="font-mono text-sm font-bold" style={{color:"hsl(195,100%,78%)"}}>@{linked.username}</p>
                 </div>
-                <div className="p-3 rounded-xl" style={{background:"hsla(195,100%,45%,0.07)",border:"1px solid hsla(195,100%,50%,0.2)"}}>
+                <div className="p-3 rounded-xl print:hidden" style={{background:"hsla(195,100%,45%,0.07)",border:"1px solid hsla(195,100%,50%,0.2)"}}>
                   <p className="font-mono text-[9px] font-bold tracking-[0.18em] mb-1" style={{color:"hsla(195,80%,65%,0.5)"}}>PASSWORD</p>
                   <p className="font-mono text-sm font-bold" style={{color:"hsl(195,100%,78%)"}}>{linked.password}</p>
                 </div>
@@ -1160,7 +1160,16 @@ const ResultPage = () => {
           );
         })()}
       </motion.div>
-    </div>
+    
+      {/* ─── GLOBAL FOOTER ─── */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,14,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+        <span style={{color:"rgba(0,210,255,0.65)"}}>BIMS v1.0</span>
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
+        <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
+        <span style={{color:"rgba(0,210,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
+      </div>
+</div>
   );
 };
 

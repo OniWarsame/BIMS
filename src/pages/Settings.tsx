@@ -6,18 +6,6 @@ import CyberBackground from "@/components/CyberBackground";
 import PageHeader from "@/components/PageHeader";
 import { getCurrentUser, getUsers, saveUsers } from "@/pages/Login";
 
-const LANGUAGES = [
-  {code:"en",label:"English",flag:"🇬🇧"},
-  {code:"so",label:"Somali — Soomaali",flag:"🇸🇴"},
-  {code:"ar",label:"Arabic — العربية",flag:"🇸🇦",rtl:true},
-  {code:"fr",label:"French — Français",flag:"🇫🇷"},
-  {code:"sw",label:"Swahili — Kiswahili",flag:"🇰🇪"},
-  {code:"am",label:"Amharic — አማርኛ",flag:"🇪🇹"},
-  {code:"ha",label:"Hausa",flag:"🇳🇬"},
-  {code:"de",label:"German — Deutsch",flag:"🇩🇪"},
-  {code:"zh",label:"Chinese — 中文",flag:"🇨🇳"},
-  {code:"es",label:"Spanish — Español",flag:"🇪🇸"},
-];
 
 /* ── Real-time UI translation strings ── */
 const T: Record<string, Record<string, string>> = {
@@ -56,8 +44,7 @@ export default function Settings() {
   /* Apply language to DOM immediately on change */
   useEffect(()=>{
     document.documentElement.lang = lang;
-    document.documentElement.dir  = isRtl ? "rtl" : "ltr";
-    localStorage.setItem("bims_lang", lang);
+    applyLang(lang);
   }, [lang]);
 
   const mono:React.CSSProperties = {fontFamily:"'Courier New',monospace",direction: isRtl?"rtl":"ltr"};
@@ -195,6 +182,15 @@ export default function Settings() {
         <span style={{margin:"0 16px",width:4,height:4,borderRadius:"50%",background:"rgba(203,178,120,0.4)",display:"inline-block"}}/>
         <span style={{color:"hsl(195,80%,72%)"}}>{t("settings",lang)}</span>
       </div>
-    </div>
+    
+      {/* ─── GLOBAL FOOTER ─── */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,14,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+        <span style={{color:"rgba(0,210,255,0.65)"}}>BIMS v1.0</span>
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
+        <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
+        <span style={{color:"rgba(0,210,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
+      </div>
+</div>
   );
 }
