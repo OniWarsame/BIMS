@@ -98,6 +98,7 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
 
 /* ─── FINGERPRINT LOGIN SCREEN ─── */
 const LoginScreen = () => {
+  const lang = useLang();
   const navigate = useNavigate();
 
   type FpState = "idle" | "scanning" | "preview" | "granting" | "not_in_db" | "no_users";
