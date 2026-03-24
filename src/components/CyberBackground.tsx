@@ -2,10 +2,17 @@ import React, { useEffect, useRef } from "react";
 import BG_IMAGE from "@/assets/bgImage";
 
 /*
-  Mystical Eye Background — best.jpg
-  Palette:  Teal  rgba(48,190,215)  iris cyan
-            Amber rgba(200,140,30)  gold veins
-  Interactive: orbs, iris rings, mouse bloom, vein tendrils, click sparks
+  LIVING IRIS — Art direction for best.jpg
+  
+  The image is NOT shown as a full background.
+  Instead it lives INSIDE a breathing iris/pupil mask at the screen centre.
+  Outside the iris: deep void with drifting particles and light veins.
+  
+  Mouse: a different kind of interaction —
+    - Your cursor creates a "retinal scan" ripple that reveals more of the image
+    - Moving fast leaves glowing eyelash-like streaks
+    - Hover near the iris = it dilates toward you (curiosity)
+    - Click = a shockwave of light explodes from the pupil
 */
 export default function CyberBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,244 +25,305 @@ export default function CyberBackground() {
 
     let raf = 0, T = 0;
 
-    const M = { x:-999,y:-999,px:-999,py:-999,vx:0,vy:0,click:false };
-    const onMove  = (e:MouseEvent)=>{ M.px=M.x;M.py=M.y;M.x=e.clientX;M.y=e.clientY;M.vx=M.x-M.px;M.vy=M.y-M.py; };
-    const onDown  = ()=>{ M.click=true; setTimeout(()=>{M.click=false;},200); };
-    const onLeave = ()=>{ M.x=-999;M.y=-999; };
+    /* ── Mouse ── */
+    const M = { x: -999, y: -999, px: -999, py: -999, vx: 0, vy: 0, click: false, down: false };
+    const onMove  = (e: MouseEvent) => { M.px=M.x; M.py=M.y; M.x=e.clientX; M.y=e.clientY; M.vx=M.x-M.px; M.vy=M.y-M.py; };
+    const onDown  = () => { M.down=true; M.click=true; setTimeout(()=>{M.click=false;},250); };
+    const onUp    = () => { M.down=false; };
+    const onLeave = () => { M.x=-999; M.y=-999; };
     window.addEventListener("mousemove",  onMove,  {passive:true});
     window.addEventListener("mousedown",  onDown);
+    window.addEventListener("mouseup",    onUp);
     window.addEventListener("mouseleave", onLeave);
-    const resize = ()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; buildOrbs(); };
+    const resize = () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; init(); };
     window.addEventListener("resize", resize);
 
-    /* Image — embedded as base64, works on every platform */
+    /* ── Image ── */
     const img = new Image();
     let imgOK = false;
-    img.onload  = ()=>{ imgOK=true; };
+    img.onload  = () => { imgOK = true; };
     img.src = BG_IMAGE;
 
-    interface Orb    { x:number;y:number;vx:number;vy:number;r:number;base:number;teal:boolean; }
-    interface Ripple { x:number;y:number;r:number;max:number;a:number;w:number;teal:boolean; }
-    interface Ember  { x:number;y:number;vx:number;vy:number;age:number;life:number;teal:boolean; }
-    interface Vein   { pts:{x:number;y:number}[];a:number;teal:boolean; }
-    interface Crumb  { x:number;y:number;t:number; }
+    /* ── Types ── */
+    interface Dust   { x:number; y:number; vx:number; vy:number; life:number; ml:number; r:number; }
+    interface Shock  { x:number; y:number; r:number; maxR:number; a:number; }
+    interface Lash   { pts:{x:number;y:number}[]; a:number; hue:number; }
+    interface Reveal { x:number; y:number; r:number; maxR:number; a:number; }
 
-    let   ORBS:   Orb[]    = [];
-    const RIPPLES:Ripple[] = [];
-    const EMBERS: Ember[]  = [];
-    const VEINS:  Vein[]   = [];
-    const CRUMBS: Crumb[]  = [];
+    let   DUST:    Dust[]   = [];
+    const SHOCKS:  Shock[]  = [];
+    const LASHES:  Lash[]   = [];
+    const REVEALS: Reveal[] = [];
 
-    const T_ = (a:number)=>`rgba(48,190,215,${a})`;
-    const A_ = (a:number)=>`rgba(200,140,30,${a})`;
-    const C_ = (t:boolean,a:number)=>t?T_(a):A_(a);
+    /* Iris state */
+    let irisR     = 0;     // current iris radius
+    let irisTarget= 0;     // target iris radius
+    let pupilR    = 0;     // inner pupil (shows image)
+    let irisAngle = 0;     // rotation of iris texture
 
-    function buildOrbs(){
-      const W=canvas.width,H=canvas.height;
-      ORBS=Array.from({length:60},(_,i)=>({
-        x:Math.random()*W,y:Math.random()*H,
-        vx:(Math.random()-0.5)*0.22,vy:(Math.random()-0.5)*0.22,
-        r:0,base:i<9?2.6+Math.random()*2:0.8+Math.random()*1.6,
-        teal:i%7!==0,
+    function init() {
+      const W=canvas.width, H=canvas.height;
+      const base = Math.min(W,H) * 0.30;
+      irisR     = base;
+      irisTarget= base;
+      pupilR    = base * 0.42;
+      DUST = Array.from({length:120}, () => ({
+        x: Math.random()*W, y: Math.random()*H,
+        vx:(Math.random()-0.5)*0.18, vy:(Math.random()-0.5)*0.18,
+        life: Math.random(), ml: 0.6+Math.random()*0.4, r:0.4+Math.random()*1.2,
       }));
-      ORBS.forEach(o=>{o.r=o.base;});
     }
 
-    function growVein(){
-      if(M.x<0||Math.hypot(M.vx,M.vy)<1.8)return;
-      const ang=Math.atan2(M.vy,M.vx);
-      const pts:{x:number;y:number}[]=[];
-      let cx=M.x,cy=M.y;
-      for(let i=0;i<26;i++){
+    function spawnLash() {
+      if (Math.hypot(M.vx,M.vy) < 3) return;
+      const ang = Math.atan2(M.vy, M.vx);
+      const pts: {x:number;y:number}[] = [];
+      let cx=M.x, cy=M.y;
+      for (let i=0;i<20;i++) {
         pts.push({x:cx,y:cy});
-        const c=(Math.random()-0.5)*0.65;
-        cx+=Math.cos(ang+c)*10+(Math.random()-0.5)*4;
-        cy+=Math.sin(ang+c)*10+(Math.random()-0.5)*4;
+        cx += Math.cos(ang+(Math.random()-0.5)*0.5)*9+(Math.random()-0.5)*3;
+        cy += Math.sin(ang+(Math.random()-0.5)*0.5)*9+(Math.random()-0.5)*3;
       }
-      VEINS.push({pts,a:0.65+Math.random()*0.35,teal:Math.random()>0.4});
+      LASHES.push({pts, a:0.7+Math.random()*0.3, hue:185+Math.random()*30});
     }
 
-    function burst(x:number,y:number){
-      for(let i=0;i<22;i++){
-        const a=Math.random()*Math.PI*2,s=1.6+Math.random()*4.8;
-        EMBERS.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,age:0,life:40+Math.random()*48,teal:Math.random()>0.42});
+    function drawIrisTexture(cx:number, cy:number, r:number) {
+      /* Concentric iris rings */
+      const rings = 8;
+      for (let i=0;i<rings;i++) {
+        const rr = r * (0.35 + (i/rings)*0.65);
+        const a  = 0.04 + (1-i/rings)*0.06;
+        ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(48,180,215,${a*(0.7+0.3*Math.sin(T*0.8+i))})`; 
+        ctx.lineWidth=0.6; ctx.setLineDash([4+i,12+i*2]); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      /* Radial fibers — like real iris fibers */
+      const fibers = 72;
+      for (let i=0;i<fibers;i++) {
+        const ang = (i/fibers)*Math.PI*2 + irisAngle;
+        const len = r*(0.25+Math.random()*0.0); // stable length per fiber
+        const jitter = Math.sin(T*0.5+i*0.4)*0.02;
+        const x1 = cx + Math.cos(ang+jitter)*r*0.38;
+        const y1 = cy + Math.sin(ang+jitter)*r*0.38;
+        const x2 = cx + Math.cos(ang)*r*(0.82+Math.sin(T*0.3+i)*0.04);
+        const y2 = cy + Math.sin(ang)*r*(0.82+Math.sin(T*0.3+i)*0.04);
+        const brightness = 0.5+0.5*Math.sin(i*2.7);
+        // Alternate teal and amber fibers
+        const col = i%9===0 ? `rgba(200,140,30,${0.12*brightness})` : `rgba(48,190,215,${0.08*brightness})`;
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+        ctx.strokeStyle=col; ctx.lineWidth=0.5; ctx.stroke();
       }
     }
 
-    function draw(){
-      T+=0.016;
-      const W=canvas.width,H=canvas.height;
+    function draw() {
+      T += 0.016;
+      const W=canvas.width, H=canvas.height;
+      const CX=W*0.5, CY=H*0.5;
 
-      /* 1 — Background image — PIXEL PERFECT, full quality */
-      if(imgOK){
-        const iAR=img.width/img.height,cAR=W/H;
-        let iw:number,ih:number,ix:number,iy:number;
-        if(cAR>iAR){iw=W;ih=W/iAR;ix=0;iy=(H-ih)/2;}
-        else{ih=H;iw=H*iAR;ix=(W-iw)/2;iy=0;}
-        ctx.drawImage(img,ix,iy,iw,ih);
+      /* ── Iris dilation logic ── */
+      irisAngle += 0.0018;
+      const base = Math.min(W,H)*0.30;
+      if (M.x > 0) {
+        const d = Math.hypot(M.x-CX, M.y-CY);
+        const proximity = Math.max(0, 1 - d/(base*2.2));
+        irisTarget = base * (1.0 + proximity*0.25);  // iris dilates as you approach
       } else {
-        ctx.fillStyle="#030d18";ctx.fillRect(0,0,W,H);
+        irisTarget = base;
+      }
+      // Breathing
+      irisTarget += Math.sin(T*0.55)*base*0.022;
+      irisR += (irisTarget - irisR) * 0.04;
+      pupilR = irisR * 0.42;
+
+      /* ── 1. Deep void background ── */
+      ctx.fillStyle = "#020812";
+      ctx.fillRect(0,0,W,H);
+
+      /* ── 2. Ambient deep glow from eye centre ── */
+      const amb = ctx.createRadialGradient(CX,CY,0,CX,CY,irisR*2.8);
+      amb.addColorStop(0, `rgba(20,60,90,${0.45+0.08*Math.sin(T*0.6)})`);
+      amb.addColorStop(0.4,`rgba(8,28,48,0.25)`);
+      amb.addColorStop(1, "transparent");
+      ctx.fillStyle=amb; ctx.fillRect(0,0,W,H);
+
+      /* ── 3. Scattered dust particles in the void ── */
+      for (const d of DUST) {
+        d.x+=d.vx; d.y+=d.vy; d.life+=0.003;
+        if(d.x<0)d.x=W; if(d.x>W)d.x=0;
+        if(d.y<0)d.y=H; if(d.y>H)d.y=0;
+        if(d.life>d.ml) d.life=0;
+        const a=(d.life<0.1?d.life/0.1:d.life>0.9?(d.ml-d.life)/0.1:1)*0.35;
+        ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(48,160,200,${a})`; ctx.fill();
       }
 
-      /* 2 — Micro vignette only at edges — centre is pure image */
-      const vg=ctx.createRadialGradient(W*.5,H*.44,W*.18,W*.5,H*.44,W*.85);
+      /* ── 4. Draw image inside iris mask (pupil = window into the eye world) ── */
+      if (imgOK) {
+        ctx.save();
+        // Clip to iris circle
+        ctx.beginPath(); ctx.arc(CX,CY,irisR*0.96,0,Math.PI*2); ctx.clip();
+
+        // Scale image to fill the iris
+        const scale = (irisR*2.2) / Math.min(img.width, img.height);
+        const iw = img.width*scale, ih = img.height*scale;
+        const ix = CX - iw/2 + Math.sin(T*0.2)*irisR*0.04; // subtle drift
+        const iy = CY - ih/2 + Math.cos(T*0.15)*irisR*0.03;
+        ctx.drawImage(img, ix, iy, iw, ih);
+
+        // Dark ring inside iris edge (limbal ring effect)
+        const lim = ctx.createRadialGradient(CX,CY,irisR*0.72,CX,CY,irisR*0.97);
+        lim.addColorStop(0,"transparent");
+        lim.addColorStop(1,"rgba(0,4,14,0.82)");
+        ctx.fillStyle=lim; ctx.beginPath(); ctx.arc(CX,CY,irisR,0,Math.PI*2); ctx.fill();
+
+        ctx.restore();
+      }
+
+      /* ── 5. Iris texture overlay ── */
+      ctx.save();
+      ctx.beginPath(); ctx.arc(CX,CY,irisR*0.96,0,Math.PI*2); ctx.clip();
+      drawIrisTexture(CX,CY,irisR);
+      ctx.restore();
+
+      /* ── 6. Iris border — glowing limbal ring ── */
+      const pulse = 0.5+0.5*Math.sin(T*1.1);
+      ctx.save();
+      ctx.shadowBlur=28+12*pulse; ctx.shadowColor=`rgba(48,185,220,0.7)`;
+      ctx.beginPath(); ctx.arc(CX,CY,irisR,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(48,190,218,${0.55+0.25*pulse})`; ctx.lineWidth=1.8; ctx.stroke();
+      ctx.restore();
+      // Outer rim
+      ctx.beginPath(); ctx.arc(CX,CY,irisR*1.04,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(48,190,218,${0.12+0.06*pulse})`; ctx.lineWidth=3; ctx.stroke();
+      // Amber inner ring
+      ctx.beginPath(); ctx.arc(CX,CY,irisR*0.44,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(200,138,28,${0.45+0.2*pulse})`; ctx.lineWidth=1.2; ctx.stroke();
+
+      /* ── 7. Pupil — pure black void ── */
+      const pupil = ctx.createRadialGradient(CX,CY,0,CX,CY,pupilR);
+      pupil.addColorStop(0,"rgba(0,0,0,1)");
+      pupil.addColorStop(0.7,"rgba(0,2,8,0.95)");
+      pupil.addColorStop(1,"transparent");
+      ctx.fillStyle=pupil; ctx.beginPath(); ctx.arc(CX,CY,pupilR,0,Math.PI*2); ctx.fill();
+      // Pupil specular highlight
+      ctx.save();
+      ctx.shadowBlur=18; ctx.shadowColor="rgba(200,220,255,0.6)";
+      ctx.beginPath(); ctx.arc(CX-pupilR*0.28,CY-pupilR*0.28,pupilR*0.14,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,230,255,${0.4+0.2*Math.sin(T*2)})`; ctx.fill();
+      ctx.restore();
+
+      /* ── 8. Rotating scan rings around iris ── */
+      [0.88,1.18,1.42].forEach((mult,i) => {
+        const r = irisR*mult;
+        const a = 0.07-i*0.018;
+        ctx.save();ctx.translate(CX,CY);ctx.rotate(T*(i%2===0?0.12:-0.09)*(1+i*0.3));
+        ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(48,185,215,${a*(0.6+0.4*Math.sin(T*0.7+i))})`;
+        ctx.lineWidth=0.7;ctx.setLineDash([i%2===0?12:6,24+i*8]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      });
+
+      /* ── 9. Mouse: retinal scan reveal (shows more image under cursor) ── */
+      if (M.x > 0) {
+        // Soft reveal spotlight where cursor is — like a retinal scanner
+        const d2iris = Math.hypot(M.x-CX, M.y-CY);
+        if (d2iris < irisR*1.5) {
+          ctx.save();
+          const sr = 80+30*Math.sin(T*3);
+          const sg = ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,sr);
+          sg.addColorStop(0,`rgba(120,210,240,${0.12+0.05*Math.sin(T*4)})`);
+          sg.addColorStop(0.5,`rgba(60,160,200,0.04)`);
+          sg.addColorStop(1,"transparent");
+          ctx.fillStyle=sg;ctx.beginPath();ctx.arc(M.x,M.y,sr,0,Math.PI*2);ctx.fill();
+          ctx.restore();
+        }
+
+        // Cursor crosshair — minimal, technical
+        const ca = 0.35+0.15*Math.sin(T*2.5);
+        ctx.strokeStyle=`rgba(48,195,220,${ca})`; ctx.lineWidth=0.6;
+        const gap=8, len=18;
+        ctx.beginPath();ctx.moveTo(M.x-len-gap,M.y);ctx.lineTo(M.x-gap,M.y);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(M.x+gap,M.y);ctx.lineTo(M.x+len+gap,M.y);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(M.x,M.y-len-gap);ctx.lineTo(M.x,M.y-gap);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(M.x,M.y+gap);ctx.lineTo(M.x,M.y+len+gap);ctx.stroke();
+
+        // Dot at cursor centre
+        ctx.save();ctx.shadowBlur=10;ctx.shadowColor="rgba(200,140,30,0.9)";
+        ctx.beginPath();ctx.arc(M.x,M.y,2.2,0,Math.PI*2);
+        ctx.fillStyle=`rgba(220,158,40,${0.75+0.25*Math.sin(T*5)})`;ctx.fill();ctx.restore();
+      }
+
+      /* ── 10. Eyelash-like streaks from fast movement ── */
+      spawnLash();
+      for(let i=LASHES.length-1;i>=0;i--) {
+        const l=LASHES[i]; l.a*=0.84;
+        if(l.a<0.015){LASHES.splice(i,1);continue;}
+        ctx.beginPath();ctx.moveTo(l.pts[0].x,l.pts[0].y);
+        for(let j=1;j<l.pts.length;j++)ctx.lineTo(l.pts[j].x,l.pts[j].y);
+        ctx.strokeStyle=`hsla(${l.hue},80%,62%,${l.a*0.45})`;ctx.lineWidth=0.85;ctx.stroke();
+      }
+
+      /* ── 11. Reveal ripples from cursor proximity ── */
+      if(M.x>0) {
+        const d=Math.hypot(M.x-CX,M.y-CY);
+        if(d<irisR*1.8 && Math.random()<0.04) {
+          REVEALS.push({x:CX,y:CY,r:irisR*0.3,maxR:irisR*1.1,a:0.25});
+        }
+      }
+      for(let i=REVEALS.length-1;i>=0;i--) {
+        const rv=REVEALS[i]; rv.r+=2.5; rv.a*=0.94;
+        if(rv.r>rv.maxR||rv.a<0.02){REVEALS.splice(i,1);continue;}
+        ctx.beginPath();ctx.arc(rv.x,rv.y,rv.r,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(48,195,220,${rv.a})`; ctx.lineWidth=0.7; ctx.stroke();
+      }
+
+      /* ── 12. Click: shockwave from pupil ── */
+      if(M.click) {
+        for(let i=0;i<4;i++) {
+          SHOCKS.push({x:CX,y:CY,r:pupilR,maxR:irisR*(1.8+i*0.5),a:0.9-i*0.15});
+        }
+      }
+      for(let i=SHOCKS.length-1;i>=0;i--) {
+        const sh=SHOCKS[i]; sh.r+=6+i; sh.a*=0.88;
+        if(sh.r>sh.maxR||sh.a<0.01){SHOCKS.splice(i,1);continue;}
+        const gradient=sh.r<irisR*0.9;
+        ctx.save();ctx.shadowBlur=12;ctx.shadowColor=`rgba(200,140,30,0.8)`;
+        ctx.beginPath();ctx.arc(sh.x,sh.y,sh.r,0,Math.PI*2);
+        ctx.strokeStyle=gradient?`rgba(200,158,40,${sh.a})`:`rgba(48,195,220,${sh.a})`;
+        ctx.lineWidth=2-sh.a;ctx.stroke();ctx.restore();
+      }
+
+      /* ── 13. Vignette — deep darkness at screen edges ── */
+      const vg=ctx.createRadialGradient(CX,CY,irisR*0.8,CX,CY,Math.max(W,H)*0.9);
       vg.addColorStop(0,"transparent");
-      vg.addColorStop(0.72,"rgba(0,5,12,0.06)");
-      vg.addColorStop(1,"rgba(0,3,10,0.38)");
-      ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+      vg.addColorStop(0.5,"rgba(0,2,8,0.3)");
+      vg.addColorStop(1,"rgba(0,1,6,0.88)");
+      ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
-      /* 3 — Orbs */
-      for(const o of ORBS){
-        o.x+=o.vx;o.y+=o.vy;
-        if(o.x<0)o.x=W;if(o.x>W)o.x=0;
-        if(o.y<0)o.y=H;if(o.y>H)o.y=0;
-        if(M.x>0){
-          const dx=M.x-o.x,dy=M.y-o.y,d=Math.hypot(dx,dy);
-          if(d<240&&d>0.5){ const f=0.019*(1-d/240);o.vx+=dx/d*f;o.vy+=dy/d*f;o.r=o.base*(1+0.9*(1-d/240)); }
-          else o.r+=(o.base-o.r)*0.08;
-        } else o.r+=(o.base-o.r)*0.04;
-        const s=Math.hypot(o.vx,o.vy);
-        if(s>0.95){o.vx*=0.95/s;o.vy*=0.95/s;}
-        o.vx*=0.993;o.vy*=0.993;
-      }
-      for(let i=0;i<ORBS.length;i++){
-        for(let j=i+1;j<ORBS.length;j++){
-          const dx=ORBS[i].x-ORBS[j].x,dy=ORBS[i].y-ORBS[j].y,d=Math.hypot(dx,dy);
-          if(d>145)continue;
-          ctx.beginPath();ctx.moveTo(ORBS[i].x,ORBS[i].y);ctx.lineTo(ORBS[j].x,ORBS[j].y);
-          ctx.strokeStyle=C_(ORBS[i].teal&&ORBS[j].teal,(1-d/145)*0.10);ctx.lineWidth=0.5;ctx.stroke();
-        }
-      }
-      const pulse=0.48+0.52*Math.sin(T*1.35);
-      for(const o of ORBS){
-        const a=o.base>2?0.78*pulse:0.42*pulse;
-        if(o.base>2){
-          ctx.save();ctx.shadowBlur=15;ctx.shadowColor=C_(o.teal,0.75);
-          ctx.beginPath();ctx.arc(o.x,o.y,o.r*(0.9+0.15*pulse),0,Math.PI*2);
-          ctx.fillStyle=C_(o.teal,a);ctx.fill();ctx.restore();
-          ctx.beginPath();ctx.arc(o.x,o.y,o.r*2.6,0,Math.PI*2);
-          ctx.strokeStyle=C_(o.teal,0.10*pulse);ctx.lineWidth=0.65;ctx.stroke();
-        } else {
-          ctx.beginPath();ctx.arc(o.x,o.y,o.r*(0.85+0.2*pulse),0,Math.PI*2);
-          ctx.fillStyle=C_(o.teal,a);ctx.fill();
-        }
-      }
-
-      /* 4 — Iris rings breathing from eye centre */
-      const EX=W*0.5,EY=H*0.44;
-      [[W*0.068,0.11],[W*0.112,0.070],[W*0.172,0.042],[W*0.245,0.023]].forEach(([r,al],i)=>{
-        const br=(r as number)+W*0.006*Math.sin(T*0.62+i);
-        ctx.save();ctx.shadowBlur=10;ctx.shadowColor=T_(0.35);
-        ctx.beginPath();ctx.arc(EX,EY,br,0,Math.PI*2);
-        ctx.strokeStyle=T_((al as number)*(0.72+0.28*Math.sin(T*0.75+i)));
-        ctx.lineWidth=0.75;ctx.setLineDash([7,22]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-      });
-      [[W*0.052,0.09],[W*0.088,0.055]].forEach(([r,al],i)=>{
-        const br=(r as number)+W*0.004*Math.sin(T*0.9+i+1.5);
-        ctx.beginPath();ctx.arc(EX,EY,br,0,Math.PI*2);
-        ctx.strokeStyle=A_((al as number)*(0.68+0.32*Math.sin(T*1.05+i)));
-        ctx.lineWidth=0.6;ctx.setLineDash([4,16]);ctx.stroke();ctx.setLineDash([]);
-      });
-
-      /* 5 — Mouse layer */
-      if(M.x>0){
-        const R1=195+20*Math.sin(T*2.1);
-        const g1=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,R1);
-        g1.addColorStop(0,T_(0.12+0.045*Math.sin(T*3.4)));g1.addColorStop(0.42,"rgba(20,130,170,0.03)");g1.addColorStop(1,"transparent");
-        ctx.fillStyle=g1;ctx.beginPath();ctx.arc(M.x,M.y,R1,0,Math.PI*2);ctx.fill();
-
-        const R2=38+5.5*Math.sin(T*6.2);
-        const g2=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,R2);
-        g2.addColorStop(0,A_(0.26+0.10*Math.sin(T*5.2)));g2.addColorStop(0.55,"rgba(160,100,16,0.05)");g2.addColorStop(1,"transparent");
-        ctx.fillStyle=g2;ctx.beginPath();ctx.arc(M.x,M.y,R2,0,Math.PI*2);ctx.fill();
-
-        ctx.save();ctx.translate(M.x,M.y);ctx.rotate(T*1.75);
-        ctx.beginPath();ctx.arc(0,0,31+3.8*Math.sin(T*4),0,Math.PI*2);
-        ctx.strokeStyle=T_(0.54+0.22*Math.sin(T*2.7));ctx.lineWidth=1.1;ctx.setLineDash([6,13]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-
-        ctx.save();ctx.translate(M.x,M.y);ctx.rotate(-T*2.6);
-        ctx.beginPath();ctx.arc(0,0,20+2.2*Math.sin(T*7.2),0,Math.PI*2);
-        ctx.strokeStyle=A_(0.44+0.18*Math.sin(T*3.8));ctx.lineWidth=0.85;ctx.setLineDash([3,9]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-
-        ctx.save();ctx.translate(M.x,M.y);ctx.rotate(T*0.55);
-        ctx.beginPath();ctx.arc(0,0,52+4*Math.sin(T*1.8),0,Math.PI*2);
-        ctx.strokeStyle=A_(0.18+0.08*Math.sin(T*2));ctx.lineWidth=0.65;ctx.setLineDash([2,28]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-
-        const ch=24,ca=0.25+0.11*Math.sin(T*2.5);
-        ctx.strokeStyle=T_(ca);ctx.lineWidth=0.72;
-        ctx.beginPath();ctx.moveTo(M.x-ch,M.y);ctx.lineTo(M.x+ch,M.y);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(M.x,M.y-ch);ctx.lineTo(M.x,M.y+ch);ctx.stroke();
-
-        ctx.strokeStyle=A_(ca*1.15);ctx.lineWidth=0.95;
-        [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([sx,sy])=>{
-          const bx=M.x+sx*20,by=M.y+sy*20;
-          ctx.beginPath();ctx.moveTo(bx,by-sy*9);ctx.lineTo(bx,by);ctx.lineTo(bx-sx*9,by);ctx.stroke();
-        });
-      }
-
-      /* 6 — Crumb trail */
-      if(M.x>0)CRUMBS.push({x:M.x,y:M.y,t:T});
-      while(CRUMBS.length>0&&T-CRUMBS[0].t>0.48)CRUMBS.shift();
-      for(let i=1;i<CRUMBS.length;i++){
-        const age=(T-CRUMBS[i].t)/0.48;
-        ctx.beginPath();ctx.moveTo(CRUMBS[i-1].x,CRUMBS[i-1].y);ctx.lineTo(CRUMBS[i].x,CRUMBS[i].y);
-        ctx.strokeStyle=T_((1-age)*0.44);ctx.lineWidth=(1-age)*2.2;ctx.stroke();
-      }
-
-      /* 7 — Vein tendrils from fast movement */
-      growVein();
-      for(let i=VEINS.length-1;i>=0;i--){
-        const v=VEINS[i];v.a*=0.855;
-        if(v.a<0.018){VEINS.splice(i,1);continue;}
-        ctx.beginPath();ctx.moveTo(v.pts[0].x,v.pts[0].y);
-        for(let j=1;j<v.pts.length;j++)ctx.lineTo(v.pts[j].x,v.pts[j].y);
-        ctx.strokeStyle=v.teal?T_(v.a*0.48):A_(v.a*0.50);ctx.lineWidth=0.9;ctx.stroke();
-      }
-
-      /* 8 — Click rings + embers */
-      if(M.click&&M.x>0){
-        RIPPLES.push({x:M.x,y:M.y,r:5,max:140,a:0.92,w:2.0,teal:true});
-        RIPPLES.push({x:M.x,y:M.y,r:5,max:88, a:0.72,w:1.4,teal:false});
-        RIPPLES.push({x:M.x,y:M.y,r:5,max:48, a:0.52,w:1.0,teal:true});
-        burst(M.x,M.y);
-      }
-      for(let i=RIPPLES.length-1;i>=0;i--){
-        const rp=RIPPLES[i];rp.r+=3.5;rp.a*=0.905;
-        ctx.save();ctx.shadowBlur=14;ctx.shadowColor=C_(rp.teal,0.72);
-        ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);
-        ctx.strokeStyle=C_(rp.teal,rp.a);ctx.lineWidth=rp.w;ctx.stroke();ctx.restore();
-        if(rp.r>=rp.max)RIPPLES.splice(i,1);
-      }
-      for(let i=EMBERS.length-1;i>=0;i--){
-        const e=EMBERS[i];e.x+=e.vx;e.y+=e.vy;e.vx*=0.962;e.vy*=0.962;e.age++;
-        if(e.age>=e.life){EMBERS.splice(i,1);continue;}
-        const p=e.age/e.life,a=p<0.18?p/0.18:1-(p-0.18)/0.82;
-        ctx.beginPath();ctx.arc(e.x,e.y,2.7*(1-p*0.5),0,Math.PI*2);
-        ctx.fillStyle=C_(e.teal,Math.max(0,a)*0.92);ctx.fill();
-      }
-
-      /* 9 — Whisper scan line */
-      const sY=((T*0.025)%1)*H;
-      const sg=ctx.createLinearGradient(0,sY-2,0,sY+2);
-      sg.addColorStop(0,"transparent");sg.addColorStop(0.5,T_(0.020));sg.addColorStop(1,"transparent");
-      ctx.fillStyle=sg;ctx.fillRect(0,sY-2,W,4);
+      /* ── 14. Scan line (very subtle) ── */
+      const sY=((T*0.022)%1)*H;
+      const sl=ctx.createLinearGradient(0,sY-1.5,0,sY+1.5);
+      sl.addColorStop(0,"transparent");sl.addColorStop(0.5,`rgba(48,190,215,0.015)`);sl.addColorStop(1,"transparent");
+      ctx.fillStyle=sl; ctx.fillRect(0,sY-1.5,W,3);
 
       raf=requestAnimationFrame(draw);
     }
 
-    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-    buildOrbs();
-    ctx.fillStyle="#030d18";ctx.fillRect(0,0,canvas.width,canvas.height);
+    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+    init();
+    ctx.fillStyle="#020812"; ctx.fillRect(0,0,canvas.width,canvas.height);
     raf=requestAnimationFrame(draw);
 
-    return ()=>{
+    return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize",    resize);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup",   onUp);
       window.removeEventListener("mouseleave",onLeave);
     };
-  },[]);
+  }, []);
 
   return (
     <div style={{position:"fixed",inset:0,zIndex:0}} aria-hidden>
