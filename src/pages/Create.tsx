@@ -332,7 +332,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
       {/* Custom header with smart back button */}
       <div style={{position:"sticky",top:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"space-between",
         padding:"12px 24px",background:"rgba(2,9,16,0.68)",borderBottom:"1px solid rgba(50,190,218,0.12)",
-        backdropFilter:"blur(48px)"}}>
+        backdropFilter:"blur(14px)"}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <motion.button onClick={back} whileHover={{scale:1.04,x:-2}} whileTap={{scale:0.97}}
             style={{display:"flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:11,
@@ -405,7 +405,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
                       cursor:"pointer",
                       transition:"border-color .22s,box-shadow .22s",
                       boxShadow:`0 4px 24px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)`,
-                      backdropFilter:"blur(22px)",
+                      backdropFilter:"blur(14px)",
                       position:"relative" as const,overflow:"hidden",
                     }}
                     onMouseEnter={e=>{

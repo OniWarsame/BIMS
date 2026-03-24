@@ -112,12 +112,12 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
           transition={{duration:0.45,ease:[0.16,1,0.3,1]}}
           style={{
             padding:"32px 28px 26px",
-            background:"linear-gradient(160deg,rgba(4,12,38,0.78),rgba(4,10,30,0.78))",
-            border:"1px solid rgba(50,145,255,0.18)",
-            borderTop:"2px solid rgba(60,165,255,0.5)",
+            background:"linear-gradient(160deg,rgba(0,8,24,0.72),rgba(0,5,16,0.78))",
+            border:"1px solid rgba(0,180,255,0.20)",
+            borderTop:"2px solid rgba(0,200,255,0.52)",
             borderRadius:20,
-            boxShadow:"0 0 80px rgba(0,0,0,0.72),0 0 40px rgba(0,175,250,0.08),inset 0 1px 0 rgba(50,140,255,0.08)",
-            backdropFilter:"blur(30px)",
+            boxShadow:"0 8px 48px rgba(0,0,0,0.55),0 0 32px rgba(0,150,255,0.08),inset 0 1px 0 rgba(0,190,255,0.10)",
+            backdropFilter:"blur(12px)",
           }}>
           {children}
         </motion.div>

@@ -143,7 +143,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
           background:"linear-gradient(160deg,rgba(4,14,26,0.78),rgba(2,10,18,0.78))",
           border:"1px solid rgba(50,190,218,0.28)",borderTop:"2px solid rgba(56,196,223,0.5)",
           borderRadius:20,boxShadow:"0 0 80px rgba(50,190,218,0.12),0 24px 64px rgba(0,0,0,0.78)",
-          backdropFilter:"blur(30px)"}}>
+          backdropFilter:"blur(14px)"}}>
 
         {/* Corner brackets */}
         {["top-2 left-2 border-t border-l","top-2 right-2 border-t border-r","bottom-2 left-2 border-b border-l","bottom-2 right-2 border-b border-r"].map((cls,i)=>(

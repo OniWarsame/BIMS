@@ -574,7 +574,7 @@ Respond ONLY with valid JSON (no markdown):
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.16)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <Bell style={{width:13,height:13}}/>
-            {notifCount>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,95%,65%)",border:"2px solid rgba(2,8,18,1)"}}/>}
+            {notifCount>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(218,95%,65%)",border:"2px solid rgba(2,8,18,0.8)"}}/>}
           </button>
 
           {/* DM */}
@@ -582,7 +582,7 @@ Respond ONLY with valid JSON (no markdown):
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(45,175,210,0.16)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";}}>
             <MessageSquare style={{width:13,height:13}}/>
-            {dmUnread>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,68%)",border:"2px solid rgba(2,8,18,1)"}}/>}
+            {dmUnread>0&&<span style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:"50%",background:"hsl(270,80%,68%)",border:"2px solid rgba(2,8,18,0.8)"}}/>}
           </button>
 
           {/* Divider */}
@@ -612,7 +612,7 @@ Respond ONLY with valid JSON (no markdown):
         <AnimatePresence>
           {showUserMenu&&(
             <motion.div initial={{opacity:0,y:-8,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.15}}
-              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.78)",border:"1px solid rgba(0,205,248,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.78)",backdropFilter:"blur(20px)"}}>
+              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.78)",border:"1px solid rgba(0,205,248,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.78)",backdropFilter:"blur(14px)"}}>
               <div style={{padding:"8px 14px 8px",borderBottom:"1px solid rgba(0,205,248,0.12)",marginBottom:4}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:11,fontWeight:700,color:"rgba(210,242,248,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,205,248,0.45)",marginTop:2}}>@{currentUser?.username}</div>
@@ -817,7 +817,7 @@ Respond ONLY with valid JSON (no markdown):
                   borderRadius:14,cursor:"pointer",
                   transition:"border-color .22s,box-shadow .22s",
                   boxShadow:"0 4px 22px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)",
-                  backdropFilter:"blur(22px)",
+                  backdropFilter:"blur(14px)",
                   position:"relative" as const,overflow:"hidden",textAlign:"left" as const}}
                 onMouseEnter={e=>{
                   const el=e.currentTarget as HTMLElement;

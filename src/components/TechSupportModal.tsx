@@ -294,7 +294,7 @@ export default function TechSupportModal({
                           <motion.div
                             style={{ position:"absolute", left:0, right:0, top:"calc(100% + 4px)", zIndex:200,
                               background:"hsla(215,55%,5%,0.99)", border:"1px solid hsla(192,100%,52%,0.3)",
-                              borderRadius:8, boxShadow:"0 16px 40px rgba(0,0,0,0.78)", backdropFilter:"blur(20px)",
+                              borderRadius:8, boxShadow:"0 16px 40px rgba(0,0,0,0.78)", backdropFilter:"blur(14px)",
                               overflow:"hidden" }}
                             initial={{ opacity:0, y:-6, scale:0.97 }}
                             animate={{ opacity:1, y:0, scale:1 }}

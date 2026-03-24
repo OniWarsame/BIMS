@@ -417,7 +417,7 @@ export default function CyberBackground() {
   },[]);
 
   return(
-    <div style={{position:"fixed",inset:0,zIndex:0}} aria-hidden>
+    <div style={{position:"fixed",inset:0,zIndex:-1}} aria-hidden>
       <canvas ref={canvasRef} style={{position:"absolute",inset:0,width:"100%",height:"100%"}}/>
     </div>
   );

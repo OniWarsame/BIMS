@@ -1033,7 +1033,7 @@ const Registration = () => {
       <AnimatePresence>{modal&&<AttachModal {...modal} onClose={()=>setModal(null)}/>}</AnimatePresence>
 
       {/* ── HEADER ── */}
-      <div className="flex items-center justify-between sticky top-0 z-10" style={{padding:"7px 16px",background:"rgba(4,8,16,0.78)",borderBottom:"1px solid rgba(0,160,200,0.12)",backdropFilter:"blur(20px)"}}>
+      <div className="flex items-center justify-between sticky top-0 z-10" style={{padding:"7px 16px",background:"rgba(4,8,16,0.78)",borderBottom:"1px solid rgba(0,160,200,0.12)",backdropFilter:"blur(14px)"}}>
         <div className="flex items-center gap-3">
           <button onClick={()=>navigate("/")} className="w-9 h-9 flex items-center justify-center rounded-lg transition-all" style={{color:"hsl(193,100%,62%)"}}
             onMouseEnter={e=>e.currentTarget.style.background="hsla(192,100%,52%,0.12)"}
