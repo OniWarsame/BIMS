@@ -6,20 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BIMS — Biometric Identity Management System</title>
     <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html { background: #000610; }
-      body { background: #000610; overflow-x: hidden; }
-      #root { min-height: 100vh; }
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html,body{min-height:100%;background:#000610}
+      body{overflow-x:hidden}
+      #root{min-height:100vh}
     </style>
     <script>
-      /* Run before React — strip any dark-mode class next-themes might have set */
-      (function() {
-        try {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.removeAttribute('data-theme');
-          localStorage.removeItem('theme');
-        } catch(e) {}
-      })();
+      /* Strip any dark-mode class that next-themes or other libs might have set */
+      try{
+        document.documentElement.classList.remove('dark');
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+      }catch(e){}
     </script>
   </head>
   <body>
