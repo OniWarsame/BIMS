@@ -70,7 +70,7 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
   return (
     <div style={{minHeight:"100vh",position:"relative",display:"flex",flexDirection:"column" as const,
       alignItems:"center",justifyContent:"center",padding:"20px 16px",
-      background:"hsl(220,62%,5%)"}}>
+      background:"transparent"}}>
       <CyberBackground/>
 
       {/* Logo — top left */}
