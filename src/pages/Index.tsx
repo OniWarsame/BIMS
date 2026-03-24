@@ -936,7 +936,7 @@ Respond ONLY with valid JSON (no markdown):
               <div style={{display:"flex",gap:6,marginBottom:14}}>
                 {(["name","username","email","phone","face"] as const).map(t=>(
                   <button key={t} onClick={()=>setDsType(t)}
-                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?(t==="face"?"rgba(0,210,255,0.7)":"rgba(120,100,255,0.6)"):"rgba(255,255,255,0.1)"}`,background:dsType===t?(t==="face"?"rgba(0,180,240,0.18)":"rgba(100,80,255,0.18)"):"rgba(255,255,255,0.04)",color:dsType===t?(t==="face"?"rgba(0,225,255,0.95)":"rgba(200,185,255,0.95)"):"rgba(140,130,200,0.5)",transition:"all .16s"}}>
+                    style={{flex:1,padding:"6px 0",borderRadius:8,cursor:"pointer",fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase" as const,border:`1px solid ${dsType===t?(t==="face"?"rgba(0,208,255,0.7)":"rgba(120,100,255,0.6)"):"rgba(255,255,255,0.1)"}`,background:dsType===t?(t==="face"?"rgba(0,180,240,0.18)":"rgba(100,80,255,0.18)"):"rgba(255,255,255,0.04)",color:dsType===t?(t==="face"?"rgba(0,225,255,0.95)":"rgba(200,185,255,0.95)"):"rgba(140,130,200,0.5)",transition:"all .16s"}}>
                     {t}
                   </button>
                 ))}
@@ -946,7 +946,7 @@ Respond ONLY with valid JSON (no markdown):
                   value={dsInput} onChange={e=>setDsInput(e.target.value)}
                   onKeyDown={e=>{if(e.key==="Enter")handleDeepSearch();}}
                   placeholder={dsType==="name"?"Full name…":dsType==="username"?"@username…":dsType==="email"?"email@domain.com":dsType==="phone"?"Phone number…":"Paste image URL for face lookup…"}
-                  style={{flex:1,padding:"10px 14px",borderRadius:10,background:"rgba(255,255,255,0.07)",border:`1.5px solid ${dsType==="face"?"rgba(0,210,255,0.45)":"rgba(100,80,255,0.28)"}`,outline:"none",color:"rgba(220,215,255,0.95)",fontFamily:"'Exo 2',sans-serif",fontSize:13}}
+                  style={{flex:1,padding:"10px 14px",borderRadius:10,background:"rgba(255,255,255,0.07)",border:`1.5px solid ${dsType==="face"?"rgba(0,208,255,0.45)":"rgba(100,80,255,0.28)"}`,outline:"none",color:"rgba(220,215,255,0.95)",fontFamily:"'Exo 2',sans-serif",fontSize:13}}
                 />
                 <button onClick={handleDeepSearch} disabled={dsLoading||!dsInput.trim()}
                   style={{padding:"10px 18px",borderRadius:10,cursor:dsLoading||!dsInput.trim()?"not-allowed":"pointer",background:"linear-gradient(135deg,hsl(260,80%,55%),hsl(280,80%,65%))",border:"0",color:"white",fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,opacity:dsLoading||!dsInput.trim()?0.5:1}}>
@@ -975,12 +975,12 @@ Respond ONLY with valid JSON (no markdown):
 
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,14,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
-        <span style={{color:"rgba(0,210,255,0.65)"}}>BIMS v1.0</span>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+        <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
-        <span style={{color:"rgba(0,210,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
+        <span style={{color:"rgba(0,208,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
       </div>
 </div>
   );

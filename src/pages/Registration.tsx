@@ -715,7 +715,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
       {/* ── SYSTEM ACCESS ACCOUNT ── */}
       <div style={{borderRadius:16,overflow:"hidden",
         border:"2px solid rgba(50,190,218,0.25)",
-        background:"linear-gradient(160deg,rgba(0,6,16,0.96),rgba(3,12,22,0.98))",
+        background:"linear-gradient(160deg,rgba(0,5,16,0.96),rgba(3,12,22,0.98))",
         boxShadow:"0 0 40px rgba(42,180,212,0.08),inset 0 1px 0 rgba(55,196,224,0.08)"}}>
         {/* Header toggle */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -1120,12 +1120,12 @@ const Registration = () => {
         </div>
       </div>
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,14,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
-        <span style={{color:"rgba(0,210,255,0.65)"}}>BIMS v1.0</span>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+        <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
-        <span style={{color:"rgba(0,210,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
+        <span style={{color:"rgba(0,208,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
       </div>
 </div>
   );

@@ -128,12 +128,12 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
         showBackButton={true} onBack={()=>setShowSupport(false)}/>
     
       {/* ─── GLOBAL FOOTER ─── */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,14,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
-        <span style={{color:"rgba(0,210,255,0.65)"}}>BIMS v1.0</span>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"9px 32px",background:"rgba(0,4,16,0.88)",borderTop:"1px solid rgba(0,200,245,0.16)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,gap:12,backdropFilter:"blur(8px)"}}>
+        <span style={{color:"rgba(0,208,255,0.65)"}}>BIMS v1.0</span>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
         <a href="https://kumi.ke/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(0,230,200,0.75)",textDecoration:"none",letterSpacing:"0.06em"}}>© 2026 KUMI</a>
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(0,200,245,0.35)",display:"inline-block"}}/>
-        <span style={{color:"rgba(0,210,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
+        <span style={{color:"rgba(0,208,255,0.40)"}}>BIOMETRIC IDENTITY MANAGEMENT SYSTEM</span>
       </div>
 </div>
   );
