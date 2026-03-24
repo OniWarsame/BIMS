@@ -7,10 +7,20 @@
     <title>BIMS — Biometric Identity Management System</title>
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { min-height: 100%; background: #000610; }
-      body { font-family: 'Exo 2', sans-serif; overflow-x: hidden; }
-      #root { min-height: 100vh; background: transparent; }
+      html { background: #000610; }
+      body { background: #000610; overflow-x: hidden; }
+      #root { min-height: 100vh; }
     </style>
+    <script>
+      /* Run before React — strip any dark-mode class next-themes might have set */
+      (function() {
+        try {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
