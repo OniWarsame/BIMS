@@ -94,7 +94,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
     setScanState("idle"); setMatchUser(null);
   };
 
-  const fpColor  = scanState==="error"?"hsl(0,85%,62%)":scanState==="preview"||scanState==="granting"?"hsl(192,70%,58%)":scanState==="scanning"?"hsl(192,68%,65%)":"hsl(195,80%,45%)";
+  const fpColor  = scanState==="error"?"hsl(0,85%,62%)":scanState==="preview"||scanState==="granting"?"hsl(270,100%,58%)":scanState==="scanning"?"hsl(270,90%,65%)":"hsl(195,80%,45%)";
   const glowCol  = scanState==="error"?"rgba(220,60,60,0.6)":scanState==="scanning"||scanState==="preview"||scanState==="granting"?"rgba(50,190,218,0.55)":"rgba(0,160,220,0.3)";
 
   const sideLeft = [
@@ -111,7 +111,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
       {/* BACK NAV */}
       <div className="fixed top-0 left-0 right-0 z-20 flex items-center px-4 py-3 cyber-header">
         <button onClick={onBack}
-          style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:"hsl(192,68%,72%)",background:"none",border:"none",cursor:"pointer",padding:"6px 10px",borderRadius:8,transition:"all .18s"}}
+          style={{display:"flex",alignItems:"center",gap:8,fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:"hsl(270,90%,72%)",background:"none",border:"none",cursor:"pointer",padding:"6px 10px",borderRadius:8,transition:"all .18s"}}
           onMouseEnter={e=>e.currentTarget.style.background="rgba(50,190,218,0.08)"}
           onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           <ArrowLeft className="w-4 h-4"/>DATABASE ACCESS
@@ -123,13 +123,13 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
         {sideLeft.map((item,i)=>(
           <motion.div key={i}
             initial={{opacity:0,x:-24}} animate={{opacity:1,x:0}} transition={{delay:i*0.12}}
-            style={{background:"rgba(4,14,24,0.85)",border:"1px solid rgba(50,190,218,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
+            style={{background:"rgba(10,2,28,0.85)",border:"1px solid rgba(50,190,218,0.18)",backdropFilter:"blur(12px)",borderRadius:8,padding:"8px 12px",minWidth:150}}>
             <motion.div animate={{opacity:[0.35,0.7,0.35]}} transition={{duration:2.5+i*0.4,repeat:Infinity,delay:i*0.3}}>
               <div className="flex items-center gap-2">
                 <span style={{fontSize:12}}>{item.icon}</span>
                 <div>
                   <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:7,letterSpacing:"0.22em",color:"rgba(44,178,212,0.42)"}}>{item.label}</div>
-                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,color:"hsl(192,68%,65%)"}}>{item.val}</div>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,color:"hsl(270,90%,65%)"}}>{item.val}</div>
                 </div>
               </div>
             </motion.div>
@@ -153,7 +153,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
         ))}
 
         <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:18,fontWeight:900,letterSpacing:"0.18em",
-          color:"hsl(192,68%,72%)",textShadow:"0 0 20px rgba(50,190,218,0.8)",marginBottom:4}}>
+          color:"hsl(270,90%,72%)",textShadow:"0 0 20px rgba(50,190,218,0.8)",marginBottom:4}}>
           DATABASE ACCESS
         </h1>
         <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.22em",
@@ -175,7 +175,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
               animate={{rotate:[360,0]}} transition={{duration:7,repeat:Infinity,ease:"linear"}}/>
           </svg>
           <div className={scanState==="scanning"?"scanner-pulse":""} style={{width:220,height:220,borderRadius:"50%",
-            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(4,18,32,0.97),rgba(4,14,24,0.99))",
+            background:scanState==="error"?"radial-gradient(circle at 38% 38%,hsla(0,70%,8%,0.97),hsla(0,70%,3%,0.99))":"radial-gradient(circle at 38% 38%,rgba(4,18,32,0.97),rgba(10,2,28,0.99))",
             border:`2px solid ${fpColor}55`,
             boxShadow:`0 0 60px ${glowCol}20,inset 0 0 60px rgba(0,0,0,0.5)`,
             display:"flex",flexDirection:"column" as const,alignItems:"center",justifyContent:"center",gap:10,
@@ -187,7 +187,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
             )}
             {scanState==="granting" ? (
               <motion.div initial={{scale:0}} animate={{scale:1}} transition={{type:"spring",stiffness:300}}>
-                <CheckCircle style={{width:60,height:60,color:"hsl(192,68%,65%)",filter:`drop-shadow(0 0 18px ${glowCol})`}}/>
+                <CheckCircle style={{width:60,height:60,color:"hsl(270,90%,65%)",filter:`drop-shadow(0 0 18px ${glowCol})`}}/>
               </motion.div>
             ) : (
               <motion.div animate={scanState==="scanning"?{scale:[1,1.09,1],opacity:[0.78,1,0.78]}:{scale:1,opacity:1}}
@@ -211,16 +211,16 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
                 padding:"8px 14px",background:"rgba(50,190,218,0.06)",borderBottom:"1px solid rgba(50,190,218,0.15)"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <motion.div animate={{opacity:[1,0.3,1]}} transition={{duration:1,repeat:Infinity}}
-                    style={{width:7,height:7,borderRadius:"50%",background:"hsl(192,70%,58%)",boxShadow:"0 0 8px rgba(50,190,218,0.8)"}}/>
+                    style={{width:7,height:7,borderRadius:"50%",background:"hsl(270,100%,58%)",boxShadow:"0 0 8px rgba(50,190,218,0.8)"}}/>
                   <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.16em",color:"rgba(56,196,223,0.85)"}}>
                     IDENTITY CONFIRMED — ACCESS IN {countdown}s
                   </span>
                 </div>
-                <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,color:"hsl(192,68%,65%)"}}>{countdown}</span>
+                <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,color:"hsl(270,90%,65%)"}}>{countdown}</span>
               </div>
               <div style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:44,height:44,borderRadius:10,background:"rgba(44,178,212,0.12)",border:"1px solid rgba(50,190,218,0.3)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"hsl(192,68%,65%)",flexShrink:0}}>
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,color:"hsl(270,90%,65%)",flexShrink:0}}>
                   {matchUser.fullName?.charAt(0).toUpperCase()||"?"}
                 </div>
                 <div>
@@ -231,7 +231,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
                 </div>
               </div>
               <div style={{height:3,margin:"0 14px 12px",borderRadius:2,background:"rgba(44,178,212,0.12)",overflow:"hidden"}}>
-                <motion.div style={{height:"100%",background:"linear-gradient(90deg,hsl(192,70%,48%),hsl(200,68%,60%))",originX:0}}
+                <motion.div style={{height:"100%",background:"linear-gradient(90deg,hsl(270,100%,48%),hsl(280,90%,60%))",originX:0}}
                   animate={{width:`${((2-countdown)/2)*100}%`}} transition={{duration:1,ease:"linear"}}/>
               </div>
               <div style={{textAlign:"right" as const,paddingRight:14,paddingBottom:10}}>
@@ -253,7 +253,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
             style={{width:"100%",height:46,borderRadius:13,display:"flex",alignItems:"center",justifyContent:"center",gap:10,
               fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,letterSpacing:"0.1em",
               color:"hsl(205,55%,5%)",cursor:"pointer",border:"0",
-              background:"linear-gradient(135deg,hsl(192,70%,45%),hsl(200,68%,58%))",
+              background:"linear-gradient(135deg,hsl(270,100%,45%),hsl(280,90%,58%))",
               boxShadow:"0 6px 28px rgba(50,190,218,0.45),inset 0 1px 0 rgba(255,255,255,0.2)",
               position:"relative" as const,overflow:"hidden"}}>
             <motion.span style={{position:"absolute" as const,inset:0,

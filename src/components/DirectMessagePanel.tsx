@@ -41,7 +41,7 @@ const fmt = (s: string) => {
   catch { return s; }
 };
 
-const CY  = "hsl(192,68%,72%)";
+const CY  = "hsl(270,90%,72%)";
 const CYD = (a = 1) => `hsla(192,100%,55%,${a})`;
 const label: React.CSSProperties = {
   fontFamily:"'Orbitron',monospace", fontSize:8, fontWeight:700,
@@ -164,7 +164,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
 
             {/* Shimmer line */}
             <div style={{position:"absolute",top:0,left:0,right:0,height:1,pointerEvents:"none",
-              background:`linear-gradient(90deg,transparent 5%,${CY} 40%,hsl(192,68%,92%) 50%,${CY} 60%,transparent 95%)`}}/>
+              background:`linear-gradient(90deg,transparent 5%,${CY} 40%,hsl(270,90%,92%) 50%,${CY} 60%,transparent 95%)`}}/>
 
             {/* ── Header ── */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -176,11 +176,11 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                   boxShadow:`0 0 16px ${CYD(0.3)},inset 0 1px 0 ${CYD(0.2)}`}}
                   animate={{boxShadow:[`0 0 16px ${CYD(0.3)}`,`0 0 28px ${CYD(0.5)}`,`0 0 16px ${CYD(0.3)}`]}}
                   transition={{duration:2.5,repeat:Infinity}}>
-                  <MessageSquare style={{width:14,height:14,color:"hsl(192,68%,80%)",filter:`drop-shadow(0 0 6px ${CYD(1)})`}}/>
+                  <MessageSquare style={{width:14,height:14,color:"hsl(270,90%,80%)",filter:`drop-shadow(0 0 6px ${CYD(1)})`}}/>
                 </motion.div>
                 <div>
                   <div style={{fontFamily:"'Orbitron',monospace",fontSize:11,fontWeight:900,
-                    letterSpacing:"0.2em",color:"hsl(192,68%,82%)",
+                    letterSpacing:"0.2em",color:"hsl(270,90%,82%)",
                     textShadow:`0 0 16px ${CYD(0.9)},0 0 32px ${CYD(0.4)}`}}>
                     DIRECT MESSAGES
                   </div>
@@ -207,7 +207,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                   style={{flex:1,padding:"9px 0",border:"none",cursor:"pointer",
                     fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:800,letterSpacing:"0.18em",
                     background:tab===t?CYD(0.1):"transparent",
-                    color:tab===t?"hsl(192,68%,80%)":CYD(0.35),
+                    color:tab===t?"hsl(270,90%,80%)":CYD(0.35),
                     borderBottom:tab===t?`2px solid ${CY}`:"2px solid transparent",
                     transition:"all .15s",position:"relative" as const}}>
                   {t==="inbox" ? "INBOX" : "COMPOSE"}
@@ -246,11 +246,11 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
                         {!msg.read && (
                           <motion.div style={{width:6,height:6,borderRadius:"50%",flexShrink:0,
-                            background:"hsl(192,68%,68%)",boxShadow:`0 0 10px ${CYD(1)}`}}
+                            background:"hsl(270,90%,68%)",boxShadow:`0 0 10px ${CYD(1)}`}}
                             animate={{opacity:[1,0.4,1]}} transition={{duration:1.2,repeat:Infinity}}/>
                         )}
                         <span style={{fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:800,
-                          letterSpacing:"0.1em",color:"hsl(192,68%,82%)",
+                          letterSpacing:"0.1em",color:"hsl(270,90%,82%)",
                           textShadow:`0 0 10px ${CYD(0.7)}`}}>
                           @{msg.from}
                         </span>
@@ -286,7 +286,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                       <span style={{fontFamily:"'Orbitron',monospace",fontSize:8,letterSpacing:"0.14em",color:CYD(0.5)}}>FROM</span>
                       <span style={{fontFamily:"'Orbitron',monospace",fontSize:10,fontWeight:800,
-                        letterSpacing:"0.1em",color:"hsl(192,68%,82%)",textShadow:`0 0 10px ${CYD(0.7)}`}}>
+                        letterSpacing:"0.1em",color:"hsl(270,90%,82%)",textShadow:`0 0 10px ${CYD(0.7)}`}}>
                         @{selectedMsg.from}
                       </span>
                       <span style={{fontFamily:"'Orbitron',monospace",fontSize:7,color:CYD(0.35),marginLeft:"auto"}}>
@@ -313,7 +313,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                       fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:800,letterSpacing:"0.18em",
                       background:sent?"hsla(142,80%,6%,0.8)":CYD(0.12),
                       border:sent?"1px solid hsla(142,90%,55%,0.45)":`1.5px solid ${CYD(0.55)}`,
-                      color:sent?"hsl(142,90%,70%)":"hsl(192,68%,72%)",
+                      color:sent?"hsl(142,90%,70%)":"hsl(270,90%,72%)",
                       boxShadow:`0 0 16px ${CYD(0.2)}`,
                       display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .15s"}}
                     onMouseEnter={e=>{if(!sent){e.currentTarget.style.background=CYD(0.24);e.currentTarget.style.boxShadow=`0 0 28px ${CYD(0.38)}`;} }}
@@ -339,7 +339,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                             fontFamily:"'Orbitron',monospace",fontSize:8,fontWeight:800,letterSpacing:"0.14em",
                             border:`1.5px solid ${sendMode==="individual"?CYD(0.65):CYD(0.2)}`,
                             background:sendMode==="individual"?CYD(0.12):"transparent",
-                            color:sendMode==="individual"?"hsl(192,68%,80%)":CYD(0.35),
+                            color:sendMode==="individual"?"hsl(270,90%,80%)":CYD(0.35),
                             boxShadow:sendMode==="individual"?`0 0 16px ${CYD(0.25)}`:"none",
                             transition:"all .15s",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                           <User style={{width:12,height:12}}/>
@@ -444,7 +444,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                                 {recipient.charAt(0).toUpperCase()}
                               </div>
                               <span style={{fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,
-                                letterSpacing:"0.1em",color:"hsl(192,68%,80%)"}}>
+                                letterSpacing:"0.1em",color:"hsl(270,90%,80%)"}}>
                                 @{recipient}
                               </span>
                               <Check style={{width:10,height:10,color:"hsl(142,80%,60%)"}}/>
@@ -488,7 +488,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                                       </div>
                                       <div style={{flex:1,minWidth:0,textAlign:"left" as const}}>
                                         <div style={{fontFamily:"'Orbitron',monospace",fontSize:10,fontWeight:700,
-                                          letterSpacing:"0.08em",color:"hsl(192,68%,82%)"}}>
+                                          letterSpacing:"0.08em",color:"hsl(270,90%,82%)"}}>
                                           @{u}
                                         </div>
                                         {info?.fullName && (
@@ -525,7 +525,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                             background:CY,boxShadow:`0 0 8px ${CYD(0.9)}`}}/>
                           <div style={{flex:1}}>
                             <span style={{fontFamily:"'Orbitron',monospace",fontSize:10,fontWeight:700,
-                              letterSpacing:"0.1em",color:"hsl(192,68%,78%)"}}>
+                              letterSpacing:"0.1em",color:"hsl(270,90%,78%)"}}>
                               {autoTarget ? `@${autoTarget.toUpperCase()}` : "ADMIN"}
                             </span>
                             {allUsersInfo.find(u=>u.username===autoTarget)?.fullName && (
@@ -594,7 +594,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                           fontFamily:"'Orbitron',monospace",fontSize:10,fontWeight:800,letterSpacing:"0.2em",
                           background:sendMode==="all"?"hsla(270,90%,62%,0.12)":CYD(0.12),
                           border:sendMode==="all"?`1.5px solid hsla(270,90%,65%,0.58)`:`1.5px solid ${CYD(0.58)}`,
-                          color:sendMode==="all"?"hsl(270,90%,78%)":"hsl(192,68%,72%)",
+                          color:sendMode==="all"?"hsl(270,90%,78%)":"hsl(270,90%,72%)",
                           boxShadow:sendMode==="all"?"0 0 18px hsla(270,90%,60%,0.22)":`0 0 18px ${CYD(0.2)}`,
                           display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                           width:"100%",transition:"all .15s",opacity:canSend?1:0.45}}
@@ -623,7 +623,7 @@ export default function DirectMessagePanel({ open, onClose, currentUsername, cur
                           background:"hsla(215,58%,5%,0.7)",border:`1px solid ${CYD(0.18)}`}}>
                           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
                             <span style={{fontFamily:"'Orbitron',monospace",fontSize:7,letterSpacing:"0.12em",color:CYD(0.45)}}>TO</span>
-                            <span style={{fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,color:"hsl(192,68%,80%)"}}>
+                            <span style={{fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,color:"hsl(270,90%,80%)"}}>
                               {msg.to==="ALL"?"📢 ALL USERS":`@${msg.to}`}
                             </span>
                             <span style={{fontFamily:"'Orbitron',monospace",fontSize:7,color:CYD(0.3),marginLeft:"auto"}}>
