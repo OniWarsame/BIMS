@@ -136,7 +136,7 @@ export default function UserManagement() {
       <PageHeader
         title="USER MANAGEMENT"
         subtitle="ACCESS CONTROL · ROLES · CREDENTIALS"
-        icon={<Users size={16} style={{color:"hsl(270,90%,68%)"}}/>}
+        icon={<Users size={16} style={{color:"hsl(192,100%,68%)"}}/>}
         rightContent={
           <>
             <div style={{fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.12em",
@@ -148,7 +148,7 @@ export default function UserManagement() {
               style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Orbitron',monospace",
                 fontSize:9,fontWeight:700,letterSpacing:"0.14em",padding:"8px 16px",borderRadius:9,
                 background:"hsla(192,100%,52%,0.12)",border:"1.5px solid hsla(192,100%,55%,0.55)",
-                color:"hsl(270,90%,72%)",cursor:"pointer",
+                color:"hsl(192,100%,72%)",cursor:"pointer",
                 boxShadow:"0 0 16px hsla(192,100%,52%,0.2)",transition:"all .15s"}}
               onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="hsla(192,100%,52%,0.22)";}}
               onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="hsla(192,100%,52%,0.12)";}}>

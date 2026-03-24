@@ -367,7 +367,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;col
             <select value={record?.id||""} onChange={e=>setRecord(allRecords.find(r=>r.id===e.target.value)||null)}
               style={{fontFamily:"'Orbitron',monospace",fontSize:8,fontWeight:700,letterSpacing:"0.1em",
                 padding:"7px 12px",borderRadius:8,background:"hsla(215,55%,5%,0.9)",
-                border:"1px solid hsla(192,100%,52%,0.35)",color:"hsl(270,90%,72%)",
+                border:"1px solid hsla(192,100%,52%,0.35)",color:"hsl(192,100%,72%)",
                 outline:"none",cursor:"pointer"}}>
               {allRecords.map(r=><option key={r.id} value={r.id}>{r.name} {r.surname}</option>)}
             </select>

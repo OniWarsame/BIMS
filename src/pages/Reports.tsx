@@ -92,7 +92,7 @@ export default function Reports() {
       <PageHeader
         title="SYSTEM REPORTS"
         subtitle="ACTIVITY LOGS · USER SESSIONS · RECORDS AUDIT"
-        icon={<FileText size={16} style={{color:"hsl(270,90%,68%)"}}/>}
+        icon={<FileText size={16} style={{color:"hsl(192,100%,68%)"}}/>}
         rightContent={
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             {me?.role==="admin"&&<button onClick={()=>{clearLogs();setLogs([]);}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.12em",padding:"7px 14px",borderRadius:9,border:"1px solid hsla(0,80%,52%,0.35)",background:"hsla(0,80%,52%,0.08)",color:"hsl(0,80%,70%)",cursor:"pointer",transition:"all .15s"}}
@@ -100,7 +100,7 @@ export default function Reports() {
               onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="hsla(0,80%,52%,0.08)";}}>
               <Trash2 size={12}/> CLEAR LOGS
             </button>}
-            <button onClick={exportLogs} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.12em",padding:"7px 14px",borderRadius:9,border:"1.5px solid hsla(192,100%,55%,0.5)",background:"hsla(192,100%,52%,0.1)",color:"hsl(270,90%,72%)",cursor:"pointer",transition:"all .15s"}}
+            <button onClick={exportLogs} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Orbitron',monospace",fontSize:9,fontWeight:700,letterSpacing:"0.12em",padding:"7px 14px",borderRadius:9,border:"1.5px solid hsla(192,100%,55%,0.5)",background:"hsla(192,100%,52%,0.1)",color:"hsl(192,100%,72%)",cursor:"pointer",transition:"all .15s"}}
               onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="hsla(192,100%,52%,0.22)";}}
               onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="hsla(192,100%,52%,0.1)";}}>
               <Download size={12}/> EXPORT
