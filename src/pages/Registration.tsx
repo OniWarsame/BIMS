@@ -44,19 +44,19 @@ const STEPS = [
 const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:boolean;onClose:()=>void}) => (
   <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
     className="fixed inset-0 z-50 flex items-center justify-center p-6"
-    style={{background:"rgba(1,10,24,0.92)",backdropFilter:"blur(16px)"}} onClick={onClose}>
+    style={{background:"rgba(0,5,14,0.92)",backdropFilter:"blur(16px)"}} onClick={onClose}>
     <motion.div initial={{scale:0.92,y:16}} animate={{scale:1,y:0}} exit={{scale:0.92}}
       className="card-surface rounded-xl overflow-hidden max-w-xl w-full"
       style={{border:"1.5px solid hsla(192,100%,55%,0.4)",boxShadow:"0 0 60px hsla(192,100%,55%,0.12)"}}
       onClick={e=>e.stopPropagation()}>
       <div className="flex items-center justify-between px-5 py-3 border-b"
         style={{borderColor:"hsla(192,70%,25%,0.35)",background:"hsla(192,100%,55%,0.06)"}}>
-        <span className="font-mono text-xs font-bold tracking-widest" style={{color:"hsl(192,100%,65%)"}}>{title}</span>
-        <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded" style={{color:"hsl(192,100%,65%)"}}>
+        <span className="font-mono text-xs font-bold tracking-widest" style={{color:"hsl(193,100%,65%)"}}>{title}</span>
+        <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded" style={{color:"hsl(193,100%,65%)"}}>
           <X className="w-4 h-4"/>
         </button>
       </div>
-      <div className="p-5 flex items-center justify-center min-h-40" style={{background:"rgba(1,10,24,0.92)"}}>
+      <div className="p-5 flex items-center justify-center min-h-40" style={{background:"rgba(0,5,14,0.92)"}}>
         {isImg
           ? <img src={src} alt={title} className="max-w-full max-h-80 object-contain rounded-lg"/>
           : <div className="text-center space-y-3">
@@ -132,28 +132,28 @@ const SectionHeader=({icon:Icon,title}:{icon:any;title:string})=>(
     borderBottom:"1px solid rgba(50,190,218,0.15)",position:"relative" as const}}>
     {/* Accent line on the left */}
     <div style={{position:"absolute",left:-24,top:0,bottom:14,width:3,
-      background:"linear-gradient(180deg,hsl(192,100%,55%),transparent)",
+      background:"linear-gradient(180deg,hsl(193,100%,55%),transparent)",
       borderRadius:"0 2px 2px 0"}}/>
     <div style={{width:36,height:36,borderRadius:10,flexShrink:0,
       background:"linear-gradient(135deg,rgba(42,180,212,0.18),rgba(0,80,200,0.12))",
       border:"1.5px solid rgba(50,190,218,0.38)",
       display:"flex",alignItems:"center",justifyContent:"center",
       boxShadow:"0 0 16px rgba(46,186,216,0.2),inset 0 1px 0 rgba(55,196,224,0.12)"}}>
-      <Icon style={{width:16,height:16,color:"hsl(192,100%,68%)",filter:"drop-shadow(0 0 4px rgba(50,190,218,0.6))"}}/>
+      <Icon style={{width:16,height:16,color:"hsl(193,100%,68%)",filter:"drop-shadow(0 0 4px rgba(50,190,218,0.6))"}}/>
     </div>
     <div>
       <h2 style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:800,
         letterSpacing:"0.12em",color:"rgba(180,240,255,0.98)",margin:0,textTransform:"uppercase" as const,
         textShadow:"0 0 16px rgba(50,190,218,0.35)"}}>{title}</h2>
       <div style={{width:40,height:1.5,marginTop:4,borderRadius:1,
-        background:"linear-gradient(90deg,hsl(192,100%,55%),transparent)"}}/>
+        background:"linear-gradient(90deg,hsl(193,100%,55%),transparent)"}}/>
     </div>
   </div>
 );
 const ToggleStyle=(active:boolean,hue=185)=>({
   fontSize:"0.8rem",fontWeight:700,
   border:      active?`2px solid hsl(${hue},100%,55%)`:`1.5px solid hsla(${hue},70%,55%,0.38)`,
-  background:  active?`hsla(${hue},100%,50%,0.18)`:"rgba(1,10,24,0.72)",
+  background:  active?`hsla(${hue},100%,50%,0.18)`:"rgba(0,5,14,0.72)",
   color:       active?`hsl(${hue},100%,82%)`:`hsl(${hue},60%,65%)`,
   boxShadow:   active?`0 0 16px hsla(${hue},100%,50%,0.22)`:"none",
 });
@@ -288,7 +288,7 @@ const StepCredentials=({form,setForm,noPassport,setNoPassport,noLicense,setNoLic
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-label" style={{margin:0}}>UPLOAD PASSPORT SCAN</label>
-            {passportFile&&<button onClick={()=>onView("PASSPORT SCAN",passportFile)} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider px-2 py-1 rounded" style={{border:"1px solid hsla(192,100%,55%,0.35)",background:"hsla(192,100%,55%,0.08)",color:"hsl(192,100%,62%)"}}><Eye className="w-3 h-3"/> VIEW</button>}
+            {passportFile&&<button onClick={()=>onView("PASSPORT SCAN",passportFile)} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider px-2 py-1 rounded" style={{border:"1px solid hsla(192,100%,55%,0.35)",background:"hsla(192,100%,55%,0.08)",color:"hsl(193,100%,62%)"}}><Eye className="w-3 h-3"/> VIEW</button>}
           </div>
           <input ref={passportRef} type="file" accept=".pdf,image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)setPassportFile(f.name);e.target.value="";}}/>
           <UploadBox label="Passport Scan" file={passportFile} onClear={()=>setPassportFile(null)} onClick={()=>passportRef.current?.click()}/>
@@ -313,7 +313,7 @@ const StepCredentials=({form,setForm,noPassport,setNoPassport,noLicense,setNoLic
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-label" style={{margin:0}}>UPLOAD DRIVING LICENSE</label>
-            {licenseFile&&<button onClick={()=>onView("DRIVING LICENSE",licenseFile)} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider px-2 py-1 rounded" style={{border:"1px solid hsla(192,100%,55%,0.35)",background:"hsla(192,100%,55%,0.08)",color:"hsl(192,100%,62%)"}}><Eye className="w-3 h-3"/> VIEW</button>}
+            {licenseFile&&<button onClick={()=>onView("DRIVING LICENSE",licenseFile)} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider px-2 py-1 rounded" style={{border:"1px solid hsla(192,100%,55%,0.35)",background:"hsla(192,100%,55%,0.08)",color:"hsl(193,100%,62%)"}}><Eye className="w-3 h-3"/> VIEW</button>}
           </div>
           <input ref={licenseRef} type="file" accept=".pdf,image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)setLicenseFile(f.name);e.target.value="";}}/>
           <UploadBox label="Driving License" file={licenseFile} onClear={()=>setLicenseFile(null)} onClick={()=>licenseRef.current?.click()}/>
@@ -350,7 +350,7 @@ const StepFamily=({form,setForm,fatherDeceased,setFatherDeceased,motherDeceased,
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        <label className="font-display text-base font-bold tracking-wide" style={{color:"hsl(192,100%,68%)"}}>NEXT OF KIN</label>
+        <label className="font-display text-base font-bold tracking-wide" style={{color:"hsl(193,100%,68%)"}}>NEXT OF KIN</label>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           <F label="FIRST NAME"><input value={kin.name} onChange={e=>setKin((p:any)=>({...p,name:e.target.value}))} placeholder="First name" className="input-cyber"/></F>
           <F label="SURNAME"><input value={kin.surname} onChange={e=>setKin((p:any)=>({...p,surname:e.target.value}))} placeholder="Last name" className="input-cyber"/></F>
@@ -382,7 +382,7 @@ const StepEducation=({form,setForm,isStudent,setIsStudent,institutionType,setIns
           <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} transition={{duration:0.2}}
             className="space-y-4 pl-4 overflow-hidden" style={{borderLeft:"2px solid hsla(192,100%,55%,0.35)"}}>
             <div>
-              <label className="text-label" style={{color:"hsl(192,100%,65%)",fontSize:"0.68rem"}}>INSTITUTION TYPE</label>
+              <label className="text-label" style={{color:"hsl(193,100%,65%)",fontSize:"0.68rem"}}>INSTITUTION TYPE</label>
               <div className="flex gap-3 mt-2">
                 {(["college","university"] as const).map(t=>(
                   <button key={t} type="button" onClick={()=>{setInstitutionType(t);setUniLevel("");}}
@@ -486,7 +486,7 @@ const StepWork=({form,setForm,isWorking,setIsWorking,workInfo,setWorkInfo,cvFile
       </F>
       {/* CV Upload */}
       <div>
-        <label className="text-label" style={{color:"hsl(192,100%,62%)",textShadow:"0 0 8px hsla(192,100%,52%,0.5)"}}>UPLOAD CV / RÉSUMÉ</label>
+        <label className="text-label" style={{color:"hsl(193,100%,62%)",textShadow:"0 0 8px hsla(192,100%,52%,0.5)"}}>UPLOAD CV / RÉSUMÉ</label>
         <input ref={cvRef} type="file" accept=".pdf,.doc,.docx,.rtf,.txt" className="hidden"
           onChange={e=>{const f=e.target.files?.[0];if(f)setCvFile(f.name);e.target.value="";}}/>
         {cvFile
@@ -692,11 +692,11 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
                 <div key={i} className={`absolute w-3 h-3 ${cls}`} style={{borderColor:fb(key)}}/>
               ))}
               <Fingerprint className={`w-12 h-12 transition-all duration-500 ${fd(key)?"text-primary":fs(key)?"text-accent/60":"text-muted-foreground/20"}`}/>
-              <span className="font-mono text-[8px] tracking-wider mt-1" style={{color:fd(key)?"hsl(192,100%,62%)":fs(key)?"hsl(33,100%,60%)":"hsla(192,80%,55%,0.4)"}}>
+              <span className="font-mono text-[8px] tracking-wider mt-1" style={{color:fd(key)?"hsl(193,100%,62%)":fs(key)?"hsl(33,100%,60%)":"hsla(192,80%,55%,0.4)"}}>
                 {fd(key)?"CAPTURED":fs(key)?"SCANNING…":"TAP TO SCAN"}
               </span>
             </motion.div>
-            {fingerHashes[key]&&<div className="font-mono text-[9px] tracking-wider px-2 py-1 rounded text-center w-full" style={{background:"hsla(38,85%,50%,0.07)",border:"1px solid hsla(38,85%,50%,0.18)",color:"hsl(192,100%,62%)"}}>{fingerHashes[key]}</div>}
+            {fingerHashes[key]&&<div className="font-mono text-[9px] tracking-wider px-2 py-1 rounded text-center w-full" style={{background:"hsla(38,85%,50%,0.07)",border:"1px solid hsla(38,85%,50%,0.18)",color:"hsl(193,100%,62%)"}}>{fingerHashes[key]}</div>}
           </div>
         ))}
       </div>
@@ -704,10 +704,10 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
         {FINGERS.map(({key,short})=>(
           <div key={key} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full transition-all" style={{background:fd(key)?"hsl(38,90%,62%)":fs(key)?"hsl(33,100%,52%)":"hsla(192,80%,40%,0.3)",boxShadow:fd(key)?"0 0 6px hsl(38,90%,62%)":"none"}}/>
-            <span className="font-mono text-[9px] tracking-wider" style={{color:fd(key)?"hsl(192,100%,62%)":"hsla(38,60%,50%,0.4)"}}>{short}</span>
+            <span className="font-mono text-[9px] tracking-wider" style={{color:fd(key)?"hsl(193,100%,62%)":"hsla(38,60%,50%,0.4)"}}>{short}</span>
           </div>
         ))}
-        <span className="font-mono text-[10px] ml-3" style={{color:allDone?"hsl(192,100%,62%)":"hsla(38,60%,50%,0.5)"}}>
+        <span className="font-mono text-[10px] ml-3" style={{color:allDone?"hsl(193,100%,62%)":"hsla(38,60%,50%,0.5)"}}>
           {FINGERS.filter(f=>fingerStates[f.key]==="done").length}/4 CAPTURED
         </span>
       </div>
@@ -715,7 +715,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
       {/* ── SYSTEM ACCESS ACCOUNT ── */}
       <div style={{borderRadius:16,overflow:"hidden",
         border:"2px solid rgba(50,190,218,0.25)",
-        background:"linear-gradient(160deg,rgba(1,12,28,0.96),rgba(3,12,22,0.98))",
+        background:"linear-gradient(160deg,rgba(0,6,16,0.96),rgba(3,12,22,0.98))",
         boxShadow:"0 0 40px rgba(42,180,212,0.08),inset 0 1px 0 rgba(55,196,224,0.08)"}}>
         {/* Header toggle */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -732,11 +732,11 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
               border:"1.5px solid rgba(50,190,218,0.4)",
               display:"flex",alignItems:"center",justifyContent:"center",
               boxShadow:"0 0 20px rgba(46,186,216,0.2)"}}>
-              <Shield style={{width:20,height:20,color:"hsl(192,100%,70%)",filter:"drop-shadow(0 0 6px rgba(50,190,218,0.7))"}}/>
+              <Shield style={{width:20,height:20,color:"hsl(193,100%,70%)",filter:"drop-shadow(0 0 6px rgba(50,190,218,0.7))"}}/>
             </div>
             <div>
               <p style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,
-                letterSpacing:"0.1em",color:"hsl(192,100%,80%)",margin:0,
+                letterSpacing:"0.1em",color:"hsl(193,100%,80%)",margin:0,
                 textShadow:"0 0 16px rgba(50,190,218,0.4)"}}>SYSTEM ACCESS ACCOUNT</p>
               <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:"0.08em",
                 color:"rgba(0,180,220,0.5)",margin:"3px 0 0"}}>
@@ -747,7 +747,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
           {/* Toggle */}
           <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
             <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.12em",
-              color:acctCreate?"hsl(192,100%,72%)":"rgba(120,140,160,0.5)"}}>
+              color:acctCreate?"hsl(193,100%,72%)":"rgba(120,140,160,0.5)"}}>
               {acctCreate?"ENABLED":"DISABLED"}
             </span>
             <div style={{width:44,height:24,borderRadius:99,transition:"all .22s",display:"flex",alignItems:"center",padding:"0 2px",
@@ -755,7 +755,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
               border:`1.5px solid ${acctCreate?"rgba(54,194,222,0.6)":"rgba(80,110,140,0.35)"}`,
               boxShadow:acctCreate?"0 0 12px rgba(50,190,218,0.3)":"none"}}>
               <div style={{width:18,height:18,borderRadius:"50%",transition:"all .22s",
-                background:acctCreate?"hsl(192,100%,68%)":"hsl(210,20%,55%)",
+                background:acctCreate?"hsl(193,100%,68%)":"hsl(210,20%,55%)",
                 boxShadow:acctCreate?"0 0 8px rgba(50,190,218,0.6)":"none",
                 transform:acctCreate?"translateX(20px)":"translateX(0)"}}/>
             </div>
@@ -1035,7 +1035,7 @@ const Registration = () => {
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between sticky top-0 z-10" style={{padding:"7px 16px",background:"rgba(4,8,16,0.97)",borderBottom:"1px solid rgba(0,160,200,0.12)",backdropFilter:"blur(20px)"}}>
         <div className="flex items-center gap-3">
-          <button onClick={()=>navigate("/")} className="w-9 h-9 flex items-center justify-center rounded-lg transition-all" style={{color:"hsl(192,100%,62%)"}}
+          <button onClick={()=>navigate("/")} className="w-9 h-9 flex items-center justify-center rounded-lg transition-all" style={{color:"hsl(193,100%,62%)"}}
             onMouseEnter={e=>e.currentTarget.style.background="hsla(192,100%,52%,0.12)"}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
             <ArrowLeft className="w-4 h-4"/>

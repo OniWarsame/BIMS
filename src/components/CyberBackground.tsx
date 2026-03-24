@@ -1,6 +1,29 @@
 import React, { useEffect, useRef } from "react";
 import BG_IMAGE from "@/assets/bgImage";
 
+/*
+  ═══════════════════════════════════════════════════════
+  THE WATCHING EYE — eye.jpg
+  
+  Concept: The digital eye watches from the background.
+  It is NOT shown as a flat image. Instead:
+  
+  1. A large oval aperture at screen centre reveals the eye
+     through a MASK — the iris of the UI IS the eye's iris.
+     
+  2. Outside the aperture: pure deep-void with golden data
+     circuits — matching the golden circuit lines in the image.
+     
+  3. The aperture BREATHES — it pulses slowly like a living eye.
+  
+  4. When you move the mouse NEAR the aperture, the eye seems
+     to look AT you — the image subtly shifts toward the cursor.
+  
+  5. Mouse: a single glowing POINT of light — like a spotlight
+     the eye follows. Clean, minimal, professional.
+     No crosshairs. No rings. Just light.
+  ═══════════════════════════════════════════════════════
+*/
 export default function CyberBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -12,10 +35,11 @@ export default function CyberBackground() {
 
     let raf = 0, T = 0;
 
-    const M = { x:-999, y:-999, px:-999, py:-999, vx:0, vy:0, click:false };
-    const onMove  = (e:MouseEvent) => { M.px=M.x; M.py=M.y; M.x=e.clientX; M.y=e.clientY; M.vx=M.x-M.px; M.vy=M.y-M.py; };
-    const onDown  = () => { M.click=true; setTimeout(()=>{ M.click=false; },220); };
-    const onLeave = () => { M.x=-999; M.y=-999; };
+    const M  = { x:-999, y:-999, tx:-999, ty:-999, click:false };
+    const SM = { x:-999, y:-999 }; // smoothed mouse
+    const onMove  = (e:MouseEvent) => { M.tx=e.clientX; M.ty=e.clientY; };
+    const onDown  = () => { M.click=true; setTimeout(()=>{ M.click=false; },240); };
+    const onLeave = () => { M.tx=-999; M.ty=-999; };
     window.addEventListener("mousemove", onMove, {passive:true});
     window.addEventListener("mousedown", onDown);
     window.addEventListener("mouseleave", onLeave);
@@ -24,184 +48,169 @@ export default function CyberBackground() {
 
     const img = new Image();
     let imgOK = false;
-    img.onload = () => { imgOK = true; };
+    img.onload = () => { imgOK=true; };
     img.src = BG_IMAGE;
 
-    /* Palette — extracted from fb.jpg */
-    const CY  = (a:number) => `rgba(0,200,255,${a})`;
-    const BL  = (a:number) => `rgba(30,120,255,${a})`;
-    const ICE = (a:number) => `rgba(180,235,255,${a})`;
-    const GN  = (a:number) => `rgba(0,255,160,${a})`;
+    /* ── Palette from eye.jpg ──
+       Void black:  #000408
+       Deep blue:   hsl(215,90%,8%)
+       Iris cyan:   hsl(193,100%,55%)
+       Iris teal:   hsl(180,100%,45%)
+       Gold:        hsl(42,100%,55%)   — the golden circuits
+       Ice:         rgba(190,235,255)
+    */
+    const CY = (a:number) => `rgba(0,210,255,${a})`;
+    const GO = (a:number) => `rgba(255,190,30,${a})`;
+    const IC = (a:number) => `rgba(190,235,255,${a})`;
+    const TL = (a:number) => `rgba(0,255,200,${a})`;
 
-    interface Node  { x:number; y:number; ox:number; oy:number; vx:number; vy:number; r:number; hue:number; phase:number; }
-    interface Trace { pts:{x:number;y:number}[]; hue:number; alpha:number; flow:number; }
-    interface Burst { x:number; y:number; r:number; max:number; a:number; hue:number; }
-    interface Mote  { x:number; y:number; vx:number; vy:number; life:number; ml:number; hue:number; }
-    interface Crumb { x:number; y:number; t:number; }
+    /* ── Types ── */
+    interface GoldTrace { pts:{x:number;y:number}[]; alpha:number; flow:number; speed:number; }
+    interface Spark     { x:number;y:number;vx:number;vy:number;life:number;ml:number;gold:boolean; }
+    interface Ring      { x:number;y:number;r:number;max:number;a:number;gold:boolean; }
+    interface Crumb     { x:number;y:number;t:number; }
 
-    let NODES:  Node[]  = [];
-    let TRACES: Trace[] = [];
-    const BURSTS: Burst[] = [];
-    const MOTES:  Mote[]  = [];
+    let TRACES: GoldTrace[] = [];
+    const SPARKS: Spark[] = [];
+    const RINGS:  Ring[]  = [];
     const CRUMBS: Crumb[] = [];
 
+    /* Iris aperture state */
+    let irisW = 0, irisH = 0;          // current aperture size
+    let irisTargW = 0, irisTargH = 0;  // target aperture size
+    let eyeOffX = 0, eyeOffY = 0;      // image pan offset (follows mouse)
+
     function init() {
-      const W = canvas.width, H = canvas.height;
+      const W=canvas.width, H=canvas.height;
+      irisW = W*0.48; irisH = H*0.30;
+      irisTargW = irisW; irisTargH = irisH;
 
-      NODES = Array.from({length:55}, (_,i) => {
-        const x = 30 + Math.random()*(W-60);
-        const y = 30 + Math.random()*(H-60);
-        return {
-          x, y, ox:x, oy:y, vx:0, vy:0,
-          r: i<10 ? 3+Math.random()*3 : 1+Math.random()*2,
-          hue: [192,205,215,185,200][Math.floor(Math.random()*5)],
-          phase: Math.random()*Math.PI*2,
-        };
-      });
-
-      TRACES = Array.from({length:50}, () => {
-        const i = Math.floor(Math.random()*NODES.length);
-        const j = (i + 1 + Math.floor(Math.random()*4)) % NODES.length;
-        const a = NODES[i], b = NODES[j];
-        const corner = Math.random()>0.5
-          ? [{x:a.ox,y:a.oy},{x:b.ox,y:a.oy},{x:b.ox,y:b.oy}]
-          : [{x:a.ox,y:a.oy},{x:a.ox,y:b.oy},{x:b.ox,y:b.oy}];
-        return { pts:corner, hue:190+Math.floor(Math.random()*25), alpha:0.06+Math.random()*0.10, flow:Math.random() };
-      });
+      /* Golden circuit traces — horizontal + vertical like image */
+      TRACES = [];
+      for (let i=0; i<32; i++) {
+        const pts: {x:number;y:number}[] = [];
+        let cx = Math.random()*W, cy = Math.random()*H;
+        pts.push({x:cx,y:cy});
+        const steps = 3+Math.floor(Math.random()*5);
+        for (let s=0; s<steps; s++) {
+          if (Math.random()>0.5) cx += (Math.random()-0.5)*180;
+          else cy += (Math.random()-0.5)*140;
+          pts.push({x:cx,y:cy});
+        }
+        TRACES.push({
+          pts,
+          alpha: 0.06 + Math.random()*0.14,
+          flow: Math.random(),
+          speed: 0.002+Math.random()*0.003,
+        });
+      }
     }
 
-    /* ── Draw the fingerprint image as a large left-side panel ── */
-    function drawFingerprintPanel(W:number, H:number) {
+    function drawEyeAperture(W:number, H:number, CX:number, CY:number) {
       if (!imgOK) return;
 
-      const PW = Math.min(320, W*0.26);
-      const PH = PW * (img.height/img.width);
-      const PX = 38;
-      const PY = (H - PH) / 2;
+      /* Smooth iris breathing */
+      const breath = Math.sin(T*0.55)*0.02;
+      irisTargW = W*0.48*(1+breath);
+      irisTargH = H*0.32*(1+breath*0.8);
+      irisW += (irisTargW-irisW)*0.04;
+      irisH += (irisTargH-irisH)*0.04;
 
+      /* Eye parallax — image pans slightly toward cursor */
+      if (M.tx>0) {
+        const dx=(M.tx-CX)/(W*0.5), dy=(M.ty-CY)/(H*0.5);
+        eyeOffX += (dx*W*0.025-eyeOffX)*0.04;
+        eyeOffY += (dy*H*0.018-eyeOffY)*0.04;
+      }
+
+      /* ── 1. Outer glow halo around aperture ── */
+      const haloGrad = ctx.createRadialGradient(CX,CY,irisW*0.6,CX,CY,irisW*1.4);
+      haloGrad.addColorStop(0, CY(0.08+0.04*Math.sin(T*0.8)));
+      haloGrad.addColorStop(0.5, CY(0.03));
+      haloGrad.addColorStop(1, "transparent");
+      ctx.fillStyle=haloGrad;
+      ctx.beginPath(); ctx.ellipse(CX,CY,irisW*1.4,irisH*1.4,0,0,Math.PI*2); ctx.fill();
+
+      /* ── 2. Draw image inside aperture ── */
       ctx.save();
+      ctx.beginPath(); ctx.ellipse(CX,CY,irisW,irisH,0,0,Math.PI*2); ctx.clip();
 
-      /* Outer glow behind panel */
-      const glow = ctx.createRadialGradient(PX+PW/2, PY+PH/2, 0, PX+PW/2, PY+PH/2, PW*0.85);
-      glow.addColorStop(0, CY(0.12));
-      glow.addColorStop(0.6, CY(0.04));
-      glow.addColorStop(1, "transparent");
-      ctx.fillStyle=glow;
-      ctx.beginPath(); ctx.ellipse(PX+PW/2, PY+PH/2, PW*0.85, PH*0.85, 0, 0, Math.PI*2); ctx.fill();
+      const scale = (irisW*2.2)/img.width;
+      const iw = img.width*scale, ih = img.height*scale;
+      const ix = CX-iw/2+eyeOffX, iy = CY-ih/2+eyeOffY;
+      ctx.drawImage(img, ix, iy, iw, ih);
 
-      /* Clip and draw image */
-      const radius = 16;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(PX+radius, PY);
-      ctx.lineTo(PX+PW-radius, PY); ctx.arcTo(PX+PW,PY,PX+PW,PY+radius,radius);
-      ctx.lineTo(PX+PW, PY+PH-radius); ctx.arcTo(PX+PW,PY+PH,PX+PW-radius,PY+PH,radius);
-      ctx.lineTo(PX+radius, PY+PH); ctx.arcTo(PX,PY+PH,PX,PY+PH-radius,radius);
-      ctx.lineTo(PX, PY+radius); ctx.arcTo(PX,PY,PX+radius,PY,radius);
-      ctx.closePath(); ctx.clip();
-
-      ctx.globalAlpha = 0.92;
-      ctx.drawImage(img, PX, PY, PW, PH);
-      ctx.globalAlpha = 1;
-
-      /* Scan line animation over image */
-      const scanY = PY + ((T*40)%(PH));
-      const sg = ctx.createLinearGradient(0, scanY-4, 0, scanY+4);
-      sg.addColorStop(0,"transparent"); sg.addColorStop(0.5,CY(0.40)); sg.addColorStop(1,"transparent");
-      ctx.fillStyle=sg; ctx.fillRect(PX, scanY-4, PW, 8);
-
-      /* Inner edge vignette */
-      const vgn = ctx.createLinearGradient(PX, 0, PX+PW, 0);
-      vgn.addColorStop(0, "rgba(0,8,20,0.0)");
-      vgn.addColorStop(0.88,"rgba(0,8,20,0.0)");
-      vgn.addColorStop(1, "rgba(0,8,20,0.55)");
-      ctx.fillStyle=vgn; ctx.fillRect(PX, PY, PW, PH);
+      /* Subtle inner vignette — darkens aperture edges */
+      const vig = ctx.createRadialGradient(CX,CY,irisW*0.45,CX,CY,irisW);
+      vig.addColorStop(0,"transparent");
+      vig.addColorStop(0.65,"rgba(0,4,12,0.12)");
+      vig.addColorStop(1,"rgba(0,4,12,0.78)");
+      ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 
       ctx.restore();
 
-      /* Glowing border */
+      /* ── 3. Aperture border — glowing iris edge ── */
+      const borderPulse = 0.55+0.45*Math.sin(T*0.7);
       ctx.save();
-      ctx.shadowBlur=18; ctx.shadowColor=CY(0.8);
-      ctx.strokeStyle=CY(0.70); ctx.lineWidth=1.5;
-      ctx.beginPath();
-      ctx.moveTo(PX+radius,PY); ctx.lineTo(PX+PW-radius,PY); ctx.arcTo(PX+PW,PY,PX+PW,PY+radius,radius);
-      ctx.lineTo(PX+PW,PY+PH-radius); ctx.arcTo(PX+PW,PY+PH,PX+PW-radius,PY+PH,radius);
-      ctx.lineTo(PX+radius,PY+PH); ctx.arcTo(PX,PY+PH,PX,PY+PH-radius,radius);
-      ctx.lineTo(PX,PY+radius); ctx.arcTo(PX,PY,PX+radius,PY,radius);
-      ctx.closePath(); ctx.stroke();
+      ctx.shadowBlur = 28; ctx.shadowColor = CY(0.85);
+      ctx.strokeStyle = CY(0.65+0.25*borderPulse);
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(CX,CY,irisW,irisH,0,0,Math.PI*2); ctx.stroke();
       ctx.shadowBlur=0; ctx.restore();
 
-      /* Corner brackets — bright */
-      const bs = 20;
-      const corners = [[PX,PY,1,1],[PX+PW,PY,-1,1],[PX+PW,PY+PH,-1,-1],[PX,PY+PH,1,-1]];
-      corners.forEach(([bx,by,sx,sy]) => {
-        ctx.save(); ctx.shadowBlur=8; ctx.shadowColor=CY(1);
-        ctx.strokeStyle=CY(0.95); ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(bx+sx*bs,by); ctx.lineTo(bx,by); ctx.lineTo(bx,by+sy*bs); ctx.stroke();
-        ctx.shadowBlur=0; ctx.restore();
-      });
+      /* Thin outer iris ring */
+      ctx.beginPath(); ctx.ellipse(CX,CY,irisW+6,irisH+4,0,0,Math.PI*2);
+      ctx.strokeStyle=CY(0.12*borderPulse); ctx.lineWidth=0.8; ctx.stroke();
 
-      /* Label below */
-      const pulse = 0.5+0.5*Math.sin(T*2.5);
-      ctx.save();
-      ctx.shadowBlur=10; ctx.shadowColor=CY(0.8);
-      ctx.font="bold 9px 'Orbitron',monospace"; ctx.textAlign="center";
-      ctx.fillStyle=CY(0.6+0.3*pulse);
-      ctx.fillText("◉  BIOMETRIC SCAN", PX+PW/2, PY+PH+18);
-      ctx.shadowBlur=0; ctx.restore();
+      /* Thin inner teal ring */
+      ctx.beginPath(); ctx.ellipse(CX,CY,irisW-5,irisH-3,0,0,Math.PI*2);
+      ctx.strokeStyle=TL(0.18*borderPulse); ctx.lineWidth=0.7; ctx.stroke();
 
-      /* Side connector line to the main content area */
-      ctx.beginPath(); ctx.moveTo(PX+PW+2, PY+PH/2);
-      ctx.lineTo(PX+PW+60, PY+PH/2);
-      ctx.strokeStyle=CY(0.18); ctx.lineWidth=0.8; ctx.setLineDash([4,8]); ctx.stroke(); ctx.setLineDash([]);
-      ctx.restore();
+      /* ── 4. Four eyelid geometry lines ── */
+      // Top eyelid arc
+      ctx.beginPath(); ctx.ellipse(CX,CY-irisH*0.15,irisW*1.05,irisH*1.1,0,Math.PI+0.08,Math.PI*2-0.08);
+      ctx.strokeStyle=CY(0.06); ctx.lineWidth=0.6; ctx.stroke();
+      // Bottom eyelid arc
+      ctx.beginPath(); ctx.ellipse(CX,CY+irisH*0.15,irisW*1.05,irisH*1.1,0,0.08,Math.PI-0.08);
+      ctx.strokeStyle=CY(0.06); ctx.lineWidth=0.6; ctx.stroke();
     }
 
     function draw() {
       T += 0.016;
       const W=canvas.width, H=canvas.height;
+      const CX=W*0.50, CY=H*0.50;
 
-      /* 1 — Full background image — COVERS ENTIRE SCREEN */
-      if (imgOK) {
-        const iAR=img.width/img.height, cAR=W/H;
-        let iw:number,ih:number,ix:number,iy:number;
-        if(cAR>iAR){iw=W;ih=W/iAR;ix=0;iy=(H-ih)/2;}
-        else{ih=H;iw=H*iAR;ix=(W-iw)/2;iy=0;}
-        ctx.drawImage(img,ix,iy,iw,ih);
-        /* Dark overlay — keeps image visible but makes HUD readable */
-        ctx.fillStyle="rgba(0,8,20,0.70)";
-        ctx.fillRect(0,0,W,H);
-      } else {
-        ctx.fillStyle="#020d1a"; ctx.fillRect(0,0,W,H);
-      }
+      /* Smooth mouse */
+      if (M.tx>0) {
+        SM.x = SM.x<0 ? M.tx : SM.x+(M.tx-SM.x)*0.08;
+        SM.y = SM.y<0 ? M.ty : SM.y+(M.ty-SM.y)*0.08;
+        M.x=SM.x; M.y=SM.y;
+      } else { M.x=-999; M.y=-999; }
 
-      /* 2 — Ambient glow matching fb.jpg's blues */
-      const a1=ctx.createRadialGradient(W*0.65,H*0.4,0,W*0.65,H*0.4,W*0.50);
-      a1.addColorStop(0,"rgba(0,80,180,0.18)"); a1.addColorStop(1,"transparent");
-      ctx.fillStyle=a1; ctx.fillRect(0,0,W,H);
+      /* ── 1. Deep void ── */
+      ctx.fillStyle="#000408"; ctx.fillRect(0,0,W,H);
 
-      const a2=ctx.createRadialGradient(W*0.20,H*0.55,0,W*0.20,H*0.55,W*0.35);
-      a2.addColorStop(0,"rgba(0,160,240,0.10)"); a2.addColorStop(1,"transparent");
-      ctx.fillStyle=a2; ctx.fillRect(0,0,W,H);
+      /* ── 2. Subtle deep-blue ambient ── */
+      const amb=ctx.createRadialGradient(CX,CY,0,CX,CY,W*0.65);
+      amb.addColorStop(0,"rgba(0,18,40,0.55)");
+      amb.addColorStop(0.5,"rgba(0,10,25,0.25)");
+      amb.addColorStop(1,"transparent");
+      ctx.fillStyle=amb; ctx.fillRect(0,0,W,H);
 
-      /* 3 — Dot grid */
-      for(let gx=0;gx<W;gx+=36){
-        for(let gy=0;gy<H;gy+=36){
-          const hue=190+((gx*0.2+gy*0.15+T*12)%25);
-          const a=0.038+0.022*Math.sin(T*0.5+gx*0.04+gy*0.035);
-          ctx.beginPath(); ctx.arc(gx,gy,0.75,0,Math.PI*2);
-          ctx.fillStyle=`hsla(${hue},100%,65%,${a})`; ctx.fill();
-        }
-      }
-
-      /* 4 — Circuit traces */
-      for(const tr of TRACES){
-        tr.flow=(tr.flow+0.0028)%1;
+      /* ── 3. Golden circuit traces ── */
+      for (const tr of TRACES) {
+        tr.flow=(tr.flow+tr.speed)%1;
         ctx.beginPath(); ctx.moveTo(tr.pts[0].x,tr.pts[0].y);
         for(let i=1;i<tr.pts.length;i++) ctx.lineTo(tr.pts[i].x,tr.pts[i].y);
-        ctx.strokeStyle=`hsla(${tr.hue},100%,58%,${tr.alpha})`; ctx.lineWidth=0.7; ctx.stroke();
+        ctx.strokeStyle=GO(tr.alpha); ctx.lineWidth=0.65; ctx.stroke();
 
-        /* Photon */
+        // Small gold node at each corner
+        for(const pt of tr.pts){
+          ctx.beginPath(); ctx.arc(pt.x,pt.y,1.5,0,Math.PI*2);
+          ctx.fillStyle=GO(tr.alpha*1.8); ctx.fill();
+        }
+
+        // Flowing photon — gold
         const total=tr.pts.slice(1).reduce((acc,p,i)=>acc+Math.hypot(p.x-tr.pts[i].x,p.y-tr.pts[i].y),0);
         let target=tr.flow*total,walked=0;
         for(let i=1;i<tr.pts.length;i++){
@@ -210,147 +219,121 @@ export default function CyberBackground() {
             const t2=(target-walked)/seg;
             const px=tr.pts[i-1].x+t2*(tr.pts[i].x-tr.pts[i-1].x);
             const py=tr.pts[i-1].y+t2*(tr.pts[i].y-tr.pts[i-1].y);
-            ctx.save(); ctx.shadowBlur=9; ctx.shadowColor=`hsla(${tr.hue},100%,80%,1)`;
-            ctx.beginPath(); ctx.arc(px,py,1.8,0,Math.PI*2);
-            ctx.fillStyle=`hsla(${tr.hue},100%,88%,0.92)`; ctx.fill();
+            ctx.save();
+            ctx.shadowBlur=8; ctx.shadowColor=GO(1);
+            ctx.beginPath(); ctx.arc(px,py,2,0,Math.PI*2);
+            ctx.fillStyle=GO(0.95); ctx.fill();
             ctx.shadowBlur=0; ctx.restore(); break;
           }
           walked+=seg;
         }
       }
 
-      /* 5 — Nodes */
-      for(const n of NODES){
-        n.phase+=0.010;
-        const pulse=0.5+0.5*Math.sin(n.phase);
-        if(M.x>0){
-          const dx=M.x-n.x,dy=M.y-n.y,d=Math.hypot(dx,dy);
-          if(d<200&&d>0.5){const f=0.020*(1-d/200);n.vx+=dx/d*f;n.vy+=dy/d*f;}
-        }
-        n.vx+=(n.ox-n.x)*0.013; n.vy+=(n.oy-n.y)*0.013;
-        n.vx*=0.87; n.vy*=0.87;
-        n.x+=n.vx; n.y+=n.vy;
-
-        const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r*3.5);
-        g.addColorStop(0,`hsla(${n.hue},100%,65%,${pulse*0.28})`); g.addColorStop(1,"transparent");
-        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(n.x,n.y,n.r*3.5,0,Math.PI*2); ctx.fill();
-
-        ctx.save(); ctx.shadowBlur=n.r>3?14:7; ctx.shadowColor=`hsla(${n.hue},100%,70%,0.9)`;
-        ctx.beginPath(); ctx.arc(n.x,n.y,n.r*(0.88+0.14*pulse),0,Math.PI*2);
-        ctx.strokeStyle=`hsla(${n.hue},100%,70%,${0.45+0.42*pulse})`;
-        ctx.lineWidth=n.r>3?1.4:0.9; ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
-        if(n.r>3){
-          ctx.beginPath(); ctx.arc(n.x,n.y,n.r*0.38,0,Math.PI*2);
-          ctx.fillStyle=`hsla(${n.hue},100%,82%,${pulse*0.65})`; ctx.fill();
+      /* ── 4. Tiny gold dot grid — very sparse, void texture ── */
+      for(let gx=0;gx<W;gx+=44){
+        for(let gy=0;gy<H;gy+=44){
+          const a=0.025+0.015*Math.sin(T*0.4+gx*0.03+gy*0.025);
+          ctx.beginPath(); ctx.arc(gx,gy,0.65,0,Math.PI*2);
+          ctx.fillStyle=`hsla(42,100%,60%,${a})`; ctx.fill();
         }
       }
 
-      /* 6 — Node connections */
-      for(let i=0;i<NODES.length;i++){
-        for(let j=i+1;j<NODES.length;j++){
-          const d=Math.hypot(NODES[i].x-NODES[j].x,NODES[i].y-NODES[j].y);
-          if(d>140)continue;
-          ctx.beginPath(); ctx.moveTo(NODES[i].x,NODES[i].y); ctx.lineTo(NODES[j].x,NODES[j].y);
-          ctx.strokeStyle=CY((1-d/140)*0.10); ctx.lineWidth=0.5; ctx.stroke();
-        }
-      }
+      /* ── 5. The Eye Aperture ── */
+      drawEyeAperture(W,H,CX,CY);
 
-      /* 7 — Fingerprint panel — LEFT SIDE, vertically centred */
-      drawFingerprintPanel(W, H);
-
-      /* 8 — Mouse: clean hairline crosshair */
-      if(M.x>0){
+      /* ── 6. MOUSE: A single glowing point of light ── */
+      if (M.x>0) {
         const cx=M.x, cy=M.y;
-        const spd=Math.hypot(M.vx,M.vy);
-        const hot=spd>1.5;
+        const distToEye = Math.hypot(cx-CX,cy-CY);
+        const insideEye = distToEye < Math.max(irisW,irisH)*0.85;
 
-        /* Soft bloom */
-        const bloom=ctx.createRadialGradient(cx,cy,0,cx,cy,50);
-        bloom.addColorStop(0,CY(hot?0.09:0.05)); bloom.addColorStop(1,"transparent");
-        ctx.fillStyle=bloom; ctx.beginPath(); ctx.arc(cx,cy,50,0,Math.PI*2); ctx.fill();
+        // ── Outer soft glow — shifts colour inside/outside eye ──
+        const lightCol = insideEye ? CY : GO;
+        const R=60;
+        const lightGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+        lightGrad.addColorStop(0, insideEye ? CY(0.18) : GO(0.14));
+        lightGrad.addColorStop(0.4, insideEye ? CY(0.05) : GO(0.04));
+        lightGrad.addColorStop(1,"transparent");
+        ctx.fillStyle=lightGrad; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
 
-        /* Outer thin ring */
-        ctx.beginPath(); ctx.arc(cx,cy,26,0,Math.PI*2);
-        ctx.strokeStyle=CY(hot?0.30:0.16); ctx.lineWidth=0.8; ctx.stroke();
+        // ── The point itself — very bright, very small ──
+        ctx.save();
+        ctx.shadowBlur = insideEye ? 18 : 14;
+        ctx.shadowColor = insideEye ? CY(1) : GO(1);
+        ctx.beginPath(); ctx.arc(cx,cy,3.5,0,Math.PI*2);
+        ctx.fillStyle = insideEye ? IC(0.98) : GO(0.95);
+        ctx.fill(); ctx.shadowBlur=0; ctx.restore();
 
-        /* Hairline cross */
-        const arm=16, gap=5;
-        ctx.strokeStyle=CY(hot?0.88:0.55); ctx.lineWidth=hot?1.2:0.9;
-        ctx.beginPath(); ctx.moveTo(cx,cy-gap); ctx.lineTo(cx,cy-arm); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx,cy+gap); ctx.lineTo(cx,cy+arm); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx-gap,cy); ctx.lineTo(cx-arm,cy); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx+gap,cy); ctx.lineTo(cx+arm,cy); ctx.stroke();
+        // ── Tiny cross-hair tick marks (very minimal) ──
+        const tick=10, gap=6;
+        ctx.strokeStyle = insideEye ? IC(0.45) : GO(0.50);
+        ctx.lineWidth=0.8;
+        ctx.beginPath();ctx.moveTo(cx,cy-gap);ctx.lineTo(cx,cy-gap-tick);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx,cy+gap);ctx.lineTo(cx,cy+gap+tick);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx-gap,cy);ctx.lineTo(cx-gap-tick,cy);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx+gap,cy);ctx.lineTo(cx+gap+tick,cy);ctx.stroke();
 
-        /* Centre dot */
-        ctx.save(); ctx.shadowBlur=hot?12:7; ctx.shadowColor=hot?GN(1):CY(0.9);
-        ctx.beginPath(); ctx.arc(cx,cy,hot?3:2.2,0,Math.PI*2);
-        ctx.fillStyle=hot?GN(0.95):CY(0.82); ctx.fill();
-        ctx.shadowBlur=0; ctx.restore();
-
-        /* Highlight nearest node */
-        for(const n of NODES){
-          const d=Math.hypot(cx-n.x,cy-n.y);
-          if(d<75){
-            const ha=(1-d/75)*0.55;
-            ctx.save(); ctx.shadowBlur=12; ctx.shadowColor=`hsla(${n.hue},100%,80%,${ha})`;
-            ctx.beginPath(); ctx.arc(n.x,n.y,n.r*1.9,0,Math.PI*2);
-            ctx.strokeStyle=`hsla(${n.hue},100%,78%,${ha})`; ctx.lineWidth=1.2; ctx.stroke();
-            ctx.shadowBlur=0; ctx.restore();
-          }
-        }
-
-        /* Crumb trail */
+        // ── Trail — warm gold outside, cool ice inside ──
         CRUMBS.push({x:cx,y:cy,t:T});
-        while(CRUMBS.length&&T-CRUMBS[0].t>0.35)CRUMBS.shift();
+        while(CRUMBS.length&&T-CRUMBS[0].t>0.4)CRUMBS.shift();
         for(let i=1;i<CRUMBS.length;i++){
-          const age=(T-CRUMBS[i].t)/0.35;
-          ctx.beginPath(); ctx.moveTo(CRUMBS[i-1].x,CRUMBS[i-1].y); ctx.lineTo(CRUMBS[i].x,CRUMBS[i].y);
-          ctx.strokeStyle=CY((1-age)*0.28); ctx.lineWidth=(1-age)*1.5; ctx.stroke();
+          const age=(T-CRUMBS[i].t)/0.4;
+          ctx.beginPath();ctx.moveTo(CRUMBS[i-1].x,CRUMBS[i-1].y);ctx.lineTo(CRUMBS[i].x,CRUMBS[i].y);
+          ctx.strokeStyle = insideEye ? IC((1-age)*0.30) : GO((1-age)*0.32);
+          ctx.lineWidth=(1-age)*1.6; ctx.stroke();
         }
       }
 
-      /* 9 — Click */
-      if(M.click&&M.x>0){
-        for(let i=0;i<3;i++) BURSTS.push({x:M.x,y:M.y,r:5,max:75+i*30,a:0.85-i*0.22,hue:192+i*12});
-        for(let i=0;i<14;i++){
-          const a=Math.random()*Math.PI*2,s=1.5+Math.random()*4;
-          MOTES.push({x:M.x,y:M.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0,ml:35+Math.random()*45,hue:188+Math.random()*30});
+      /* ── 7. Click: concentric rings from click point ── */
+      if (M.click && M.x>0) {
+        const gold = Math.hypot(M.x-CX,M.y-CY) > irisW*0.6;
+        for(let i=0;i<3;i++)
+          RINGS.push({x:M.x,y:M.y,r:4,max:65+i*28,a:0.9-i*0.2,gold});
+        for(let i=0;i<12;i++){
+          const a=Math.random()*Math.PI*2, s=1.5+Math.random()*3.5;
+          SPARKS.push({x:M.x,y:M.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:0,ml:30+Math.random()*40,gold});
         }
       }
-      for(let i=BURSTS.length-1;i>=0;i--){
-        const b=BURSTS[i]; b.r+=3.5; b.a*=0.905;
-        if(b.r>b.max||b.a<0.01){BURSTS.splice(i,1);continue;}
-        ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-        ctx.strokeStyle=`hsla(${b.hue},100%,70%,${b.a})`; ctx.lineWidth=1.5; ctx.stroke();
+      for(let i=RINGS.length-1;i>=0;i--){
+        const r=RINGS[i]; r.r+=3.2; r.a*=0.91;
+        if(r.r>r.max||r.a<0.01){RINGS.splice(i,1);continue;}
+        ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
+        ctx.strokeStyle = r.gold ? GO(r.a) : CY(r.a);
+        ctx.lineWidth=1.6; ctx.stroke();
       }
-      for(let i=MOTES.length-1;i>=0;i--){
-        const m=MOTES[i]; m.x+=m.vx; m.y+=m.vy; m.vx*=0.962; m.vy*=0.962; m.life++;
-        if(m.life>=m.ml){MOTES.splice(i,1);continue;}
-        const p=m.life/m.ml,a=p<0.2?p/0.2:1-(p-0.2)/0.8;
-        ctx.beginPath(); ctx.arc(m.x,m.y,2.2*(1-p*0.4),0,Math.PI*2);
-        ctx.fillStyle=`hsla(${m.hue},100%,72%,${a*0.85})`; ctx.fill();
+      for(let i=SPARKS.length-1;i>=0;i--){
+        const s=SPARKS[i]; s.x+=s.vx; s.y+=s.vy; s.vx*=0.96; s.vy*=0.96; s.life++;
+        if(s.life>=s.ml){SPARKS.splice(i,1);continue;}
+        const p=s.life/s.ml, a=p<0.2?p/0.2:1-(p-0.2)/0.8;
+        ctx.beginPath(); ctx.arc(s.x,s.y,2*(1-p*0.4),0,Math.PI*2);
+        ctx.fillStyle = s.gold ? GO(a*0.88) : CY(a*0.88); ctx.fill();
       }
 
-      /* 10 — Corner marks */
+      /* ── 8. Corner frame marks — minimal gold ── */
       [[14,14,1,1],[W-14,14,-1,1],[W-14,H-14,-1,-1],[14,H-14,1,-1]].forEach(([x,y,sx,sy])=>{
-        const s=16;
-        ctx.strokeStyle=CY(0.25); ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo(x+sx*s,y); ctx.lineTo(x,y); ctx.lineTo(x,y+sy*s); ctx.stroke();
+        ctx.strokeStyle=GO(0.22); ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.moveTo(x+sx*18,y);ctx.lineTo(x,y);ctx.lineTo(x,y+sy*18);ctx.stroke();
       });
+
+      /* ── 9. Single scan line ── */
+      const sY=((T*0.020)%1)*H;
+      const sl=ctx.createLinearGradient(0,sY-1,0,sY+1);
+      sl.addColorStop(0,"transparent"); sl.addColorStop(0.5,CY(0.015)); sl.addColorStop(1,"transparent");
+      ctx.fillStyle=sl; ctx.fillRect(0,sY-1,W,2);
 
       raf=requestAnimationFrame(draw);
     }
 
     canvas.width=window.innerWidth; canvas.height=window.innerHeight;
     init();
-    ctx.fillStyle="#020d1a"; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#000408"; ctx.fillRect(0,0,canvas.width,canvas.height);
     raf=requestAnimationFrame(draw);
 
     return()=>{
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize",   onResize);
-      window.removeEventListener("mousemove",onMove);
-      window.removeEventListener("mousedown",onDown);
+      window.removeEventListener("resize",    onResize);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseleave",onLeave);
     };
   },[]);

@@ -13,9 +13,9 @@ export interface TechSupportModalProps {
 
 const ISSUES = [
   { value:"cant_login",     label:"Can't Login",                 icon:"🔒", color:"hsl(0,85%,62%)" },
-  { value:"biometric_fail", label:"Biometric Scan Failure",      icon:"🖐️", color:"hsl(192,100%,60%)" },
+  { value:"biometric_fail", label:"Biometric Scan Failure",      icon:"🖐️", color:"hsl(193,100%,60%)" },
   { value:"access_denied",  label:"Access Denied / Permission",  icon:"⛔", color:"hsl(20,100%,62%)" },
-  { value:"data_missing",   label:"Missing / Incorrect Data",    icon:"📂", color:"hsl(210,100%,65%)" },
+  { value:"data_missing",   label:"Missing / Incorrect Data",    icon:"📂", color:"hsl(42,100%,65%)" },
   { value:"system_slow",    label:"System Slow / Unresponsive",  icon:"🐢", color:"hsl(42,100%,60%)" },
   { value:"scan_error",     label:"Scanner Hardware Error",      icon:"⚠️", color:"hsl(38,100%,58%)" },
   { value:"export_issue",   label:"Export / Report Issue",       icon:"📄", color:"hsl(260,80%,68%)" },
@@ -140,7 +140,7 @@ export default function TechSupportModal({
                   className="flex items-center gap-1.5 transition-all flex-shrink-0"
                   style={{ fontFamily:"'Orbitron',monospace", fontSize:9, fontWeight:700, letterSpacing:"0.16em",
                     color:"hsla(192,80%,60%,0.55)", border:"none", background:"none", cursor:"pointer", padding:0 }}
-                  onMouseEnter={e=>e.currentTarget.style.color="hsl(192,100%,72%)"}
+                  onMouseEnter={e=>e.currentTarget.style.color="hsl(193,100%,72%)"}
                   onMouseLeave={e=>e.currentTarget.style.color="hsla(192,80%,60%,0.55)"}>
                   <ArrowLeft size={12}/> BACK
                 </button>
@@ -152,12 +152,12 @@ export default function TechSupportModal({
                   boxShadow:"0 0 20px hsla(192,100%,52%,0.2)" }}
                 animate={{ boxShadow:["0 0 20px hsla(192,100%,52%,0.2)","0 0 36px hsla(192,100%,52%,0.38)","0 0 20px hsla(192,100%,52%,0.2)"] }}
                 transition={{ duration:3, repeat:Infinity }}>
-                <Headphones size={20} style={{ color:"hsl(192,100%,68%)", filter:"drop-shadow(0 0 8px hsla(192,100%,55%,0.9))" }}/>
+                <Headphones size={20} style={{ color:"hsl(193,100%,68%)", filter:"drop-shadow(0 0 8px hsla(192,100%,55%,0.9))" }}/>
               </motion.div>
 
               <div className="flex-1 min-w-0">
                 <h2 style={{ fontFamily:"'Orbitron',monospace", fontSize:15, fontWeight:900,
-                  letterSpacing:"0.18em", color:"hsl(192,100%,72%)",
+                  letterSpacing:"0.18em", color:"hsl(193,100%,72%)",
                   textShadow:"0 0 20px hsla(192,100%,58%,0.8)", margin:0 }}>
                   TECHNICAL SUPPORT
                 </h2>
@@ -170,7 +170,7 @@ export default function TechSupportModal({
               <button onClick={handleClose}
                 className="w-8 h-8 flex items-center justify-center rounded-lg transition-all flex-shrink-0"
                 style={{ color:"hsla(192,70%,55%,0.4)", border:"1px solid hsla(192,50%,28%,0.22)" }}
-                onMouseEnter={e=>{e.currentTarget.style.background="hsla(192,70%,42%,0.14)";e.currentTarget.style.color="hsl(192,100%,72%)";}}
+                onMouseEnter={e=>{e.currentTarget.style.background="hsla(192,70%,42%,0.14)";e.currentTarget.style.color="hsl(193,100%,72%)";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="hsla(192,70%,55%,0.4)";}}>
                 <X size={14}/>
               </button>
@@ -189,10 +189,10 @@ export default function TechSupportModal({
                       style={{ background:"hsla(192,100%,52%,0.1)", border:"1.5px solid hsla(192,100%,55%,0.5)",
                         boxShadow:"0 0 40px hsla(192,100%,52%,0.22)" }}
                       initial={{ scale:0 }} animate={{ scale:1 }} transition={{ type:"spring", stiffness:280, delay:0.1 }}>
-                      <CheckCircle size={30} style={{ color:"hsl(192,100%,68%)", filter:"drop-shadow(0 0 10px hsla(192,100%,55%,0.9))" }}/>
+                      <CheckCircle size={30} style={{ color:"hsl(193,100%,68%)", filter:"drop-shadow(0 0 10px hsla(192,100%,55%,0.9))" }}/>
                     </motion.div>
                     <h3 style={{ fontFamily:"'Orbitron',monospace", fontSize:14, fontWeight:800,
-                      letterSpacing:"0.2em", color:"hsl(192,100%,72%)", marginBottom:6 }}>
+                      letterSpacing:"0.2em", color:"hsl(193,100%,72%)", marginBottom:6 }}>
                       TICKET SUBMITTED
                     </h3>
                     <p style={{ fontFamily:"'Rajdhani',sans-serif", fontSize:13, color:"hsla(192,80%,65%,0.6)", marginBottom:16 }}>
@@ -219,7 +219,7 @@ export default function TechSupportModal({
                     <button onClick={handleClose}
                       className="w-full h-10 rounded-lg transition-all"
                       style={{ fontFamily:"'Orbitron',monospace", fontSize:10, fontWeight:700, letterSpacing:"0.18em",
-                        background:"hsla(192,100%,52%,0.12)", border:"1.5px solid hsla(192,100%,55%,0.55)", color:"hsl(192,100%,72%)" }}
+                        background:"hsla(192,100%,52%,0.12)", border:"1.5px solid hsla(192,100%,55%,0.55)", color:"hsl(193,100%,72%)" }}
                       onMouseEnter={e=>{e.currentTarget.style.background="hsla(192,100%,52%,0.24)";}}
                       onMouseLeave={e=>{e.currentTarget.style.background="hsla(192,100%,52%,0.12)";}}>
                       CLOSE
@@ -249,10 +249,10 @@ export default function TechSupportModal({
                       ) : (
                         <div style={{ ...inputBase, display:"flex", alignItems:"center", gap:10,
                           borderColor:"hsla(192,100%,52%,0.22)", opacity:0.8, pointerEvents:"none" }}>
-                          <span style={{ width:7, height:7, borderRadius:"50%", background:"hsl(192,100%,58%)",
+                          <span style={{ width:7, height:7, borderRadius:"50%", background:"hsl(193,100%,58%)",
                             boxShadow:"0 0 8px hsla(192,100%,55%,0.8)", flexShrink:0, display:"inline-block" }}/>
                           <span style={{ fontFamily:"'Orbitron',monospace", fontSize:11, fontWeight:700,
-                            letterSpacing:"0.1em", color:"hsl(192,100%,72%)" }}>
+                            letterSpacing:"0.1em", color:"hsl(193,100%,72%)" }}>
                             {reporterUsername ? `@${reporterUsername.toUpperCase()}` : "NOT LOGGED IN"}
                           </span>
                           <span style={{ marginLeft:"auto", fontFamily:"'Orbitron',monospace", fontSize:7,
@@ -392,7 +392,7 @@ export default function TechSupportModal({
                       className="w-full h-11 rounded-lg flex items-center justify-center gap-2.5 transition-all disabled:opacity-50"
                       style={{ fontFamily:"'Orbitron',monospace", fontSize:10, fontWeight:800, letterSpacing:"0.2em",
                         background:"hsla(192,100%,52%,0.12)", border:"1.5px solid hsla(192,100%,55%,0.58)",
-                        color:"hsl(192,100%,72%)", boxShadow:"0 0 20px hsla(192,100%,52%,0.18)",
+                        color:"hsl(193,100%,72%)", boxShadow:"0 0 20px hsla(192,100%,52%,0.18)",
                         cursor: sending ? "not-allowed" : "pointer" }}
                       onMouseEnter={e=>{ if(!sending){ e.currentTarget.style.background="hsla(192,100%,52%,0.24)"; e.currentTarget.style.boxShadow="0 0 32px hsla(192,100%,52%,0.35)"; } }}
                       onMouseLeave={e=>{ e.currentTarget.style.background="hsla(192,100%,52%,0.12)"; e.currentTarget.style.boxShadow="0 0 20px hsla(192,100%,52%,0.18)"; }}>

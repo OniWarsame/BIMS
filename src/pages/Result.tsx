@@ -522,7 +522,7 @@ const ResultPage = () => {
         {showEdit && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-14 overflow-y-auto"
-            style={{background:"rgba(1,10,24,0.92)",backdropFilter:"blur(18px)"}}>
+            style={{background:"rgba(0,5,14,0.92)",backdropFilter:"blur(18px)"}}>
             <motion.div initial={{scale:0.94,y:20}} animate={{scale:1,y:0}} exit={{scale:0.94,y:20}} transition={{duration:0.22}}
               className="card-surface rounded-2xl overflow-hidden w-full max-w-3xl mb-8"
               style={{border:"1.5px solid hsla(33,100%,52%,0.45)",boxShadow:"0 0 80px hsla(33,100%,52%,0.1),0 24px 60px rgba(0,0,0,.8)"}}>
@@ -729,7 +729,7 @@ const ResultPage = () => {
                   style={{
                     background:editSaved?"hsla(140,80%,45%,0.25)":"hsla(33,100%,52%,0.2)",
                     border:editSaved?"2px solid hsla(140,80%,55%,0.65)":"2px solid hsla(33,100%,55%,0.65)",
-                    color:editSaved?"hsl(210,100%,72%)":"hsl(33,100%,80%)",
+                    color:editSaved?"hsl(42,100%,72%)":"hsl(33,100%,80%)",
                     boxShadow:editSaved?"0 0 24px hsla(140,80%,50%,0.25)":"0 0 24px hsla(33,100%,52%,0.22)",
                   }}>
                   <Save className="w-4 h-4"/> {editSaved?"SAVED!":"SAVE CHANGES"}

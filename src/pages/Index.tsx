@@ -62,7 +62,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
         padding:"5px 12px", borderRadius:6, cursor:"pointer",
         border:`1px solid ${isEdit?"hsla(192,100%,52%,0.4)":"hsla(142,80%,50%,0.55)"}`,
         background:isEdit?"rgba(40,185,215,0.08)":"hsla(142,80%,45%,0.1)",
-        color:isEdit?"hsl(192,100%,72%)":"hsl(142,80%,68%)",
+        color:isEdit?"hsl(193,100%,72%)":"hsl(142,80%,68%)",
         transition:"all .15s"
       } as React.CSSProperties}
       onMouseEnter={e=>{e.currentTarget.style.background=isEdit?"hsla(192,100%,52%,0.2)":"hsla(142,80%,45%,0.22)"; e.currentTarget.style.boxShadow=isEdit?"0 0 12px hsla(192,100%,52%,0.3)":"0 0 12px hsla(142,80%,50%,0.3)";}}
@@ -116,7 +116,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
               : sending
                 ? "hsla(192,100%,52%,0.06)"
                 : "hsla(192,100%,52%,0.14)",
-            color: done ? "hsl(142,90%,70%)" : "hsl(192,100%,76%)",
+            color: done ? "hsl(142,90%,70%)" : "hsl(193,100%,76%)",
             boxShadow: done ? "0 0 14px hsla(142,90%,52%,0.2)" : "0 0 18px hsla(192,100%,52%,0.25)",
             opacity: (!text.trim() && !done) ? 0.4 : 1,
             transition:"all .18s"
@@ -127,7 +127,7 @@ const AdminReplyBox = ({ ticket, onSave, isEdit }: { ticket: any; onSave: (resp:
           {done ? (
             <>✓ SENT & DELIVERED</>
           ) : sending ? (
-            <><div style={{width:10,height:10,borderRadius:"50%",border:"2px solid hsla(192,100%,55%,0.3)",borderTopColor:"hsl(192,100%,72%)",animation:"spin 0.8s linear infinite"}}/> SENDING...</>
+            <><div style={{width:10,height:10,borderRadius:"50%",border:"2px solid hsla(192,100%,55%,0.3)",borderTopColor:"hsl(193,100%,72%)",animation:"spin 0.8s linear infinite"}}/> SENDING...</>
           ) : (
             <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> SEND RESPONSE</>
           )}
@@ -463,14 +463,14 @@ Respond ONLY with valid JSON (no markdown):
 
   const RC: Record<string,string> = {
     owner:"hsl(270,80%,72%)", admin:"hsl(354,88%,68%)",
-    operator:"hsl(192,100%,62%)", analyst:"hsl(158,80%,55%)",
+    operator:"hsl(193,100%,62%)", analyst:"hsl(158,80%,55%)",
   };
   const RU = currentUser?.role || "analyst";
 
   // Security-themed command definitions
   const CMDS = [
     { label:"Register",    sub:"Enroll Biometric Subject", Icon:UserPlus,  path:"/register", hue:200, color:"hsl(200,100%,68%)", shape:"hexagon" },
-    { label:"Database",    sub:"Access Records Vault",     Icon:Database,  path:"/database", hue:195, color:"hsl(192,100%,62%)", shape:"shield"  },
+    { label:"Database",    sub:"Access Records Vault",     Icon:Database,  path:"/database", hue:195, color:"hsl(193,100%,62%)", shape:"shield"  },
     { label:"Deep Search", sub:"OSINT Intelligence Query", Icon:Search,    path:null,         hue:270, color:"hsl(270,80%,70%)",  shape:"target",  osint:true },
     ...(userIsAdmin ? [
       { label:"Users",   sub:"Access Control",          Icon:Users,    path:"/users",    hue:36,  color:"hsl(36,100%,62%)",  shape:"badge"   },
@@ -525,18 +525,18 @@ Respond ONLY with valid JSON (no markdown):
         width:"100%",
         height:54,
         zIndex:9999,
-        background:"rgba(1,10,24,0.88)",
-        borderBottom:"1px solid rgba(0,195,235,0.20)",
+        background:"rgba(0,5,14,0.88)",
+        borderBottom:"1px solid rgba(0,205,248,0.20)",
         backdropFilter:"blur(6px)",
       }}>
         {/* BIMS — hard left */}
         <div style={{position:"absolute",left:20,top:0,bottom:0,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:32,height:32,borderRadius:"50%",background:"radial-gradient(circle,rgba(30,130,200,0.4),rgba(10,50,100,0.2))",border:"1.5px solid rgba(50,190,220,0.55)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <Shield style={{width:14,height:14,color:"hsl(192,100%,72%)"}}/>
+            <Shield style={{width:14,height:14,color:"hsl(193,100%,72%)"}}/>
           </div>
           <div style={{lineHeight:1}}>
-            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,letterSpacing:"0.12em",color:"rgba(210,242,248,0.98)",textShadow:"0 0 20px rgba(0,195,235,0.5)"}}>BIMS</div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:"rgba(0,195,235,0.42)",letterSpacing:"0.1em",textTransform:"uppercase" as const,marginTop:3}}>Biometric Identity Management System</div>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,letterSpacing:"0.12em",color:"rgba(210,242,248,0.98)",textShadow:"0 0 20px rgba(0,205,248,0.5)"}}>BIMS</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,color:"rgba(0,205,248,0.42)",letterSpacing:"0.1em",textTransform:"uppercase" as const,marginTop:3}}>Biometric Identity Management System</div>
           </div>
         </div>
 
@@ -592,10 +592,10 @@ Respond ONLY with valid JSON (no markdown):
         <AnimatePresence>
           {showUserMenu&&(
             <motion.div initial={{opacity:0,y:-8,scale:0.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:0.95}} transition={{duration:0.15}}
-              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.97)",border:"1px solid rgba(0,195,235,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(20px)"}}>
-              <div style={{padding:"8px 14px 8px",borderBottom:"1px solid rgba(0,195,235,0.12)",marginBottom:4}}>
+              style={{position:"fixed",top:60,right:14,minWidth:178,zIndex:10000,padding:"8px 0",borderRadius:14,background:"rgba(3,10,22,0.97)",border:"1px solid rgba(0,205,248,0.22)",boxShadow:"0 20px 60px rgba(0,0,0,0.9)",backdropFilter:"blur(20px)"}}>
+              <div style={{padding:"8px 14px 8px",borderBottom:"1px solid rgba(0,205,248,0.12)",marginBottom:4}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:11,fontWeight:700,color:"rgba(210,242,248,0.95)"}}>{currentUser?.fullName||currentUser?.username}</div>
-                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,195,235,0.45)",marginTop:2}}>@{currentUser?.username}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,205,248,0.45)",marginTop:2}}>@{currentUser?.username}</div>
               </div>
               {[{label:"My Profile",path:"/profile"},{label:"Settings",path:"/settings"}].map(({label,path})=>(
                 <button key={label} onClick={()=>{setShowUserMenu(false);navigate(path);}} style={{width:"100%",textAlign:"left" as const,padding:"7px 14px",background:"none",border:"none",cursor:"pointer",fontFamily:"'Exo 2',sans-serif",fontSize:12.5,color:"rgba(100,188,218,0.65)",transition:"all .14s"}}
@@ -623,13 +623,13 @@ Respond ONLY with valid JSON (no markdown):
                   background:"linear-gradient(135deg,rgba(0,160,255,0.2),rgba(0,80,200,0.15))",
                   border:"1.5px solid rgba(50,190,218,0.4)",
                   display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <Fingerprint style={{width:24,height:24,color:"hsl(192,100%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
+                <Fingerprint style={{width:24,height:24,color:"hsl(193,100%,60%)",filter:"drop-shadow(0 0 8px rgba(50,190,218,0.8))"}}/>
               </motion.div>
               <div style={{textAlign:"left" as const}}>
                 <h1 style={{fontFamily:"'Orbitron',sans-serif",fontSize:"clamp(20px,2.8vw,32px)",fontWeight:900,letterSpacing:"0.14em",color:"rgba(200,245,255,0.98)",textTransform:"uppercase" as const,margin:0,lineHeight:1,textShadow:"0 0 35px rgba(50,190,218,0.5),0 0 70px rgba(0,150,220,0.2)"}}>
                   BIMS
                 </h1>
-                <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"clamp(6px,0.85vw,8.5px)",letterSpacing:"0.18em",color:"rgba(0,195,235,0.48)",margin:"4px 0 0",textTransform:"uppercase" as const}}>
+                <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"clamp(6px,0.85vw,8.5px)",letterSpacing:"0.18em",color:"rgba(0,205,248,0.48)",margin:"4px 0 0",textTransform:"uppercase" as const}}>
                   Biometric Identity Management System
                 </p>
               </div>
