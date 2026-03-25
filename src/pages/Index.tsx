@@ -162,6 +162,8 @@ const Index = () => {
   const [ghostPhone, setGhostPhone] = useState("");
   const [ghostLoading, setGhostLoading] = useState(false);
   const [ghostResults, setGhostResults] = useState<any>(null);
+  const [ghostView, setGhostView] = useState<"search"|"results"|"record">("search");
+  const [ghostSelectedRecord, setGhostSelectedRecord] = useState<any>(null);
   const [showFaceSearch, setShowFaceSearch] = useState(false);
   const [faceFile, setFaceFile] = useState<string|null>(null);
   const [faceLoading, setFaceLoading] = useState(false);
@@ -1093,11 +1095,10 @@ Respond ONLY with valid JSON (no markdown):
         {showGhostTrace && (
           <motion.div
             initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{position:"fixed",inset:0,zIndex:50,
-              background:"rgba(0,2,8,0.95)",
-              backdropFilter:"blur(20px)",
-              display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}
-            onClick={()=>{setShowGhostTrace(false);setGhostPhone("");setGhostResults(null);}}>
+            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,2,8,0.96)",
+              backdropFilter:"blur(22px)",display:"flex",alignItems:"center",
+              justifyContent:"center",padding:"16px"}}
+            onClick={()=>{if(ghostView==="search"){setShowGhostTrace(false);setGhostPhone("");setGhostResults(null);setGhostView("search");setGhostSelectedRecord(null);}}}>
             <motion.div
               initial={{scale:0.94,y:24,opacity:0}} animate={{scale:1,y:0,opacity:1}}
               exit={{scale:0.94,y:24,opacity:0}}
@@ -1105,432 +1106,548 @@ Respond ONLY with valid JSON (no markdown):
               onClick={e=>e.stopPropagation()}
               style={{width:"100%",maxWidth:580,maxHeight:"92vh",overflowY:"auto",
                 borderRadius:24,
-                background:"linear-gradient(170deg,rgba(0,14,20,0.98),rgba(0,8,16,0.99))",
-                border:"1px solid rgba(0,255,160,0.15)",
+                background:"linear-gradient(170deg,rgba(0,12,18,0.99),rgba(0,6,14,1))",
+                border:"1px solid rgba(0,255,160,0.14)",
                 borderTop:"2.5px solid rgba(0,255,160,0.55)",
-                boxShadow:"0 40px 100px rgba(0,0,0,0.90),0 0 80px rgba(0,180,120,0.07),inset 0 1px 0 rgba(0,255,160,0.08)",
-                padding:"0",overflow:"hidden"}}>
+                boxShadow:"0 40px 100px rgba(0,0,0,0.92),0 0 80px rgba(0,200,120,0.06)",
+                overflow:"hidden"}}>
 
-              {/* ══ HEADER ══ */}
-              <div style={{padding:"22px 26px 18px",borderBottom:"1px solid rgba(0,255,160,0.08)",
-                background:"linear-gradient(180deg,rgba(0,30,20,0.60),transparent)"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:14}}>
-                    {/* Animated ghost icon */}
-                    <motion.div
-                      animate={{boxShadow:["0 0 20px rgba(0,255,160,0.25)","0 0 40px rgba(0,255,160,0.50)","0 0 20px rgba(0,255,160,0.25)"]}}
-                      transition={{duration:2.5,repeat:Infinity,ease:"easeInOut"}}
-                      style={{width:46,height:46,borderRadius:14,
-                        background:"linear-gradient(135deg,rgba(0,200,120,0.18),rgba(0,140,90,0.10))",
-                        border:"1.5px solid rgba(0,255,160,0.40)",
-                        display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 3C8.5 3 6 6 6 9v8l-1.5 1.5V20h15v-1.5L18 17V9c0-3-2.5-6-6-6z" stroke="rgba(0,255,160,0.95)" strokeWidth="1.5" fill="rgba(0,255,160,0.10)"/>
-                        <circle cx="9.5" cy="10.5" r="1.3" fill="rgba(0,255,160,0.95)"/>
-                        <circle cx="14.5" cy="10.5" r="1.3" fill="rgba(0,255,160,0.95)"/>
-                        <path d="M6 17c1-1 1.5-0.5 2 0s1.5 1 2 0 1.5-1 2 0 1.5 1 2 0" stroke="rgba(0,255,160,0.70)" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+              {/* ══ HEADER — always visible ══ */}
+              <div style={{padding:"20px 24px 16px",
+                borderBottom:"1px solid rgba(0,255,160,0.07)",
+                background:"linear-gradient(180deg,rgba(0,28,18,0.55),transparent)",
+                display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  {/* Back button — shown when not on search view */}
+                  {(ghostView==="results"||ghostView==="record") && (
+                    <button
+                      onClick={()=>{
+                        if(ghostView==="record"){setGhostView("results");setGhostSelectedRecord(null);}
+                        else{setGhostView("search");setGhostResults(null);}
+                      }}
+                      style={{width:34,height:34,borderRadius:10,border:"1.5px solid rgba(0,255,160,0.30)",
+                        background:"rgba(0,255,160,0.07)",cursor:"pointer",
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        color:"rgba(0,255,160,0.80)",transition:"all .18s",flexShrink:0}}
+                      onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.18)";}}
+                      onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.07)";}}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(0,255,160,0.90)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                    </motion.div>
-                    <div>
-                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:20,fontWeight:900,
-                        letterSpacing:"0.08em",
-                        background:"linear-gradient(90deg,rgba(0,255,160,1),rgba(0,220,140,0.70))",
-                        WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-                        GHOST TRACE
+                    </button>
+                  )}
+                  <motion.div
+                    animate={{boxShadow:["0 0 18px rgba(0,255,160,0.22)","0 0 36px rgba(0,255,160,0.45)","0 0 18px rgba(0,255,160,0.22)"]}}
+                    transition={{duration:2.5,repeat:Infinity,ease:"easeInOut"}}
+                    style={{width:42,height:42,borderRadius:12,flexShrink:0,
+                      background:"linear-gradient(135deg,rgba(0,200,120,0.16),rgba(0,140,90,0.10))",
+                      border:"1.5px solid rgba(0,255,160,0.38)",
+                      display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 3C8.5 3 6 6 6 9v8l-1.5 1.5V20h15v-1.5L18 17V9c0-3-2.5-6-6-6z" stroke="rgba(0,255,160,0.95)" strokeWidth="1.5" fill="rgba(0,255,160,0.10)"/>
+                      <circle cx="9.5" cy="10.5" r="1.3" fill="rgba(0,255,160,0.95)"/>
+                      <circle cx="14.5" cy="10.5" r="1.3" fill="rgba(0,255,160,0.95)"/>
+                      <path d="M6 17c1-1 1.5-.5 2 0s1.5 1 2 0 1.5-1 2 0 1.5 1 2 0" stroke="rgba(0,255,160,0.70)" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                    </svg>
+                  </motion.div>
+                  <div>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:18,fontWeight:900,
+                      letterSpacing:"0.08em",
+                      background:"linear-gradient(90deg,rgba(0,255,160,1),rgba(0,200,130,0.65))",
+                      WebkitBackgroundClip:"text" as any,WebkitTextFillColor:"transparent" as any}}>
+                      {ghostView==="record"
+                        ? "IDENTITY RECORD"
+                        : ghostView==="results"
+                        ? ghostResults?.phone || "GHOST TRACE"
+                        : "GHOST TRACE"}
+                    </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
+                      color:"rgba(0,180,110,0.40)",marginTop:2,letterSpacing:"0.12em"}}>
+                      {ghostView==="record"
+                        ? "← BACK TO TRACE RESULTS"
+                        : ghostView==="results"
+                        ? "PHONE SIGNAL INTELLIGENCE"
+                        : "PHONE · SIGNAL · INTELLIGENCE"}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={()=>{setShowGhostTrace(false);setGhostPhone("");setGhostResults(null);setGhostView("search");setGhostSelectedRecord(null);}}
+                  style={{width:32,height:32,borderRadius:"50%",border:"1px solid rgba(0,255,160,0.16)",
+                    background:"rgba(0,255,160,0.05)",cursor:"pointer",display:"flex",
+                    alignItems:"center",justifyContent:"center",color:"rgba(0,200,130,0.50)",
+                    transition:"all .18s",flexShrink:0}}
+                  onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.14)";}}
+                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.05)";}}>
+                  <X style={{width:14,height:14}}/>
+                </button>
+              </div>
+
+              {/* ══ VIEW: SEARCH ══ */}
+              {ghostView==="search" && (
+                <div style={{padding:"22px 24px 28px"}}>
+                  {/* Big phone input */}
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
+                      color:"rgba(0,200,130,0.45)",letterSpacing:"0.14em",marginBottom:8}}>
+                      ENTER PHONE NUMBER
+                    </div>
+                    <div style={{display:"flex",gap:10}}>
+                      <div style={{flex:1,position:"relative" as const}}>
+                        <span style={{position:"absolute" as const,left:14,top:"50%",
+                          transform:"translateY(-50%)",fontSize:16}}>📞</span>
+                        <input
+                          value={ghostPhone}
+                          onChange={e=>{setGhostPhone(e.target.value.replace(/[^0-9+\-\s()]/g,""));}}
+                          onKeyDown={e=>{if(e.key==="Enter")runGhostTrace();}}
+                          placeholder="+252 61 234 5678"
+                          autoFocus
+                          style={{width:"100%",padding:"15px 14px 15px 46px",borderRadius:14,
+                            background:"rgba(0,255,160,0.05)",
+                            border:`2px solid ${ghostPhone?"rgba(0,255,160,0.45)":"rgba(0,255,160,0.14)"}`,
+                            outline:"none",color:"rgba(0,255,180,0.95)",
+                            fontFamily:"'JetBrains Mono',monospace",fontSize:18,
+                            letterSpacing:"0.08em",transition:"border-color .2s"}}/>
+                      </div>
+                      <button onClick={runGhostTrace}
+                        disabled={ghostLoading||!ghostPhone.trim()}
+                        style={{padding:"15px 26px",borderRadius:14,cursor:ghostLoading||!ghostPhone.trim()?"not-allowed":"pointer",
+                          background:ghostLoading||!ghostPhone.trim()
+                            ?"rgba(0,180,110,0.15)"
+                            :"linear-gradient(135deg,rgba(0,230,140,0.92),rgba(0,170,100,0.88))",
+                          border:"0",color:ghostLoading||!ghostPhone.trim()?"rgba(0,200,120,0.30)":"rgba(0,0,0,0.88)",
+                          fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:900,
+                          letterSpacing:"0.10em",transition:"all .2s",
+                          boxShadow:ghostLoading||!ghostPhone.trim()?"none":"0 4px 28px rgba(0,210,130,0.45)"}}>
+                        {ghostLoading?"···":"TRACE"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Loading */}
+                  {ghostLoading && (
+                    <div style={{padding:"36px 0",textAlign:"center" as const}}>
+                      <div style={{display:"flex",justifyContent:"center",gap:7,marginBottom:20}}>
+                        {[0,1,2,3,4].map(i=>(
+                          <motion.div key={i}
+                            animate={{scaleY:[0.3,1,0.3],opacity:[0.25,1,0.25]}}
+                            transition={{duration:0.85,delay:i*0.13,repeat:Infinity,ease:"easeInOut"}}
+                            style={{width:4,height:32,borderRadius:2,background:"rgba(0,255,160,0.80)"}}/>
+                        ))}
+                      </div>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:800,
+                        color:"rgba(0,255,160,0.80)",letterSpacing:"0.14em",marginBottom:8}}>
+                        TRACING SIGNAL
                       </div>
                       <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,
-                        color:"rgba(0,200,130,0.45)",marginTop:3,letterSpacing:"0.14em"}}>
-                        PHONE · SIGNAL · INTELLIGENCE
+                        color:"rgba(0,180,110,0.40)",letterSpacing:"0.08em"}}>
+                        AI analysis · Carrier lookup · Database scan
                       </div>
                     </div>
-                  </div>
-                  <button onClick={()=>{setShowGhostTrace(false);setGhostPhone("");setGhostResults(null);}}
-                    style={{width:34,height:34,borderRadius:"50%",
-                      border:"1px solid rgba(0,255,160,0.18)",
-                      background:"rgba(0,255,160,0.06)",cursor:"pointer",
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      color:"rgba(0,200,130,0.55)",transition:"all .18s"}}
-                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.14)";}}
-                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.06)";}}>
-                    <X style={{width:15,height:15}}/>
-                  </button>
-                </div>
-              </div>
+                  )}
 
-              {/* ══ INPUT BAR ══ */}
-              <div style={{padding:"18px 26px",borderBottom:"1px solid rgba(0,255,160,0.07)"}}>
-                <div style={{display:"flex",gap:10}}>
-                  <div style={{flex:1,position:"relative" as const}}>
-                    <div style={{position:"absolute" as const,left:14,top:"50%",transform:"translateY(-50%)",
-                      fontFamily:"'JetBrains Mono',monospace",fontSize:14,color:"rgba(0,255,160,0.35)"}}>
-                      📞
+                  {/* Description when idle */}
+                  {!ghostLoading && (
+                    <div style={{padding:"12px 0",textAlign:"center" as const}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                        color:"rgba(0,160,100,0.35)",letterSpacing:"0.08em",lineHeight:1.9}}>
+                        Carrier · Caller Name · Social Platforms<br/>
+                        Database Match · OSINT · Breach Check
+                      </div>
                     </div>
-                    <input
-                      value={ghostPhone}
-                      onChange={e=>{setGhostPhone(e.target.value.replace(/[^0-9+\-\s()]/g,""));setGhostResults(null);}}
-                      onKeyDown={e=>{if(e.key==="Enter")runGhostTrace();}}
-                      placeholder="+252 61 234 5678"
-                      autoFocus
-                      style={{width:"100%",padding:"13px 14px 13px 42px",borderRadius:12,
-                        background:"rgba(0,255,160,0.05)",
-                        border:`2px solid ${ghostPhone?"rgba(0,255,160,0.45)":"rgba(0,255,160,0.15)"}`,
-                        outline:"none",
-                        color:"rgba(0,255,180,0.95)",
-                        fontFamily:"'JetBrains Mono',monospace",
-                        fontSize:16,
-                        letterSpacing:"0.06em",
-                        transition:"border-color .2s"}}/>
-                  </div>
-                  <button onClick={runGhostTrace}
-                    disabled={ghostLoading||!ghostPhone.trim()}
-                    style={{padding:"13px 24px",borderRadius:12,
-                      cursor:ghostLoading||!ghostPhone.trim()?"not-allowed":"pointer",
-                      background:ghostLoading||!ghostPhone.trim()
-                        ?"rgba(0,180,110,0.18)"
-                        :"linear-gradient(135deg,rgba(0,220,130,0.90),rgba(0,170,100,0.85))",
-                      border:"0",
-                      color:ghostLoading||!ghostPhone.trim()?"rgba(0,200,120,0.35)":"rgba(0,0,0,0.88)",
-                      fontFamily:"'Orbitron',sans-serif",
-                      fontSize:13,fontWeight:900,letterSpacing:"0.10em",
-                      transition:"all .2s",
-                      boxShadow:ghostLoading||!ghostPhone.trim()?"none":"0 4px 24px rgba(0,200,130,0.40)"}}>
-                    {ghostLoading?"···":"TRACE"}
-                  </button>
-                </div>
-              </div>
-
-              {/* ══ LOADING ══ */}
-              {ghostLoading && (
-                <div style={{padding:"40px 26px",textAlign:"center" as const}}>
-                  <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:18}}>
-                    {[0,1,2,3,4].map(i=>(
-                      <motion.div key={i}
-                        animate={{scaleY:[0.4,1,0.4],opacity:[0.3,1,0.3]}}
-                        transition={{duration:0.9,delay:i*0.14,repeat:Infinity,ease:"easeInOut"}}
-                        style={{width:4,height:28,borderRadius:2,background:"rgba(0,255,160,0.80)"}}/>
-                    ))}
-                  </div>
-                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,
-                    color:"rgba(0,255,160,0.85)",letterSpacing:"0.14em",marginBottom:8}}>
-                    TRACING SIGNAL
-                  </div>
-                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,
-                    color:"rgba(0,180,110,0.45)",letterSpacing:"0.10em"}}>
-                    AI ANALYSIS · DATABASE SCAN · OSINT LINKS
-                  </div>
+                  )}
                 </div>
               )}
 
-              {/* ══ RESULTS ══ */}
-              {ghostResults && !ghostLoading && (
-                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.25}}
-                  style={{padding:"20px 26px 26px"}}>
+              {/* ══ VIEW: RESULTS ══ */}
+              {ghostView==="results" && ghostResults && (
+                <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.20}}
+                  style={{padding:"20px 24px 28px"}}>
 
-                  {/* ── AI NUMBER INTEL CARD ── */}
-                  {ghostResults.ai && typeof ghostResults.ai==="object" && (
-                    <div style={{marginBottom:18,padding:"16px 18px",borderRadius:16,
-                      background:"linear-gradient(135deg,rgba(0,30,20,0.90),rgba(0,15,12,0.95))",
-                      border:"1.5px solid rgba(0,255,160,0.22)",
-                      boxShadow:"0 8px 32px rgba(0,0,0,0.40),0 0 30px rgba(0,180,120,0.06)"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                        <div style={{width:7,height:7,borderRadius:"50%",
-                          background:"rgba(0,255,160,0.90)",
-                          boxShadow:"0 0 12px rgba(0,255,160,0.80)"}}/>
-                        <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:800,
-                          color:"rgba(0,220,140,0.60)",letterSpacing:"0.16em"}}>
-                          NUMBER INTELLIGENCE — {ghostResults.phone}
+                  {/* ── SECTION 1: IDENTITY MATCH (DB) — first and most prominent ── */}
+                  <div style={{marginBottom:20}}>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                      color:ghostResults.dbMatch?.length>0?"rgba(0,255,160,0.55)":"rgba(255,100,80,0.45)",
+                      letterSpacing:"0.16em",marginBottom:10,display:"flex",alignItems:"center",gap:7}}>
+                      {ghostResults.dbMatch?.length>0 && (
+                        <motion.div animate={{opacity:[0.4,1,0.4]}} transition={{duration:1.4,repeat:Infinity}}
+                          style={{width:7,height:7,borderRadius:"50%",background:"rgba(0,255,160,0.90)",
+                            boxShadow:"0 0 14px rgba(0,255,160,0.80)"}}/>
+                      )}
+                      {ghostResults.dbMatch?.length>0
+                        ? `● IDENTITY MATCHED IN DATABASE (${ghostResults.dbMatch.length})`
+                        : "○ NO DATABASE MATCH"}
+                    </div>
+                    {ghostResults.dbMatch?.length>0 ? ghostResults.dbMatch.map((rec:any,i:number)=>(
+                      <motion.div key={i}
+                        initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{delay:i*0.05}}
+                        onClick={()=>{setGhostSelectedRecord(rec);setGhostView("record");}}
+                        style={{marginBottom:8,padding:"14px 16px",borderRadius:16,cursor:"pointer",
+                          background:"linear-gradient(135deg,rgba(0,36,24,0.92),rgba(0,22,15,0.96))",
+                          border:"2px solid rgba(0,255,160,0.28)",
+                          boxShadow:"0 4px 20px rgba(0,0,0,0.50)",
+                          transition:"all .18s"}}
+                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(0,255,160,0.60)";(e.currentTarget as HTMLElement).style.boxShadow="0 8px 30px rgba(0,0,0,0.60),0 0 30px rgba(0,200,120,0.12)";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(0,255,160,0.28)";(e.currentTarget as HTMLElement).style.boxShadow="0 4px 20px rgba(0,0,0,0.50)";}}>
+                        <div style={{display:"flex",alignItems:"center",gap:12}}>
+                          {rec.photo
+                            ?<img src={rec.photo} alt="" style={{width:52,height:52,borderRadius:12,
+                                objectFit:"cover" as const,border:"2px solid rgba(0,255,160,0.40)",flexShrink:0}}/>
+                            :<div style={{width:52,height:52,borderRadius:12,flexShrink:0,
+                                background:"rgba(0,180,100,0.16)",border:"2px solid rgba(0,255,160,0.30)",
+                                display:"flex",alignItems:"center",justifyContent:"center",
+                                fontFamily:"'Orbitron',sans-serif",fontSize:18,fontWeight:900,
+                                color:"rgba(0,255,160,0.75)"}}>
+                              {rec.name?.charAt(0)||"?"}
+                            </div>}
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:900,
+                              color:"rgba(0,255,180,0.97)",marginBottom:5}}>
+                              {rec.surname}, {rec.name}
+                            </div>
+                            <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+                              {[["📞",rec.phoneNo||"—"],["🌍",rec.nationality||"—"],["📅",rec.dateOfBirth||"—"]].map(([ic,val])=>(
+                                <span key={ic as string} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,
+                                  color:"rgba(0,200,140,0.65)"}}>
+                                  {ic as string} <span style={{color:"rgba(0,230,160,0.88)"}}>{val as string}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
+                            color:"rgba(0,200,130,0.40)",letterSpacing:"0.06em",flexShrink:0}}>
+                            TAP →
+                          </div>
+                        </div>
+                      </motion.div>
+                    )) : (
+                      <div style={{padding:"10px 14px",borderRadius:10,
+                        background:"rgba(255,60,40,0.05)",border:"1px solid rgba(255,80,60,0.16)"}}>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                          color:"rgba(255,120,100,0.55)"}}>
+                          Not found in local BIMS database
                         </div>
                       </div>
-                      {/* Main fields grid */}
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-                        {[
-                          {k:"country",    icon:"🌍", label:"COUNTRY"},
-                          {k:"carrier",    icon:"📡", label:"CARRIER"},
-                          {k:"type",       icon:"📱", label:"LINE TYPE"},
-                          {k:"region",     icon:"📍", label:"REGION"},
-                        ].map(({k,icon,label})=>ghostResults.ai[k]?(
-                          <div key={k} style={{padding:"10px 12px",borderRadius:10,
-                            background:"rgba(0,255,160,0.05)",
-                            border:"1px solid rgba(0,255,160,0.12)"}}>
-                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,
-                              color:"rgba(0,180,110,0.45)",letterSpacing:"0.14em",marginBottom:4}}>{icon} {label}</div>
-                            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,
-                              color:"rgba(0,240,160,0.92)"}}>{ghostResults.ai[k]}</div>
-                          </div>
-                        ):null)}
+                    )}
+                  </div>
+
+                  {/* ── SECTION 2: AI NUMBER INTELLIGENCE ── */}
+                  {ghostResults.ai && typeof ghostResults.ai==="object" && (
+                    <div style={{marginBottom:20,padding:"16px",borderRadius:16,
+                      background:"rgba(0,22,16,0.90)",border:"1.5px solid rgba(0,255,160,0.16)"}}>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                        color:"rgba(0,200,130,0.45)",letterSpacing:"0.16em",marginBottom:12}}>
+                        📡 SIGNAL INTELLIGENCE
                       </div>
-                      {/* Risk + messaging flags */}
-                      <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
-                        {ghostResults.ai.risk && (
-                          <div style={{padding:"6px 14px",borderRadius:20,
-                            background:ghostResults.ai.risk==="high"?"rgba(255,60,60,0.15)":
-                                       ghostResults.ai.risk==="medium"?"rgba(255,180,0,0.12)":
-                                       "rgba(0,255,120,0.10)",
-                            border:`1px solid ${ghostResults.ai.risk==="high"?"rgba(255,80,80,0.40)":
-                                                 ghostResults.ai.risk==="medium"?"rgba(255,180,0,0.35)":
-                                                 "rgba(0,255,120,0.30)"}`,
-                            fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:800,letterSpacing:"0.10em",
-                            color:ghostResults.ai.risk==="high"?"rgba(255,100,100,0.95)":
-                                  ghostResults.ai.risk==="medium"?"rgba(255,190,30,0.95)":
-                                  "rgba(0,220,120,0.95)"}}>
-                            {ghostResults.ai.risk==="high"?"⚠ HIGH RISK":
-                             ghostResults.ai.risk==="medium"?"⚡ MEDIUM RISK":
-                             "✓ LOW RISK"}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+                        {[
+                          {k:"country",  icon:"🌍",label:"COUNTRY"},
+                          {k:"carrier",  icon:"📡",label:"CARRIER"},
+                          {k:"type",     icon:"📱",label:"LINE TYPE"},
+                          {k:"region",   icon:"📍",label:"REGION"},
+                        ].filter(({k})=>ghostResults.ai[k]).map(({k,icon,label})=>(
+                          <div key={k} style={{padding:"9px 11px",borderRadius:10,
+                            background:"rgba(0,255,160,0.04)",border:"1px solid rgba(0,255,160,0.10)"}}>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,
+                              color:"rgba(0,180,110,0.40)",letterSpacing:"0.12em",marginBottom:3}}>
+                              {icon} {label}
+                            </div>
+                            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:11,fontWeight:700,
+                              color:"rgba(0,240,160,0.90)"}}>{ghostResults.ai[k]}</div>
                           </div>
+                        ))}
+                      </div>
+                      <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
+                        {ghostResults.ai.risk && (
+                          <span style={{padding:"5px 12px",borderRadius:20,
+                            background:ghostResults.ai.risk==="high"?"rgba(255,60,60,0.14)":
+                                       ghostResults.ai.risk==="medium"?"rgba(255,180,0,0.11)":
+                                       "rgba(0,255,120,0.09)",
+                            border:`1px solid ${ghostResults.ai.risk==="high"?"rgba(255,80,80,0.38)":
+                                                 ghostResults.ai.risk==="medium"?"rgba(255,180,0,0.33)":"rgba(0,255,120,0.28)"}`,
+                            fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                            color:ghostResults.ai.risk==="high"?"rgba(255,100,100,0.95)":
+                                  ghostResults.ai.risk==="medium"?"rgba(255,190,30,0.95)":"rgba(0,220,120,0.95)"}}>
+                            {ghostResults.ai.risk==="high"?"⚠ HIGH RISK":ghostResults.ai.risk==="medium"?"⚡ MEDIUM RISK":"✓ LOW RISK"}
+                          </span>
                         )}
                         {ghostResults.ai.whatsapp_likely===true && (
-                          <div style={{padding:"6px 14px",borderRadius:20,
-                            background:"rgba(37,211,102,0.12)",border:"1px solid rgba(37,211,102,0.35)",
-                            fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.08em",
-                            color:"rgba(37,211,102,0.95)"}}>
+                          <span style={{padding:"5px 12px",borderRadius:20,background:"rgba(37,211,102,0.11)",
+                            border:"1px solid rgba(37,211,102,0.32)",fontFamily:"'Orbitron',sans-serif",
+                            fontSize:8,fontWeight:700,color:"rgba(37,211,102,0.92)"}}>
                             💬 WHATSAPP LIKELY
-                          </div>
+                          </span>
                         )}
                         {ghostResults.ai.telegram_likely===true && (
-                          <div style={{padding:"6px 14px",borderRadius:20,
-                            background:"rgba(0,136,204,0.12)",border:"1px solid rgba(0,136,204,0.35)",
-                            fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.08em",
-                            color:"rgba(0,180,240,0.95)"}}>
+                          <span style={{padding:"5px 12px",borderRadius:20,background:"rgba(0,136,204,0.11)",
+                            border:"1px solid rgba(0,136,204,0.32)",fontFamily:"'Orbitron',sans-serif",
+                            fontSize:8,fontWeight:700,color:"rgba(0,180,240,0.92)"}}>
                             ✈️ TELEGRAM LIKELY
-                          </div>
+                          </span>
                         )}
                       </div>
                       {ghostResults.ai.notes && (
-                        <div style={{marginTop:10,padding:"8px 12px",borderRadius:8,
-                          background:"rgba(0,255,160,0.04)",
-                          fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
-                          color:"rgba(0,200,130,0.55)",fontStyle:"italic" as const,lineHeight:1.6}}>
+                        <div style={{marginTop:10,fontFamily:"'JetBrains Mono',monospace",fontSize:9,
+                          color:"rgba(0,180,110,0.45)",fontStyle:"italic" as const,lineHeight:1.7}}>
                           {ghostResults.ai.notes}
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* ── IDENTITY MATCH (DB) — shown FIRST and prominently ── */}
-                  {ghostResults.dbMatch && ghostResults.dbMatch.length>0 && (
-                    <div style={{marginBottom:18}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                        <motion.div
-                          animate={{opacity:[0.5,1,0.5]}} transition={{duration:1.4,repeat:Infinity}}
-                          style={{width:8,height:8,borderRadius:"50%",
-                            background:"rgba(0,255,160,0.95)",
-                            boxShadow:"0 0 16px rgba(0,255,160,0.80)"}}/>
-                        <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:900,
-                          color:"rgba(0,255,160,0.95)",letterSpacing:"0.16em"}}>
-                          IDENTITY MATCHED IN DATABASE
-                        </div>
-                        <div style={{padding:"2px 8px",borderRadius:10,
-                          background:"rgba(0,255,160,0.18)",border:"1px solid rgba(0,255,160,0.40)",
-                          fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
-                          color:"rgba(0,255,160,0.90)"}}>
-                          {ghostResults.dbMatch.length}
-                        </div>
-                      </div>
-                      {ghostResults.dbMatch.map((rec:any,i:number)=>(
-                        <motion.div key={i}
-                          initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}}
-                          transition={{delay:i*0.06}}
-                          style={{marginBottom:10,padding:"16px",borderRadius:16,
-                            background:"linear-gradient(135deg,rgba(0,40,28,0.90),rgba(0,25,18,0.95))",
-                            border:"2px solid rgba(0,255,160,0.30)",
-                            boxShadow:"0 4px 24px rgba(0,0,0,0.50),0 0 30px rgba(0,180,120,0.10)"}}>
-                          <div style={{display:"flex",alignItems:"center",gap:14}}>
-                            {rec.photo
-                              ?<img src={rec.photo} alt="" style={{width:56,height:56,borderRadius:12,
-                                  objectFit:"cover" as const,
-                                  border:"2px solid rgba(0,255,160,0.45)",flexShrink:0}}/>
-                              :<div style={{width:56,height:56,borderRadius:12,flexShrink:0,
-                                  background:"rgba(0,180,100,0.18)",border:"2px solid rgba(0,255,160,0.35)",
-                                  display:"flex",alignItems:"center",justifyContent:"center",
-                                  fontFamily:"'Orbitron',sans-serif",fontSize:20,fontWeight:900,
-                                  color:"rgba(0,255,160,0.80)"}}>
-                                {rec.name?.charAt(0)||"?"}
-                              </div>}
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:900,
-                                color:"rgba(0,255,180,0.98)",marginBottom:5,letterSpacing:"0.02em"}}>
-                                {rec.surname}, {rec.name}
-                              </div>
-                              <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
-                                {[
-                                  ["🆔",rec.id],
-                                  ["📞",rec.phoneNo||"—"],
-                                  ["🌍",rec.nationality||"—"],
-                                  ["📅",rec.dateOfBirth||"—"],
-                                  ["⚧",rec.gender||"—"],
-                                ].map(([icon,val])=>(
-                                  <span key={icon as string} style={{
-                                    fontFamily:"'JetBrains Mono',monospace",
-                                    fontSize:10.5,color:"rgba(0,200,140,0.70)"}}>
-                                    {icon as string} <span style={{color:"rgba(0,230,160,0.90)"}}>{val as string}</span>
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                  {/* ── SECTION 3: SOCIAL DIRECT OPEN ── */}
+                  <div style={{marginBottom:20}}>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                      color:"rgba(0,200,130,0.45)",letterSpacing:"0.16em",marginBottom:10}}>
+                      📲 OPEN ON PLATFORM DIRECTLY
                     </div>
-                  )}
-
-                  {ghostResults.dbMatch?.length===0 && (
-                    <div style={{marginBottom:14,padding:"12px 16px",borderRadius:12,
-                      background:"rgba(255,60,40,0.06)",border:"1px solid rgba(255,80,60,0.18)"}}>
-                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,
-                        color:"rgba(255,120,100,0.65)",letterSpacing:"0.08em"}}>
-                        ✗ No match in local database
-                      </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
+                      color:"rgba(0,160,100,0.35)",marginBottom:10,lineHeight:1.6}}>
+                      WhatsApp & Telegram open directly — platform shows if account exists.
+                      Others search public posts mentioning this number.
                     </div>
-                  )}
-
-                  {/* ── QUICK SOCIAL LAUNCH — 8 platforms ── */}
-                  <div style={{marginBottom:18}}>
-                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
-                      color:"rgba(0,200,130,0.50)",letterSpacing:"0.16em",marginBottom:10}}>
-                      ⚡ PLATFORM QUICK LAUNCH
-                    </div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:7}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
                       {[
-                        {label:"WhatsApp", icon:"💬",url:`https://wa.me/${ghostResults.digits}`,col:"37,211,102"},
-                        {label:"Telegram", icon:"✈️",url:`https://t.me/+${ghostResults.digits}`,col:"0,136,204"},
-                        {label:"Instagram",icon:"📸",url:`https://www.google.com/search?q=site:instagram.com+"${ghostResults.phone}"`,col:"200,60,150"},
-                        {label:"Facebook", icon:"👥",url:`https://www.facebook.com/search/people/?q=${encodeURIComponent(ghostResults.phone)}`,col:"24,119,242"},
-                        {label:"Twitter/X",icon:"🐦",url:`https://x.com/search?q="${encodeURIComponent(ghostResults.phone)}"&f=user`,col:"160,160,160"},
-                        {label:"TikTok",   icon:"🎵",url:`https://www.google.com/search?q=site:tiktok.com+"${ghostResults.phone}"`,col:"255,0,80"},
-                        {label:"LinkedIn", icon:"💼",url:`https://www.google.com/search?q=site:linkedin.com+"${ghostResults.phone}"`,col:"10,102,194"},
-                        {label:"YouTube",  icon:"▶️",url:`https://www.google.com/search?q=site:youtube.com+"${ghostResults.phone}"`,col:"255,50,50"},
+                        {label:"WhatsApp", icon:"💬",
+                          url:`https://wa.me/${ghostResults.digits}`,
+                          note:"Opens chat",col:"37,211,102",direct:true},
+                        {label:"Telegram", icon:"✈️",
+                          url:`https://t.me/+${ghostResults.digits}`,
+                          note:"Opens profile",col:"0,136,204",direct:true},
+                        {label:"Viber",    icon:"📲",
+                          url:`viber://chat?number=%2B${ghostResults.digits}`,
+                          note:"Opens if app",col:"125,86,178",direct:true},
+                        {label:"Signal",   icon:"🔒",
+                          url:`https://signal.me/#p/+${ghostResults.digits}`,
+                          note:"Opens profile",col:"59,165,93",direct:true},
+                        {label:"Facebook", icon:"👥",
+                          url:`https://www.facebook.com/search/people/?q=${encodeURIComponent(ghostResults.phone)}`,
+                          note:"People search",col:"24,119,242",direct:false},
+                        {label:"Instagram",icon:"📸",
+                          url:`https://www.google.com/search?q=%22${encodeURIComponent(ghostResults.phone)}%22+site:instagram.com`,
+                          note:"Google dork",col:"200,60,150",direct:false},
+                        {label:"Twitter/X",icon:"🐦",
+                          url:`https://x.com/search?q=%22${encodeURIComponent(ghostResults.phone)}%22&f=user`,
+                          note:"User search",col:"150,150,150",direct:false},
+                        {label:"LinkedIn", icon:"💼",
+                          url:`https://www.google.com/search?q=%22${encodeURIComponent(ghostResults.phone)}%22+site:linkedin.com`,
+                          note:"Google dork",col:"10,102,194",direct:false},
                       ].map(s=>(
                         <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
-                          style={{padding:"10px 6px",borderRadius:12,textDecoration:"none",cursor:"pointer",
-                            background:`rgba(${s.col},0.08)`,
-                            border:`1.5px solid rgba(${s.col},0.30)`,
-                            display:"flex",flexDirection:"column" as const,
-                            alignItems:"center",gap:5,transition:"all .18s"}}
-                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${s.col},0.18)`;(e.currentTarget as HTMLElement).style.transform="translateY(-2px)";}}
-                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${s.col},0.08)`;(e.currentTarget as HTMLElement).style.transform="translateY(0)";}}>
-                          <span style={{fontSize:20}}>{s.icon}</span>
-                          <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:700,
-                            letterSpacing:"0.06em",color:`rgba(${s.col},0.90)`}}>
-                            {s.label}
-                          </span>
+                          style={{padding:"11px 6px",borderRadius:13,textDecoration:"none",cursor:"pointer",
+                            background:`rgba(${s.col},${s.direct?"0.12":"0.07"})`,
+                            border:`${s.direct?"2":"1.5"}px solid rgba(${s.col},${s.direct?"0.42":"0.25"})`,
+                            display:"flex",flexDirection:"column" as const,alignItems:"center",gap:5,
+                            transition:"all .18s",position:"relative" as const}}
+                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${s.col},0.22)`;(e.currentTarget as HTMLElement).style.transform="translateY(-2px)";}}
+                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${s.col},${s.direct?"0.12":"0.07"})`;(e.currentTarget as HTMLElement).style.transform="translateY(0)";}}>
+                          {s.direct && (
+                            <div style={{position:"absolute" as const,top:5,right:6,
+                              fontFamily:"'JetBrains Mono',monospace",fontSize:6,
+                              color:`rgba(${s.col},0.60)`,letterSpacing:"0.04em"}}>DIRECT</div>
+                          )}
+                          <span style={{fontSize:22}}>{s.icon}</span>
+                          <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                            letterSpacing:"0.04em",color:`rgba(${s.col},0.92)`}}>{s.label}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,
+                            color:`rgba(${s.col},0.45)`}}>{s.note}</span>
                         </a>
                       ))}
                     </div>
                   </div>
 
-                  {/* ── WHAT WE CAN TRACE (instead of GPS) ── */}
-                  <div style={{marginBottom:18}}>
-                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
-                      color:"rgba(0,200,130,0.50)",letterSpacing:"0.16em",marginBottom:10}}>
-                      🔎 CARRIER & IDENTITY LOOKUP
+                  {/* ── SECTION 4: CALLER ID / NAME LOOKUP ── */}
+                  <div style={{marginBottom:20}}>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                      color:"rgba(0,200,130,0.45)",letterSpacing:"0.16em",marginBottom:10}}>
+                      🪪 CALLER NAME & CARRIER LOOKUP
                     </div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
                       {[
-                        {label:"Truecaller",   url:`https://www.truecaller.com/search/intl/${encodeURIComponent(ghostResults.phone)}`,  note:"Caller ID + Name"},
-                        {label:"NumVerify",    url:`https://numverify.com/phone-number-validation?number=${encodeURIComponent(ghostResults.e164||ghostResults.phone)}`, note:"Carrier + Type"},
-                        {label:"HLR Lookup",   url:`https://www.hlrlookup.com/`,                                                          note:"SIM Status (live)"},
-                        {label:"Spokeo",       url:`https://www.spokeo.com/phone/${encodeURIComponent(ghostResults.phone)}`,               note:"Full identity"},
-                        {label:"BeenVerified", url:`https://www.beenverified.com/phone/${encodeURIComponent(ghostResults.phone)}`,         note:"Address + name"},
-                        {label:"TruePeople",   url:`https://www.truepeoplesearch.com/results?phoneno=${encodeURIComponent(ghostResults.phone)}`, note:"Free search"},
+                        {label:"Truecaller",   url:`https://www.truecaller.com/search/intl/${encodeURIComponent(ghostResults.phone)}`,
+                          note:"Caller name (best)",bold:true},
+                        {label:"NumVerify",    url:`https://numverify.com/phone-number-validation?number=${encodeURIComponent(ghostResults.e164||ghostResults.phone)}`,
+                          note:"Carrier + type",bold:true},
+                        {label:"HLR Lookup",   url:"https://www.hlrlookup.com/",
+                          note:"Live SIM status",bold:true},
+                        {label:"Spokeo",       url:`https://www.spokeo.com/phone/${encodeURIComponent(ghostResults.phone)}`,
+                          note:"Full identity",bold:false},
+                        {label:"BeenVerified", url:`https://www.beenverified.com/phone/${encodeURIComponent(ghostResults.phone)}`,
+                          note:"Name + address",bold:false},
+                        {label:"TruePeople",   url:`https://www.truepeoplesearch.com/results?phoneno=${encodeURIComponent(ghostResults.phone)}`,
+                          note:"Free records",bold:false},
                       ].map(lk=>(
                         <a key={lk.label} href={lk.url} target="_blank" rel="noopener noreferrer"
                           style={{padding:"10px 12px",borderRadius:11,textDecoration:"none",cursor:"pointer",
-                            background:"rgba(0,255,160,0.05)",border:"1px solid rgba(0,255,160,0.18)",
+                            background:lk.bold?"rgba(0,255,160,0.07)":"rgba(0,255,160,0.03)",
+                            border:`${lk.bold?"1.5":"1"}px solid rgba(0,255,160,${lk.bold?"0.24":"0.12"})`,
                             transition:"all .18s"}}
-                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.12)";(e.currentTarget as HTMLElement).style.borderColor="rgba(0,255,160,0.40)";}}
-                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.05)";(e.currentTarget as HTMLElement).style.borderColor="rgba(0,255,160,0.18)";}}>
+                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.13)";}}
+                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=lk.bold?"rgba(0,255,160,0.07)":"rgba(0,255,160,0.03)";}}>
                           <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9.5,fontWeight:700,
-                            color:"rgba(0,240,160,0.90)",marginBottom:3}}>{lk.label}</div>
-                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
-                            color:"rgba(0,180,110,0.45)"}}>{lk.note}</div>
+                            color:"rgba(0,240,160,0.88)",marginBottom:3}}>{lk.label}</div>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,
+                            color:"rgba(0,180,110,0.40)"}}>{lk.note}</div>
                         </a>
                       ))}
                     </div>
                   </div>
 
-                  {/* ── OSINT DORKS ── */}
-                  <div style={{marginBottom:18}}>
-                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
-                      color:"rgba(0,200,130,0.50)",letterSpacing:"0.16em",marginBottom:10}}>
-                      🧠 AI-GENERATED SEARCH QUERIES
+                  {/* ── SECTION 5: AI DORKS ── */}
+                  <div style={{marginBottom:20}}>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                      color:"rgba(0,200,130,0.45)",letterSpacing:"0.16em",marginBottom:10}}>
+                      🧠 AI OSINT QUERIES
                     </div>
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
+                    <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                       {(ghostResults.ai?.google_dorks||[
-                        `"${ghostResults.phone}" social media profile`,
+                        `"${ghostResults.phone}" social media`,
                         `"${ghostResults.phone}" site:facebook.com OR site:instagram.com`,
-                        `"${ghostResults.phone}" contact OR owner`,
+                        `"${ghostResults.phone}" contact owner profile`,
                       ]).slice(0,4).map((q:string,i:number)=>(
                         <a key={i} href={`https://www.google.com/search?q=${encodeURIComponent(q)}`}
                           target="_blank" rel="noopener noreferrer"
                           style={{padding:"9px 14px",borderRadius:10,textDecoration:"none",cursor:"pointer",
-                            background:"rgba(0,255,160,0.04)",border:"1px solid rgba(0,255,160,0.13)",
+                            background:"rgba(0,255,160,0.03)",border:"1px solid rgba(0,255,160,0.10)",
                             display:"flex",alignItems:"center",gap:10,transition:"all .18s"}}
-                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.10)";}}
-                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.04)";}}>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,
-                            color:"rgba(0,200,130,0.40)",flexShrink:0}}>0{i+1}</span>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,
-                            color:"rgba(0,220,150,0.80)",flex:1}}>{q.length>60?q.slice(0,57)+"...":q}</span>
-                          <span style={{fontSize:10,color:"rgba(0,180,110,0.40)"}}>↗</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── BREACH & DARK WEB ── */}
-                  <div style={{marginBottom:10}}>
-                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
-                      color:"rgba(0,200,130,0.50)",letterSpacing:"0.16em",marginBottom:10}}>
-                      🕵️ BREACH & DEEP WEB TRACE
-                    </div>
-                    <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                      {[
-                        {label:"IntelligenceX",url:`https://intelx.io/?s=${encodeURIComponent(ghostResults.phone)}`,note:"Dark web"},
-                        {label:"That'sThem",   url:`https://thatsthem.com/phone/${encodeURIComponent(ghostResults.phone)}`,note:"Public records"},
-                        {label:"Sync.me",      url:`https://sync.me/search/?q=${encodeURIComponent(ghostResults.phone)}`,note:"Global caller DB"},
-                        {label:"PhoneInfoga",  url:`https://github.com/sundowndev/phoneinfoga`,                          note:"Run locally"},
-                        {label:"Pipl",         url:"https://pipl.com/",                                                  note:"Deep identity"},
-                      ].map(lk=>(
-                        <a key={lk.label} href={lk.url} target="_blank" rel="noopener noreferrer"
-                          style={{padding:"7px 14px",borderRadius:9,textDecoration:"none",cursor:"pointer",
-                            background:"rgba(0,255,160,0.05)",border:"1px solid rgba(0,255,160,0.16)",
-                            fontFamily:"'Exo 2',sans-serif",fontSize:11,
-                            color:"rgba(0,220,150,0.80)",display:"flex",alignItems:"center",gap:6,
-                            transition:"all .18s"}}
-                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.12)";}}
-                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.05)";}}>
-                          {lk.label}
+                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.09)";}}
+                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.03)";}}>
                           <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
-                            color:"rgba(0,180,110,0.40)"}}>{lk.note}</span>
+                            color:"rgba(0,200,130,0.35)",flexShrink:0}}>0{i+1}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                            color:"rgba(0,220,150,0.75)",flex:1}}>
+                            {q.length>56?q.slice(0,53)+"…":q}
+                          </span>
+                          <span style={{color:"rgba(0,180,110,0.35)",fontSize:11}}>↗</span>
                         </a>
                       ))}
                     </div>
                   </div>
 
-                  {/* ── Disclaimer ── */}
+                  {/* ── DISCLAIMER ── */}
                   <div style={{padding:"10px 14px",borderRadius:10,
-                    background:"rgba(255,160,0,0.05)",border:"1px solid rgba(255,160,0,0.15)"}}>
-                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
-                      color:"rgba(255,180,0,0.45)",lineHeight:1.7}}>
-                      ⚠ GPS tracking and real-time social account detection are not possible from a browser —
-                      no public API exists for this. Use Truecaller, HLR Lookup or PhoneInfoga for deeper carrier intelligence.
+                    background:"rgba(255,160,0,0.04)",border:"1px solid rgba(255,160,0,0.12)"}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,
+                      color:"rgba(255,180,0,0.38)",lineHeight:1.8}}>
+                      ⚠ WhatsApp & Telegram open directly — the platform confirms if the account exists.
+                      GPS tracking from browser is technically impossible (requires carrier court order).
+                      Use Truecaller for registered caller name — most accurate public tool available.
                     </div>
                   </div>
-
                 </motion.div>
               )}
 
-              {/* ── Empty state ── */}
-              {!ghostResults && !ghostLoading && (
-                <div style={{padding:"32px 26px",textAlign:"center" as const}}>
-                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,
-                    color:"rgba(0,180,110,0.35)",letterSpacing:"0.10em",lineHeight:1.8}}>
-                    Enter any phone number above to begin tracing<br/>
-                    <span style={{fontSize:8.5,color:"rgba(0,160,100,0.28)"}}>
-                      Carrier · Caller ID · Social Profiles · OSINT · Breach Data
-                    </span>
+              {/* ══ VIEW: RECORD ══ */}
+              {ghostView==="record" && ghostSelectedRecord && (
+                <motion.div initial={{opacity:0,x:20}} animate={{opacity:1,x:0}} transition={{duration:0.22}}
+                  style={{padding:"20px 24px 28px"}}>
+
+                  {/* Profile header */}
+                  <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20,
+                    padding:"16px",borderRadius:18,
+                    background:"linear-gradient(135deg,rgba(0,36,24,0.92),rgba(0,22,15,0.96))",
+                    border:"2px solid rgba(0,255,160,0.28)"}}>
+                    {ghostSelectedRecord.photo
+                      ?<img src={ghostSelectedRecord.photo} alt="" style={{width:72,height:72,borderRadius:16,
+                          objectFit:"cover" as const,border:"2px solid rgba(0,255,160,0.50)",flexShrink:0}}/>
+                      :<div style={{width:72,height:72,borderRadius:16,flexShrink:0,
+                          background:"rgba(0,180,100,0.18)",border:"2px solid rgba(0,255,160,0.35)",
+                          display:"flex",alignItems:"center",justifyContent:"center",
+                          fontFamily:"'Orbitron',sans-serif",fontSize:26,fontWeight:900,
+                          color:"rgba(0,255,160,0.80)"}}>
+                        {ghostSelectedRecord.name?.charAt(0)||"?"}
+                      </div>}
+                    <div>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:20,fontWeight:900,
+                        color:"rgba(0,255,180,0.98)",marginBottom:4,letterSpacing:"0.02em"}}>
+                        {ghostSelectedRecord.surname}, {ghostSelectedRecord.name}
+                      </div>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,
+                        color:"rgba(0,200,140,0.60)"}}>
+                        {ghostSelectedRecord.id} · {ghostSelectedRecord.nationality||"—"}
+                      </div>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Record fields */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
+                    {[
+                      ["📞","Phone",ghostSelectedRecord.phoneNo],
+                      ["🌍","Nationality",ghostSelectedRecord.nationality],
+                      ["📅","Date of Birth",ghostSelectedRecord.dateOfBirth],
+                      ["⚧","Gender",ghostSelectedRecord.gender],
+                      ["🩸","Blood Type",ghostSelectedRecord.bloodType],
+                      ["🏙","City",ghostSelectedRecord.city],
+                      ["📧","Email",ghostSelectedRecord.email],
+                      ["💼","Occupation",ghostSelectedRecord.occupation],
+                    ].filter(([,,v])=>v).map(([icon,label,value])=>(
+                      <div key={label as string} style={{padding:"10px 12px",borderRadius:11,
+                        background:"rgba(0,255,160,0.04)",border:"1px solid rgba(0,255,160,0.10)"}}>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,
+                          color:"rgba(0,180,110,0.40)",letterSpacing:"0.10em",marginBottom:3}}>
+                          {icon as string} {label as string}
+                        </div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,
+                          color:"rgba(0,230,160,0.90)",fontWeight:600}}>{value as string}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Now search social for THIS identity */}
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:800,
+                      color:"rgba(0,200,130,0.45)",letterSpacing:"0.16em",marginBottom:10}}>
+                      🔎 SEARCH THIS IDENTITY ON PLATFORMS
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+                      {(()=>{
+                        const name=`${ghostSelectedRecord.name||""} ${ghostSelectedRecord.surname||""}`.trim();
+                        const phone=ghostSelectedRecord.phoneNo||"";
+                        const digits2=(phone||"").replace(/[^0-9]/g,"");
+                        const enc=encodeURIComponent;
+                        return [
+                          {label:"WhatsApp", icon:"💬",url:`https://wa.me/${digits2}`,col:"37,211,102"},
+                          {label:"Telegram", icon:"✈️",url:`https://t.me/+${digits2}`,col:"0,136,204"},
+                          {label:"Facebook", icon:"👥",url:`https://www.facebook.com/search/people/?q=${enc(name)}`,col:"24,119,242"},
+                          {label:"Instagram",icon:"📸",url:`https://www.google.com/search?q=site:instagram.com+"${enc(name)}"`,col:"200,60,150"},
+                          {label:"Twitter/X",icon:"🐦",url:`https://x.com/search?q="${enc(name)}"&f=user`,col:"150,150,150"},
+                          {label:"TikTok",   icon:"🎵",url:`https://www.google.com/search?q=site:tiktok.com+"${enc(name)}"`,col:"255,0,80"},
+                          {label:"LinkedIn", icon:"💼",url:`https://www.linkedin.com/search/results/people/?keywords=${enc(name)}`,col:"10,102,194"},
+                          {label:"Google",   icon:"🔍",url:`https://www.google.com/search?q="${enc(name)}"`,col:"80,180,255"},
+                        ].map(s=>(
+                          <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+                            style={{padding:"10px 5px",borderRadius:12,textDecoration:"none",cursor:"pointer",
+                              background:`rgba(${s.col},0.09)`,border:`1.5px solid rgba(${s.col},0.28)`,
+                              display:"flex",flexDirection:"column" as const,alignItems:"center",gap:5,
+                              transition:"all .18s"}}
+                            onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${s.col},0.20)`;(e.currentTarget as HTMLElement).style.transform="translateY(-2px)";}}
+                            onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${s.col},0.09)`;(e.currentTarget as HTMLElement).style.transform="translateY(0)";}}>
+                            <span style={{fontSize:20}}>{s.icon}</span>
+                            <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:7.5,fontWeight:800,
+                              color:`rgba(${s.col},0.88)`}}>{s.label}</span>
+                          </a>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Back to trace button */}
+                  <button
+                    onClick={()=>{setGhostView("results");setGhostSelectedRecord(null);}}
+                    style={{width:"100%",padding:"13px",borderRadius:13,cursor:"pointer",
+                      background:"rgba(0,255,160,0.07)",border:"1.5px solid rgba(0,255,160,0.25)",
+                      color:"rgba(0,255,160,0.80)",fontFamily:"'Orbitron',sans-serif",
+                      fontSize:11,fontWeight:700,letterSpacing:"0.10em",
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                      transition:"all .18s"}}
+                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.14)";}}
+                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,255,160,0.07)";}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M19 12H5M12 5l-7 7 7 7" stroke="rgba(0,255,160,0.80)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    BACK TO TRACE RESULTS
+                  </button>
+                </motion.div>
               )}
 
             </motion.div>
