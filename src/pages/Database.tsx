@@ -573,6 +573,56 @@ const DatabasePage = () => {
     const records = getRecords().filter(r => r.photo);
     if (records.length === 0) { setPhotoSearching(false); setPhotoMatch("none"); return; }
 
+    /* ── STEP 1: Exact data-URL match (same image uploaded) ── */
+    const exactMatch = records.find(r => r.photo === imgData);
+    if (exactMatch) {
+      setTimeout(() => {
+        setPhotoMatch(exactMatch);
+        setPhotoSearching(false);
+      }, 1800); // show scanning animation briefly
+      return;
+    }
+
+    /* ── STEP 2: Thumbnail pixel similarity (fast pre-filter) ── */
+    const thumbSimilarity = async (a: string, b: string): Promise<number> => {
+      try {
+        const toPixels = (src: string, size: number): Promise<Uint8ClampedArray> =>
+          new Promise(res => {
+            const img = new Image();
+            img.onload = () => {
+              const cv = document.createElement("canvas");
+              cv.width = cv.height = size;
+              cv.getContext("2d")!.drawImage(img, 0, 0, size, size);
+              res(cv.getContext("2d")!.getImageData(0, 0, size, size).data);
+            };
+            img.src = src;
+          });
+        const [pa, pb] = await Promise.all([toPixels(a, 16), toPixels(b, 16)]);
+        let diff = 0;
+        for (let i = 0; i < pa.length; i += 4) {
+          diff += Math.abs(pa[i] - pb[i]) + Math.abs(pa[i+1] - pb[i+1]) + Math.abs(pa[i+2] - pb[i+2]);
+        }
+        // Max possible diff per channel per pixel = 255, 3 channels, 16*16=256 pixels
+        return 1 - (diff / (255 * 3 * 256));
+      } catch { return 0; }
+    };
+
+    // Check pixel similarity against all records (16x16 thumbnail)
+    const similarities = await Promise.all(records.map(r => thumbSimilarity(imgData, r.photo as string)));
+    const bestPixelIdx = similarities.indexOf(Math.max(...similarities));
+    const bestPixelScore = similarities[bestPixelIdx];
+    console.log("[BIMS] Pixel similarities:", similarities.map(s => (s*100).toFixed(1)+"%"));
+
+    // Very high pixel similarity = same image or near-duplicate → match directly
+    if (bestPixelScore >= 0.88) {
+      console.log("[BIMS] Pixel match found:", records[bestPixelIdx].name, bestPixelScore);
+      setTimeout(() => {
+        setPhotoMatch(records[bestPixelIdx]);
+        setPhotoSearching(false);
+      }, 1800);
+      return;
+    }
+
     /* detect media type from data URI */
     const getMediaType = (dataUrl: string): "image/jpeg"|"image/png"|"image/gif"|"image/webp" => {
       if (dataUrl.startsWith("data:image/png"))  return "image/png";
@@ -589,15 +639,21 @@ const DatabasePage = () => {
       const content: any[] = [
         {
           type: "text",
-          text: `You are an expert biometric facial recognition system. Your task is to find which database record (if any) shows the SAME PERSON as the query photo.
+          text: `You are a biometric facial recognition system. Find which database record shows the SAME PERSON as the query photo.
 
-QUERY PHOTO: the first image below is the face to search for.
-DATABASE RECORDS: the subsequent images are labelled with their index (0-based).
+QUERY PHOTO: the FIRST image — this is the face to find.
+DATABASE RECORDS: all subsequent images, each labelled with their index number.
 
-Compare facial features carefully: face shape, eyes, eyebrows, nose, lips, chin, ears, skin tone, and overall structure. Ignore lighting, angle, and photo quality differences.
+RULES:
+- If the query photo IS the exact same image as a database record → confidence 99, match that index
+- If same person, different photo → confidence 70-95
+- If unsure but possible → confidence 40-69
+- If clearly different person → confidence 0-20
+- Compare: face shape, eyes, nose, lips, chin, skin tone, hair. Ignore lighting/angle/quality.
+- IMPORTANT: Even if the query photo is cropped, filtered, or at a different angle, still match if it's the same person.
 
-Respond ONLY with valid JSON — no markdown:
-{"match_index": <0-based index of best matching record, or -1 if no match>, "confidence": <0-100>, "reason": "<one sentence explanation>"}`
+Respond ONLY with JSON (no markdown, no explanation outside JSON):
+{"match_index": <0-based index or -1 if no match>, "confidence": <0-100>, "reason": "<brief reason>"}`
         },
         { type: "image", source: { type: "base64", media_type: queryMime, data: strip(imgData) } },
         ...records.flatMap((r, i) => [
@@ -608,7 +664,11 @@ Respond ONLY with valid JSON — no markdown:
 
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 300,
@@ -617,16 +677,25 @@ Respond ONLY with valid JSON — no markdown:
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        console.error("[BIMS] Face search API error:", response.status, data);
+        setPhotoMatch("none");
+        setPhotoSearching(false);
+        return;
+      }
       const text = data.content?.map((b: any) => b.text || "").join("") || "";
+      console.log("[BIMS] Face search AI response:", text);
       const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      console.log("[BIMS] Face match result:", parsed);
 
-      if (parsed.match_index >= 0 && parsed.confidence >= 40 && records[parsed.match_index]) {
+      if (parsed.match_index >= 0 && parsed.confidence >= 35 && records[parsed.match_index]) {
         setPhotoMatch(records[parsed.match_index]);
       } else {
         setPhotoMatch("none");
       }
     } catch (e) {
-      console.error("Face search error:", e);
+      console.error("[BIMS] Face search error:", e);
+      // Even on total failure, show "none" not a crash
       setPhotoMatch("none");
     }
     setPhotoSearching(false);
