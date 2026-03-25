@@ -209,95 +209,136 @@ const Index = () => {
   const [dsImageStage, setDsImageStage] = useState("");
   const dsImageRef = useRef<HTMLInputElement>(null);
 
-  const runGhostTrace = () => {
+  const runGhostTrace = async () => {
     if (!ghostPhone.trim() || ghostLoading) return;
     setGhostLoading(true);
     setGhostResults(null);
 
-    const raw = ghostPhone.trim();
-    const digits = raw.replace(/[^0-9]/g, "");
-    const enc = encodeURIComponent;
+    const raw  = ghostPhone.trim();
+    // Normalise: strip everything except digits and leading +
+    const digits = raw.replace(/[^0-9]/g,"");
+    // Build E.164-ish (keep leading + if present)
+    const e164  = raw.startsWith("+") ? "+"+digits : digits;
+    const enc   = encodeURIComponent;
 
-    // ── 1. Search local database immediately ──
+    // ── 1. Local DB match ──
     const allRecords = getRecords();
-    const dbMatch = allRecords.filter(r => {
-      if (!r.phoneNo) return false;
-      const stored = r.phoneNo.replace(/[^0-9]/g, "");
-      return stored === digits || stored.endsWith(digits) || digits.endsWith(stored);
+    const dbMatch = allRecords.filter(r=>{
+      if(!r.phoneNo) return false;
+      const s=r.phoneNo.replace(/[^0-9]/g,"");
+      return s===digits||s.endsWith(digits.slice(-9))||digits.endsWith(s.slice(-9));
     });
 
-    // Show DB result immediately while AI analyses in background
-    setTimeout(async () => {
+    // ── 2. AI intelligence (runs in background) ──
+    let aiInfo: any = null;
+    try {
+      const aiResp = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,
+          messages:[{role:"user",content:
+            `Analyse this phone number: ${raw}
 
-      // ── 2. Build OSINT internet trace links ──
-      const links: any[] = [];
+Respond ONLY with valid JSON (no markdown):
+{"country":"","country_code":"+XX","carrier":"likely carrier","type":"mobile|landline|voip","region":"city or region","format_valid":true,"risk":"low|medium|high","whatsapp_likely":true,"telegram_likely":true,"notes":"one sentence intel summary","google_dorks":["site:facebook.com ${raw}","site:linkedin.com ${raw}","site:instagram.com ${raw}"]}`
+          }]})
+      });
+      if(aiResp.ok){
+        const d=await aiResp.json();
+        const txt=(d.content||[]).map((b:any)=>b.text||"").join("").trim();
+        try{ aiInfo=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch{}
+      }
+    }catch{}
 
-      // Carrier & identity lookup
-      links.push({cat:"📡 Carrier & Number Lookup", sub:"Identify carrier, location and line type", items:[
-        {label:"NumLookup",    url:`https://www.numlookup.com/phone/${enc(raw)}`,          bold:true,  note:"Free carrier lookup"},
-        {label:"PhoneInfoga", url:`https://github.com/sundowndev/phoneinfoga`,             bold:true,  note:"Full OSINT framework"},
-        {label:"Truecaller",  url:`https://www.truecaller.com/search/so/${enc(raw)}`,      bold:false, note:"Caller ID + spam"},
-        {label:"WhitePages",  url:`https://www.whitepages.com/phone/${enc(raw)}`,          bold:false},
-        {label:"CallerID Test",url:`https://www.calleridtest.com/`,                         bold:false},
-        {label:"HLR Lookup",  url:`https://www.hlrlookup.com/`,                            bold:false, note:"Live SIM status"},
+    // ── 3. Build comprehensive OSINT links ──
+    const links: any[] = [];
+
+    // DIRECT social media — open platform URLs with the number
+    links.push({cat:"📱 Social Media Direct Links", sub:"Click to open — platform opens if account exists", items:[
+      {label:"WhatsApp",      url:`https://wa.me/${digits}`,                                bold:true,  note:"Opens chat if registered",   icon:"💬"},
+      {label:"Telegram",      url:`https://t.me/+${digits}`,                               bold:true,  note:"Opens if number exists",     icon:"✈️"},
+      {label:"Viber",         url:`viber://chat?number=%2B${digits}`,                       bold:true,  note:"Opens Viber if installed",   icon:"📲"},
+      {label:"Signal",        url:`https://signal.me/#p/+${digits}`,                       bold:false, note:"Signal profile link",        icon:"🔒"},
+      {label:"Instagram Search",url:`https://www.google.com/search?q=site:instagram.com+"${enc(raw)}"`, bold:false, icon:"📸"},
+      {label:"Facebook",      url:`https://www.facebook.com/search/people/?q=${enc(raw)}`, bold:false, icon:"👥"},
+      {label:"Twitter/X",     url:`https://x.com/search?q="${enc(raw)}"&f=user`,           bold:false, icon:"🐦"},
+      {label:"TikTok Search", url:`https://www.google.com/search?q=site:tiktok.com+"${enc(raw)}"`, bold:false, icon:"🎵"},
+      {label:"LinkedIn",      url:`https://www.google.com/search?q=site:linkedin.com+"${enc(raw)}"`, bold:false, icon:"💼"},
+      {label:"YouTube",       url:`https://www.google.com/search?q=site:youtube.com+"${enc(raw)}"`, bold:false, icon:"▶️"},
+      {label:"Snapchat",      url:`https://www.snapchat.com/`,                              bold:false, icon:"👻"},
+      {label:"Pinterest",     url:`https://www.google.com/search?q=site:pinterest.com+"${enc(raw)}"`, bold:false, icon:"📌"},
+    ]});
+
+    // Carrier & number intelligence
+    links.push({cat:"📡 Carrier & Number Intelligence", sub:"Identify carrier, SIM status and line type", items:[
+      {label:"NumVerify",    url:`https://numverify.com/phone-number-validation?number=${enc(e164)}`, bold:true,  note:"Free carrier lookup"},
+      {label:"Truecaller",   url:`https://www.truecaller.com/search/intl/${enc(raw)}`,     bold:true,  note:"Caller ID + spam rating"},
+      {label:"NumLookup",    url:`https://www.numlookup.com/phone/${enc(raw)}`,            bold:true,  note:"Line type + carrier"},
+      {label:"HLR Lookup",   url:`https://www.hlrlookup.com/`,                             bold:false, note:"Live SIM registration status"},
+      {label:"CNAM Lookup",  url:`https://opencnam.com/`,                                  bold:false, note:"Caller name database"},
+      {label:"MNP Check",    url:`https://www.numberingplans.com/?page=analysis&sub=phonen&input_number=${enc(raw)}`, bold:false, note:"Mobile number portability"},
+    ]});
+
+    // Google OSINT dorks
+    const dorks = aiInfo?.google_dorks || [
+      `"${raw}"`,
+      `"${raw}" site:facebook.com OR site:instagram.com OR site:twitter.com`,
+      `"${raw}" site:linkedin.com`,
+      `"${raw}" contact OR profile OR resume`,
+    ];
+    links.push({cat:"🔎 Google OSINT Dorks", sub:"Targeted Google searches to find public profiles", items:
+      dorks.map((q:string)=>({
+        label:q.length>50?q.slice(0,47)+"...":q,
+        url:`https://www.google.com/search?q=${enc(q)}`,
+        bold:false, icon:"🔍"
+      })).concat([
+        {label:`"${raw}" site:truecaller.com`,    url:`https://www.google.com/search?q=${enc('"'+raw+'" site:truecaller.com')}`, bold:false},
+        {label:`"${raw}" site:sync.me`,           url:`https://www.google.com/search?q=${enc('"'+raw+'" site:sync.me')}`,       bold:false},
+      ])
+    });
+
+    // People search engines
+    links.push({cat:"🗂️ People Search & Public Records", sub:"Reverse phone lookup — full identity data", items:[
+      {label:"Spokeo",          url:`https://www.spokeo.com/phone/${enc(raw)}`,             bold:true},
+      {label:"BeenVerified",    url:`https://www.beenverified.com/phone/${enc(raw)}`,       bold:true},
+      {label:"TruePeopleSearch",url:`https://www.truepeoplesearch.com/results?phoneno=${enc(raw)}`, bold:true, note:"Free people search"},
+      {label:"Intelius",        url:`https://www.intelius.com/phone-number/${enc(raw)}`,    bold:false},
+      {label:"That'sThem",      url:`https://thatsthem.com/phone/${enc(raw)}`,              bold:false},
+      {label:"ZabaSearch",      url:`https://www.zabasearch.com/phone/${enc(digits)}/`,     bold:false},
+      {label:"Sync.me",         url:`https://sync.me/search/?q=${enc(raw)}`,               bold:false, note:"Global caller database"},
+      {label:"Eyecon",          url:`https://eyecon.me/search?phone=${enc(raw)}`,           bold:false},
+      {label:"WhoCallsMe",      url:`https://www.whocalledme.com/PhoneNumber/${enc(digits)}`,bold:false},
+      {label:"CallerIDTest",    url:`https://www.calleridtest.com/`,                        bold:false},
+    ]});
+
+    // Breach & dark web checks
+    links.push({cat:"🕵️ OSINT & Breach Databases", sub:"Check if number appears in data breaches or dark web", items:[
+      {label:"PhoneInfoga",     url:`https://github.com/sundowndev/phoneinfoga`,            bold:true,  note:"Run locally — full OSINT scan"},
+      {label:"HaveIBeenPwned",  url:`https://haveibeenpwned.com/`,                          bold:true,  note:"Check email/number breach"},
+      {label:"IntelligenceX",   url:`https://intelx.io/?s=${enc(raw)}`,                    bold:false, note:"Dark web search"},
+      {label:"Pipl",            url:`https://pipl.com/`,                                   bold:false, note:"Deep web identity"},
+      {label:"LeakCheck",       url:`https://leakcheck.io/`,                               bold:false, note:"Breach data check"},
+      {label:"OSINT Framework", url:`https://osintframework.com/`,                         bold:false, note:"Full OSINT toolkit"},
+    ]});
+
+    // Regional East Africa
+    const cc = digits.slice(0,3);
+    const isEastAfrica = ["252","254","251","255","250","256","257","253"].includes(cc)||
+                         ["252","254","251","255"].includes(digits.slice(0,3));
+    if(isEastAfrica){
+      links.push({cat:"🌍 East Africa Carrier Lookup", sub:"Somalia · Kenya · Ethiopia · Tanzania · Uganda", items:[
+        {label:"Hormuud Telecom",  url:`https://www.hormuud.com`,                           bold:true,  note:"+252 — Somalia"},
+        {label:"Somtel",           url:`https://www.somtel.so`,                             bold:false, note:"+252 — Somalia"},
+        {label:"Golis Telecom",    url:`https://www.golis.net`,                             bold:false, note:"+252 — Somalia"},
+        {label:"Safaricom",        url:`https://www.safaricom.co.ke`,                       bold:true,  note:"+254 — Kenya"},
+        {label:"Ethio Telecom",    url:`https://www.ethiotelecom.et`,                       bold:false, note:"+251 — Ethiopia"},
+        {label:"Airtel Africa",    url:`https://airtel.africa`,                             bold:false, note:"Multi-country"},
+        {label:"Google Maps",      url:`https://www.google.com/maps/search/${enc(raw)}`,   bold:false, note:"Location traces"},
       ]});
+    }
 
-      // Social media search
-      links.push({cat:"📱 Social Media Scan", sub:"Find accounts registered with this number", items:[
-        {label:"WhatsApp",      url:`https://wa.me/${digits}`,                             bold:true,  note:"Check if registered"},
-        {label:"Telegram",      url:`https://t.me/+${digits}`,                            bold:true,  note:"Open chat if exists"},
-        {label:"TruePeopleSearch",url:`https://www.truepeoplesearch.com/results?phoneno=${enc(raw)}`, bold:true},
-        {label:"Facebook Search",url:`https://www.facebook.com/search/people/?q=${enc(raw)}`,       bold:false},
-        {label:"Google",        url:`https://www.google.com/search?q="${enc(raw)}"`,       bold:false},
-        {label:"Google (digits)",url:`https://www.google.com/search?q="${enc(digits)}"`,   bold:false},
-      ]});
-
-      // People search engines
-      links.push({cat:"🔍 People Search Engines", sub:"Public records and identity databases", items:[
-        {label:"Spokeo",     url:`https://www.spokeo.com/phone/${enc(raw)}`,               bold:true},
-        {label:"BeenVerified",url:`https://www.beenverified.com/phone/${enc(raw)}`,        bold:true},
-        {label:"Intelius",   url:`https://www.intelius.com/phone-number/${enc(raw)}`,      bold:false},
-        {label:"ZabaSearch", url:`https://www.zabasearch.com/phone/${enc(digits)}/`,       bold:false},
-        {label:"AnyWho",     url:`https://www.anywho.com/reverse-lookup/${enc(raw)}`,      bold:false},
-        {label:"Pipl",       url:`https://pipl.com/`,                                      bold:false, note:"Deep web identity"},
-      ]});
-
-      // Dark/OSINT databases
-      links.push({cat:"🕵️ OSINT Intelligence Databases", sub:"Advanced signal intelligence sources", items:[
-        {label:"PhoneInfoga (GitHub)",url:`https://github.com/sundowndev/phoneinfoga`,     bold:true,  note:"Run locally for full trace"},
-        {label:"That'sThem",  url:`https://thatsthem.com/phone/${enc(raw)}`,               bold:false},
-        {label:"Sync.me",     url:`https://sync.me/search/?q=${enc(raw)}`,                 bold:false, note:"Global caller DB"},
-        {label:"Eyecon",      url:`https://eyecon.me/search?phone=${enc(raw)}`,            bold:false},
-        {label:"OpenCNAM",    url:`https://opencnam.com/`,                                 bold:false, note:"CNAM lookup API"},
-        {label:"OSINT Framework",url:`https://osintframework.com/`,                        bold:false, note:"Full OSINT toolkit"},
-      ]});
-
-      // Regional (East Africa focus given BIMS is Kenya/Somalia based)
-      links.push({cat:"🌍 Regional Lookup — East Africa", sub:"Safaricom, Hormuud, Airtel, Telkom", items:[
-        {label:"Safaricom M-Pesa",  url:`https://www.safaricom.co.ke/personal/m-pesa`,    bold:false, note:"Kenya"},
-        {label:"Hormuud Telecom",   url:`https://www.hormuud.com`,                         bold:false, note:"Somalia"},
-        {label:"Airtel Africa",     url:`https://airtel.africa`,                           bold:false},
-        {label:"Google Maps Search",url:`https://www.google.com/maps/search/${enc(raw)}`, bold:false, note:"Location ping"},
-        {label:"Africa OSINT",      url:`https://www.google.com/search?q=OSINT+${enc(raw)}+africa+phone`, bold:false},
-      ]});
-
-      // ── AI phone intelligence ──
-      let aiInfo = "";
-      try {
-        const aiResp = await fetch("https://api.anthropic.com/v1/messages",{
-          method:"POST",
-          headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-          body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:250,messages:[{role:"user",content:`Analyse phone number: ${raw}\n\nRespond with ONLY JSON:\n{"country":"country name","carrier":"likely carrier/telecom","type":"mobile/landline/voip","region":"region or city if detectable","format_valid":true,"risk":"low/medium/high","notes":"one sentence OSINT note"}`}]})
-        });
-        if(aiResp.ok){
-          const aiData = await aiResp.json();
-          const txt=(aiData.content||[]).map((b:any)=>b.text||"").join("").trim();
-          try{ aiInfo = JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch{}
-        }
-      }catch{}
-      setGhostResults({ dbMatch, links, phone: raw, ai: aiInfo });
-      setGhostLoading(false);
-    }, 900);
+    setGhostResults({ dbMatch, links, phone:raw, e164, digits, ai:aiInfo });
+    setGhostLoading(false);
   };
 
   const handleDeepSearch = () => {
@@ -1119,7 +1160,7 @@ Respond ONLY with valid JSON (no markdown):
                     TRACING SIGNAL…
                   </div>
                   <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,color:"rgba(0,180,110,0.45)",marginTop:6,letterSpacing:"0.08em"}}>
-                    Scanning database · Building intelligence links
+                    Querying AI · Matching database · Building 40+ OSINT links
                   </div>
                 </div>
               )}
@@ -1137,8 +1178,8 @@ Respond ONLY with valid JSON (no markdown):
                         🧠 AI PHONE INTELLIGENCE — {ghostResults.phone}
                       </div>
                       <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
-                        {(["country","carrier","type","region","risk"] as const).map((k)=>
-                          ghostResults.ai[k] ? (
+                        {(["country","carrier","type","region","risk","whatsapp_likely","telegram_likely"] as const).map((k)=>
+                          ghostResults.ai[k] !== undefined && ghostResults.ai[k] !== "" && ghostResults.ai[k] !== null ? (
                             <div key={k} style={{background:"rgba(0,180,100,0.12)",
                               border:"1px solid rgba(0,200,120,0.25)",borderRadius:6,padding:"4px 10px"}}>
                               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
@@ -1146,6 +1187,8 @@ Respond ONLY with valid JSON (no markdown):
                               <span style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,
                                 color:k==="risk"&&ghostResults.ai.risk==="high"?"rgba(255,100,80,0.90)":
                                       k==="risk"&&ghostResults.ai.risk==="medium"?"rgba(255,180,30,0.90)":
+                                      (k==="whatsapp_likely"||k==="telegram_likely")?
+                                        (ghostResults.ai[k]?"rgba(0,220,140,0.90)":"rgba(255,100,80,0.70)"):
                                       "rgba(0,220,140,0.90)",fontWeight:600}}>
                                 {ghostResults.ai[k]}
                               </span>
@@ -1159,6 +1202,36 @@ Respond ONLY with valid JSON (no markdown):
                           {ghostResults.ai.notes}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* ── QUICK SOCIAL ACTIONS ── */}
+                  {ghostResults.digits && (
+                    <div style={{marginBottom:16,padding:"12px 14px",borderRadius:12,
+                      background:"rgba(0,160,90,0.06)",border:"1px solid rgba(0,200,120,0.22)"}}>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,color:"rgba(0,200,130,0.55)",
+                        letterSpacing:"0.12em",marginBottom:10}}>⚡ QUICK SOCIAL LAUNCH</div>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap" as const}}>
+                        {[
+                          {label:"💬 WhatsApp",   url:`https://wa.me/${ghostResults.digits}`,                                 col:"rgba(37,211,102,0.9)"},
+                          {label:"✈️ Telegram",   url:`https://t.me/+${ghostResults.digits}`,                                col:"rgba(0,136,204,0.9)"},
+                          {label:"📸 Instagram",  url:`https://www.google.com/search?q=site:instagram.com+"${ghostResults.phone}"`, col:"rgba(200,60,150,0.9)"},
+                          {label:"👥 Facebook",   url:`https://www.facebook.com/search/people/?q=${encodeURIComponent(ghostResults.phone)}`, col:"rgba(24,119,242,0.9)"},
+                          {label:"🐦 Twitter/X",  url:`https://x.com/search?q="${encodeURIComponent(ghostResults.phone)}"&f=user`, col:"rgba(180,180,180,0.9)"},
+                          {label:"🎵 TikTok",     url:`https://www.google.com/search?q=site:tiktok.com+"${ghostResults.phone}"`, col:"rgba(255,0,80,0.9)"},
+                          {label:"💼 LinkedIn",   url:`https://www.google.com/search?q=site:linkedin.com+"${ghostResults.phone}"`, col:"rgba(10,102,194,0.9)"},
+                          {label:"▶️ YouTube",    url:`https://www.google.com/search?q=site:youtube.com+"${ghostResults.phone}"`, col:"rgba(255,50,50,0.9)"},
+                        ].map(s=>(
+                          <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+                            style={{padding:"6px 12px",borderRadius:8,textDecoration:"none",cursor:"pointer",
+                              background:"rgba(0,0,0,0.3)",border:`1.5px solid ${s.col.replace("0.9","0.45")}`,
+                              color:s.col,fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:600,
+                              display:"inline-flex",alignItems:"center",
+                              boxShadow:`0 0 8px ${s.col.replace("0.9","0.15")}`}}>
+                            {s.label}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
 
