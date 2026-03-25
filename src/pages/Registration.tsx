@@ -252,10 +252,69 @@ const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
           const f=e.target.files?.[0]; if(!f) return;
           const r=new FileReader(); r.onloadend=()=>setPhotoPreview(r.result as string); r.readAsDataURL(f);
         }}/>
-        <div className="upload-zone h-36 flex-col gap-2 cursor-pointer" onClick={()=>photoRef.current?.click()}>
-          {photoPreview
-            ?<img src={photoPreview} alt="Subject" className="w-full h-full object-cover rounded"/>
-            :<><Camera className="w-7 h-7" style={{color:"hsla(192,100%,55%,0.3)"}}/><span className="font-mono text-[10px] tracking-widest" style={{color:"hsla(192,100%,58%,0.45)"}}>CLICK TO UPLOAD PHOTO</span></>}
+        {/* Selfie camera stream */}
+        {setForm._selfieActive && (
+          <div style={{position:"relative",marginBottom:8}}>
+            <video id="bims-selfie-video" autoPlay muted playsInline style={{width:"100%",height:144,objectFit:"cover",borderRadius:8,border:"1.5px solid hsla(192,100%,55%,0.45)",background:"#000"}}/>
+            <canvas id="bims-selfie-canvas" style={{display:"none"}}/>
+            <div style={{position:"absolute",bottom:8,left:0,right:0,display:"flex",justifyContent:"center",gap:8}}>
+              <button type="button" onClick={()=>{
+                const vid=document.getElementById("bims-selfie-video") as HTMLVideoElement;
+                const cv=document.getElementById("bims-selfie-canvas") as HTMLCanvasElement;
+                cv.width=vid.videoWidth; cv.height=vid.videoHeight;
+                cv.getContext("2d")!.drawImage(vid,0,0);
+                setPhotoPreview(cv.toDataURL("image/jpeg",0.9));
+                const stream=vid.srcObject as MediaStream;
+                stream?.getTracks().forEach(t=>t.stop());
+                setForm((p:any)=>({...p,_selfieActive:false}));
+              }} style={{padding:"5px 14px",borderRadius:6,background:"rgba(0,200,80,0.85)",border:"0",color:"#fff",fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,cursor:"pointer",letterSpacing:"0.06em"}}>
+                📸 CAPTURE
+              </button>
+              <button type="button" onClick={()=>{
+                const vid=document.getElementById("bims-selfie-video") as HTMLVideoElement;
+                const stream=vid.srcObject as MediaStream;
+                stream?.getTracks().forEach(t=>t.stop());
+                setForm((p:any)=>({...p,_selfieActive:false}));
+              }} style={{padding:"5px 12px",borderRadius:6,background:"rgba(200,40,40,0.75)",border:"0",color:"#fff",fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,cursor:"pointer"}}>
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+        {!setForm._selfieActive && (
+          <div className="upload-zone h-36 flex-col gap-2 cursor-pointer" onClick={()=>photoRef.current?.click()}>
+            {photoPreview
+              ?<img src={photoPreview} alt="Subject" className="w-full h-full object-cover rounded"/>
+              :<><Camera className="w-7 h-7" style={{color:"hsla(192,100%,55%,0.3)"}}/><span className="font-mono text-[10px] tracking-widest" style={{color:"hsla(192,100%,58%,0.45)"}}>CLICK TO UPLOAD PHOTO</span></>}
+          </div>
+        )}
+        {/* Upload vs Selfie buttons */}
+        <div style={{display:"flex",gap:6,marginTop:6}}>
+          <button type="button" onClick={()=>photoRef.current?.click()}
+            style={{flex:1,padding:"7px 0",borderRadius:8,background:"rgba(0,180,220,0.10)",border:"1px solid rgba(0,190,230,0.35)",color:"rgba(0,210,255,0.85)",fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:700,letterSpacing:"0.08em",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+            📁 UPLOAD FILE
+          </button>
+          <button type="button" onClick={async()=>{
+            try {
+              const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});
+              setForm((p:any)=>({...p,_selfieActive:true}));
+              setTimeout(()=>{
+                const vid=document.getElementById("bims-selfie-video") as HTMLVideoElement;
+                if(vid){ vid.srcObject=stream; vid.play(); }
+              },100);
+            } catch(e) {
+              alert("Camera access denied. Please allow camera permission in your browser.");
+            }
+          }}
+            style={{flex:1,padding:"7px 0",borderRadius:8,background:"rgba(0,220,100,0.10)",border:"1px solid rgba(0,220,100,0.35)",color:"rgba(0,220,100,0.88)",fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:700,letterSpacing:"0.08em",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+            📷 TAKE SELFIE
+          </button>
+          {photoPreview && (
+            <button type="button" onClick={()=>setPhotoPreview(null)}
+              style={{padding:"7px 10px",borderRadius:8,background:"rgba(200,40,40,0.10)",border:"1px solid rgba(200,40,40,0.35)",color:"rgba(255,100,100,0.80)",fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:700,cursor:"pointer"}}>
+              ✕
+            </button>
+          )}
         </div>
       </div>
     </div>

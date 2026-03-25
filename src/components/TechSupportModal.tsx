@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Headphones, Send, CheckCircle, AlertTriangle, Loader2, ArrowLeft, ChevronDown, User } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
 export interface TechSupportModalProps {
   open: boolean;
@@ -42,9 +43,13 @@ export default function TechSupportModal({
   const [sent,           setSent]           = useState(false);
   const [error,          setError]          = useState("");
 
+  // Always read the live session — this overrides any stale prop
+  const liveUser = getCurrentUser();
+  const liveUsername = liveUser?.username || reporterUsername || "";
+
   const effectiveReporter = allowManualReporter
     ? manualReporter.trim()
-    : (reporterUsername || "");
+    : liveUsername;
   const selectedIssue    = ISSUES.find(i => i.value === issue);
   const selectedPriority = PRIORITY.find(p => p.value === priority)!;
   const ticketId = `TKT-${Date.now().toString(36).toUpperCase().slice(-6)}`;
@@ -253,7 +258,7 @@ export default function TechSupportModal({
                             boxShadow:"0 0 8px hsla(192,100%,55%,0.8)", flexShrink:0, display:"inline-block" }}/>
                           <span style={{ fontFamily:"'Orbitron',monospace", fontSize:11, fontWeight:700,
                             letterSpacing:"0.1em", color:"hsl(193,100%,72%)" }}>
-                            {reporterUsername ? `@${reporterUsername.toUpperCase()}` : "NOT LOGGED IN"}
+                            {liveUsername ? `@${liveUsername.toUpperCase()}` : "NOT LOGGED IN"}
                           </span>
                           <span style={{ marginLeft:"auto", fontFamily:"'Orbitron',monospace", fontSize:7,
                             letterSpacing:"0.18em", color:"hsla(192,80%,55%,0.38)" }}>AUTO-FILLED</span>

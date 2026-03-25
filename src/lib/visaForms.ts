@@ -974,6 +974,54 @@ function visaEthiopia(r:BiometricRecord):string {
 
 
 
+/* ═══════════════════════════════════════════════════
+   🇪🇬 EGYPT — Ministry of Interior e-Visa Application Form
+   Source: visa2egypt.gov.eg — Official numbered field structure
+═══════════════════════════════════════════════════ */
+function visaEgypt(r:BiometricRecord):string {
+  const fn=v(r.name)+" "+v(r.surname); const id=docId(r,"visa-egypt"); const tds=td2();
+  const A="#C8102E"; const GOLD="#C09300";
+  const H=(en:string,ar:string,w?:string,cs?:number)=>"<td style=\"border:1px solid #444;padding:3px 5px;background:#fef3f3;font-size:8px;font-weight:700;"+(w?"width:"+w+";":"")+"\""+(cs?" colspan=\""+cs+"\"":"")+"><div style='color:"+A+";font-size:8.5px;'>"+en+"</div><div style='color:#444;font-size:8px;direction:rtl;text-align:right;'>"+ar+"</div></td>";
+  const rows:string[]=[]; const p=(...s:string[])=>rows.push(...s);
+  p("<div style='"+PAGE+"border:2px solid "+A+";'>");
+  p("<div style='background:"+A+";color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px;'>");
+  p("<div style='font-size:28px;'>🇪🇬</div>");
+  p("<div><div style='font-size:13px;font-weight:800;letter-spacing:0.05em;'>ARAB REPUBLIC OF EGYPT</div>");
+  p("<div style='font-size:10px;opacity:0.85;'>جمهورية مصر العربية</div>");
+  p("<div style='font-size:9px;opacity:0.7;'>Ministry of Interior — e-Visa Application Form | وزارة الداخلية — طلب التأشيرة الإلكترونية</div></div></div>");
+  p("<div style='text-align:center;font-size:11px;font-weight:700;color:"+A+";letter-spacing:0.1em;margin-bottom:10px;border-bottom:1.5px solid "+A+";padding-bottom:6px;'>VISA APPLICATION FORM — نموذج طلب التأشيرة</div>");
+  p("<table style='width:100%;border-collapse:collapse;margin-bottom:8px;font-family:Arial,sans-serif;'>");
+  p("<tr>"+H("1. Family Name (as in passport)","اللقب (كما في جواز السفر)","40%")+H("2. First / Given Name","الاسم الأول","35%")+H("3. Application ID","رقم الطلب","25%")+"</tr>");
+  p("<tr>"+tds(v(r.surname).toUpperCase())+tds(v(r.name))+tds(id)+"</tr>");
+  p("<tr>"+H("4. Date of Birth","تاريخ الميلاد","25%")+H("5. Place of Birth","مكان الميلاد","35%")+H("6. Gender","الجنس","20%")+H("7. Marital Status","الحالة الاجتماعية","20%")+"</tr>");
+  p("<tr>"+tds(v(r.dateOfBirth))+tds(v(r.placeOfBirth)||v(r.city))+tds(v(r.gender))+tds(v(r.maritalStatus))+"</tr>");
+  p("<tr>"+H("8. Nationality","الجنسية","35%")+H("9. Country of Birth","بلد الميلاد","35%")+H("10. Religion","الديانة","30%")+"</tr>");
+  p("<tr>"+tds(v(r.nationality))+tds(v(r.nationality))+tds(v(r.religion))+"</tr>");
+  p("<tr>"+H("11. Passport Number","رقم جواز السفر","30%")+H("12. Passport Issue Date","تاريخ إصدار الجواز","25%")+H("13. Passport Expiry Date","تاريخ انتهاء الجواز","25%")+H("14. Issue Country","بلد الإصدار","20%")+"</tr>");
+  p("<tr>"+tds(v(r.passportNumber))+tds(v(r.passportIssue))+tds(v(r.passportExpiry))+tds(v(r.nationality))+"</tr>");
+  p("<tr>"+H("15. Occupation / Profession","المهنة","35%")+H("16. Employer / Company Name","اسم صاحب العمل","35%")+H("17. Phone Number","رقم الهاتف","30%")+"</tr>");
+  p("<tr>"+tds(v(r.occupation))+tds(v(r.employer))+tds(v(r.phoneNo))+"</tr>");
+  p("<tr>"+H("18. Email Address","البريد الإلكتروني","50%")+H("19. Address in Home Country","العنوان في البلد الأصلي","50%")+"</tr>");
+  p("<tr>"+tds(v(r.email))+tds([v(r.address),v(r.city),v(r.country)].filter(Boolean).join(", "))+"</tr>");
+  p("<tr>"+H("20. Purpose of Visit","الغرض من الزيارة","33%")+H("21. Intended Date of Arrival","تاريخ الوصول المقصود","33%")+H("22. Duration of Stay (days)","مدة الإقامة (أيام)","34%")+"</tr>");
+  p("<tr>"+tds("Tourism / سياحة")+tds("—")+tds("30")+"</tr>");
+  p("<tr>"+H("23. Intended Address in Egypt","العنوان المقصود في مصر","60%")+H("24. Have you visited Egypt before?","هل سبق لك زيارة مصر؟","40%")+"</tr>");
+  p("<tr>"+tds("—")+tds("No / لا")+"</tr>");
+  p("<tr>"+H("25. Emergency Contact Name","اسم جهة الاتصال في حالات الطوارئ","50%")+H("26. Emergency Contact Phone","هاتف جهة الاتصال الطارئ","50%")+"</tr>");
+  p("<tr>"+tds(v(r.emergencyContact))+tds(v(r.emergencyPhone))+"</tr>");
+  p("</table>");
+  p("<table style='width:100%;border-collapse:collapse;margin-bottom:10px;'>");
+  p("<tr><td colspan='2' style='border:1px solid #444;padding:6px 8px;background:#fef3f3;font-size:8.5px;font-weight:700;color:"+A+";'>27. DECLARATION — إقرار</td></tr>");
+  p("<tr><td style='border:1px solid #444;padding:8px;font-size:8px;color:#333;width:65%;'>I declare that the information given in this application is true and correct to the best of my knowledge. I understand that providing false information may result in visa refusal or cancellation.<br/><br/><span style='direction:rtl;display:block;'>أقر بأن المعلومات الواردة في هذا الطلب صحيحة وسليمة على حد علمي. أفهم أن تقديم معلومات مزيفة قد يؤدي إلى رفض التأشيرة أو إلغائها.</span></td>");
+  p("<td style='border:1px solid #444;padding:8px;font-size:8px;vertical-align:top;'>");
+  if(r.photo) p("<img src='"+r.photo+"' style='width:80px;height:100px;object-fit:cover;border:1px solid #ccc;display:block;margin:0 auto 6px;'/>");
+  p("<div style='font-size:7.5px;color:#888;text-align:center;'>Applicant Photo<br/>صورة المتقدم</div>");
+  p("<div style='margin-top:12px;border-top:1px solid #ccc;padding-top:6px;font-size:7.5px;color:#666;'>Signature / التوقيع:<br/>Date / التاريخ: _____________</div></td></tr>");
+  p("</table>");
+  p("<div style='font-size:7.5px;color:#aaa;text-align:center;border-top:1px dashed #ddd;padding-top:6px;'>Ministry of Interior, Arab Republic of Egypt • visa2egypt.gov.eg • BIMS Ref: "+id+"</div>");
+  p("</div>"); return rows.join("");
+}
+
 function visaGenericFull(r:BiometricRecord, tplId:string, country:string, authority:string, flag:string, accent:string, website:string, formRef:string, langLabel:string):string {
   const fn=v(r.name)+" "+v(r.surname); const id=docId(r,tplId); const td=td2();
   const rows:string[]=[];
@@ -1117,6 +1165,7 @@ export function buildVisaDoc(tplId:string, r:BiometricRecord):string {
     case "visa-egypt":    return visaEgypt(r);
     case "visa-uae":      return visaUAE(r);
     case "visa-canada":   return visaCanada(r);
+    case "visa-somalia":  return visaSomalia(r);
     case "visa-turkey":   return visaGenericFull(r,"visa-turkey","Turkey","Republic of Turkey \u2014 Ministry of Foreign Affairs, Directorate General of Consular Affairs","\ud83c\uddf9\ud83c\uddf7","#c8102e","mfa.gov.tr/visa","Sticker Visa Application Form (e-Visa / Embassy)","T\u00fcrkiye Vize Ba\u015fvuru Formu");
     case "visa-saudi":    return visaGenericFull(r,"visa-saudi","Saudi Arabia","Kingdom of Saudi Arabia \u2014 Ministry of Foreign Affairs","\ud83c\uddf8\ud83c\udde6","#006233","mofa.gov.sa","Kingdom Visa Application Form","\u0646\u0645\u0648\u0630\u062c \u0637\u0644\u0628 \u062a\u0623\u0634\u064a\u0631\u0629");
     case "visa-india":    return visaGenericFull(r,"visa-india","India","Bureau of Immigration, Ministry of Home Affairs, Government of India","\ud83c\uddee\ud83c\uddf3","#ff671f","indianvisaonline.gov.in","e-Visa Application Form (eTA / e-Tourist Visa)","\u092d\u093e\u0930\u0924 \u0908-\u0935\u0940\u091c\u093c\u093e \u0906\u0935\u0947\u0926\u0928 \u092a\u0924\u094d\u0930");

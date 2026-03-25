@@ -490,12 +490,17 @@ const DatabasePage = () => {
   const [photoMatch, setPhotoMatch] = useState<BiometricRecord|null|"none">(null);
   const photoSearchRef = useRef<HTMLInputElement>(null);
 
-  /* PIN gate for edit / delete */
-  type PinGate = { mode:"edit"|"delete"; record:BiometricRecord; pin:string; error:string };
+  /* PIN gate — DELETE only */
+  type PinGate = { mode:"delete"; record:BiometricRecord; pin:string; error:string };
   const [pinGate, setPinGate] = useState<PinGate|null>(null);
 
-  const openPinGate = (mode:"edit"|"delete", record:BiometricRecord) =>
-    setPinGate({mode, record, pin:"", error:""});
+  const openPinGate = (_mode:"edit"|"delete", record:BiometricRecord) => {
+    if(_mode==="delete") {
+      setPinGate({mode:"delete", record, pin:"", error:""});
+    } else {
+      openEditGate(record);
+    }
+  };
 
   const confirmPinGate = () => {
     if(!pinGate) return;
@@ -503,14 +508,48 @@ const DatabasePage = () => {
       setPinGate(p=>p?{...p, pin:"", error:"INCORRECT PIN — ACCESS DENIED"}:null);
       return;
     }
-    if(pinGate.mode==="edit") {
-      setEditRecord(pinGate.record);
-    } else {
-      deleteRecord(pinGate.record.id);
-      if(preview?.id===pinGate.record.id) setPreview(null);
-      refreshAll();
-    }
+    deleteRecord(pinGate.record.id);
+    if(preview?.id===pinGate.record.id) setPreview(null);
+    refreshAll();
     setPinGate(null);
+  };
+
+  /* ── Edit gate: Fingerprint → OTP (admin/owner skip OTP) ── */
+  type EditGateStep = "fingerprint"|"scanning"|"otp";
+  type EditGate = { record:BiometricRecord; step:EditGateStep; otp:string; input:string; error:string };
+  const [editGate, setEditGate] = useState<EditGate|null>(null);
+
+  const openEditGate = (record:BiometricRecord) =>
+    setEditGate({ record, step:"fingerprint", otp:"", input:"", error:"" });
+
+  const startFingerprintScan = () => {
+    if(!editGate) return;
+    const capturedRecord = editGate.record;
+    setEditGate(p=>p?{...p, step:"scanning"}:null);
+    setTimeout(()=>{
+      const role = getCurrentUser()?.role;
+      if(role==="admin"||role==="owner") {
+        // Privileged — fingerprint only, no OTP
+        setEditGate(null);
+        setEditRecord(capturedRecord);
+      } else {
+        const otp = String(Math.floor(100000+Math.random()*900000));
+        // In real app this would email/SMS. Here we show it in console & simulate.
+        console.log("[BIMS] Edit OTP:", otp);
+        setEditGate(p=>p?{...p, step:"otp", otp}:null);
+      }
+    }, 2600);
+  };
+
+  const confirmEditOtp = () => {
+    if(!editGate) return;
+    if(editGate.input.trim()===editGate.otp) {
+      const capturedRecord = editGate.record;
+      setEditGate(null);
+      setEditRecord(capturedRecord);
+    } else {
+      setEditGate(p=>p?{...p, input:"", error:"INVALID OTP — TRY AGAIN"}:null);
+    }
   };
 
   const refreshAll = () => {
@@ -695,6 +734,153 @@ Respond ONLY with valid JSON — no markdown:
                   {pinGate.mode==="delete"?"DELETE":"EDIT"}
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Edit Gate Modal: Fingerprint → OTP ── */}
+      <AnimatePresence>
+        {editGate&&(
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{background:"hsla(210,80%,4%,0.90)",backdropFilter:"blur(18px)"}}>
+            <motion.div initial={{scale:0.92,y:20}} animate={{scale:1,y:0}} exit={{scale:0.92,y:20}}
+              className="card-surface rounded-2xl p-8 w-full max-w-sm text-center"
+              style={{border:"1.5px solid hsla(193,100%,52%,0.40)",boxShadow:"0 0 60px hsla(193,100%,52%,0.12)"}}>
+
+              {/* Fingerprint step */}
+              {(editGate.step==="fingerprint"||editGate.step==="scanning")&&(<>
+                <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{background:"hsla(193,100%,52%,0.12)",border:"2px solid hsla(193,100%,52%,0.40)"}}>
+                  <Fingerprint className="w-7 h-7" style={{
+                    color: editGate.step==="scanning"?"hsl(193,100%,65%)":"hsl(193,80%,50%)",
+                    filter: editGate.step==="scanning"?"drop-shadow(0 0 12px hsla(193,100%,60%,0.9))":"none",
+                    animation: editGate.step==="scanning"?"pulse 0.8s ease-in-out infinite":"none"
+                  }}/>
+                </div>
+                <h3 className="font-display text-lg font-bold mb-1" style={{color:"hsl(193,100%,72%)"}}>
+                  {editGate.step==="scanning"?"SCANNING…":"FINGERPRINT REQUIRED"}
+                </h3>
+                <p className="font-mono text-xs mb-1 tracking-wider" style={{color:"hsla(185,70%,65%,0.6)"}}>
+                  EDIT: {editGate.record.surname}, {editGate.record.name}
+                </p>
+                <p className="font-mono text-[10px] mb-6 tracking-widest" style={{color:"hsla(185,80%,65%,0.4)"}}>
+                  {editGate.step==="scanning"
+                    ?"VERIFYING BIOMETRIC…"
+                    :"PLACE FINGER ON SCANNER TO CONTINUE"}
+                </p>
+
+                {/* Fingerprint scan area */}
+                {editGate.step==="fingerprint"&&(
+                  <button onClick={startFingerprintScan}
+                    className="w-full mb-4 py-5 rounded-xl transition-all"
+                    style={{
+                      background:"hsla(193,100%,50%,0.07)",
+                      border:"2px dashed hsla(193,100%,50%,0.35)",
+                      cursor:"pointer"
+                    }}
+                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="hsla(193,100%,50%,0.14)";(e.currentTarget as HTMLElement).style.borderColor="hsla(193,100%,50%,0.60)";}}
+                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="hsla(193,100%,50%,0.07)";(e.currentTarget as HTMLElement).style.borderColor="hsla(193,100%,50%,0.35)";}}>
+                    <Fingerprint className="w-12 h-12 mx-auto mb-2" style={{color:"hsla(193,100%,55%,0.55)"}}/>
+                    <div className="font-mono text-[10px] tracking-widest" style={{color:"hsla(193,80%,60%,0.50)"}}>TAP TO SCAN</div>
+                  </button>
+                )}
+
+                {editGate.step==="scanning"&&(
+                  <div className="mb-4">
+                    {/* Animated scan bar */}
+                    <div className="relative w-full h-20 rounded-xl overflow-hidden mb-2"
+                      style={{background:"hsla(193,100%,50%,0.06)",border:"1.5px solid hsla(193,100%,50%,0.25)"}}>
+                      <Fingerprint className="w-12 h-12 absolute inset-0 m-auto" style={{color:"hsla(193,100%,55%,0.35)"}}/>
+                      {/* Sweeping scan line */}
+                      <motion.div
+                        animate={{y:[0,76,0]}}
+                        transition={{duration:1.6,repeat:Infinity,ease:"linear"}}
+                        style={{position:"absolute",left:0,right:0,height:3,background:"linear-gradient(90deg,transparent,hsla(193,100%,65%,0.90),transparent)",borderRadius:2}}
+                      />
+                    </div>
+                    <div className="flex gap-1 justify-center">
+                      {[0,1,2,3,4].map(i=>(
+                        <motion.div key={i}
+                          animate={{opacity:[0.2,1,0.2]}}
+                          transition={{duration:0.8,delay:i*0.16,repeat:Infinity}}
+                          style={{width:6,height:6,borderRadius:"50%",background:"hsl(193,100%,60%)"}}/>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {editGate.step==="fingerprint"&&(
+                  <button onClick={()=>setEditGate(null)}
+                    className="w-full h-10 rounded-lg font-mono font-bold tracking-widest text-xs"
+                    style={{border:"1.5px solid hsla(185,60%,35%,0.38)",color:"hsla(185,70%,65%,0.6)"}}>
+                    CANCEL
+                  </button>
+                )}
+              </>)}
+
+              {/* OTP step */}
+              {editGate.step==="otp"&&(<>
+                <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{background:"hsla(158,80%,45%,0.12)",border:"2px solid hsla(158,80%,45%,0.45)"}}>
+                  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="hsl(158,80%,62%)" strokeWidth="1.8">
+                    <path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+                  </svg>
+                </div>
+                <h3 className="font-display text-lg font-bold mb-1" style={{color:"hsl(158,80%,68%)"}}>
+                  OTP VERIFICATION
+                </h3>
+                <p className="font-mono text-xs mb-1 tracking-wider" style={{color:"hsla(185,70%,65%,0.6)"}}>
+                  EDIT: {editGate.record.surname}, {editGate.record.name}
+                </p>
+                <p className="font-mono text-[10px] mb-2 tracking-widest" style={{color:"hsla(185,80%,65%,0.4)"}}>
+                  ✓ FINGERPRINT VERIFIED
+                </p>
+                <div className="mb-3 p-2 rounded-lg" style={{background:"hsla(158,80%,45%,0.07)",border:"1px solid hsla(158,80%,45%,0.22)"}}>
+                  <p className="font-mono text-[10px] tracking-wider" style={{color:"hsla(158,80%,60%,0.70)"}}>
+                    OTP sent to registered contact
+                  </p>
+                  {/* In dev mode: show the OTP so you can test */}
+                  <p className="font-mono text-[10px] mt-1" style={{color:"hsla(158,80%,50%,0.40)"}}>
+                    [DEV] Code: <span style={{color:"hsl(158,80%,65%)",fontWeight:700,letterSpacing:"0.2em"}}>{editGate.otp}</span>
+                  </p>
+                </div>
+                <p className="font-mono text-xs mb-3 tracking-widest" style={{color:"hsla(185,80%,65%,0.5)"}}>
+                  ENTER OTP TO ACCESS EDIT
+                </p>
+                <div className="mb-2">
+                  <input
+                    type="text" value={editGate.input} autoFocus maxLength={6}
+                    inputMode="numeric" placeholder="● ● ● ● ● ●"
+                    onChange={e=>setEditGate(p=>p?{...p,input:e.target.value.replace(/\D/g,""),error:""}:null)}
+                    onKeyDown={e=>{if(e.key==="Enter")confirmEditOtp();if(e.key==="Escape")setEditGate(null);}}
+                    className="input-cyber text-center font-bold w-full"
+                    style={{fontSize:"1.4rem",letterSpacing:"0.55em",borderColor:editGate.error?"hsl(0,90%,58%)":"hsla(158,80%,50%,0.38)"}}/>
+                </div>
+                <div className="h-6 flex items-center justify-center mb-3">
+                  {editGate.error&&<p className="font-mono text-xs tracking-wider" style={{color:"hsl(0,90%,65%)"}}>{editGate.error}</p>}
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={()=>setEditGate(null)}
+                    className="flex-1 h-10 rounded-lg font-mono font-bold tracking-widest text-xs"
+                    style={{border:"1.5px solid hsla(185,60%,35%,0.38)",color:"hsla(185,70%,65%,0.6)"}}>
+                    CANCEL
+                  </button>
+                  <button onClick={confirmEditOtp}
+                    disabled={editGate.input.length!==6}
+                    className="flex-1 h-10 rounded-lg font-mono font-bold tracking-widest text-xs transition-all"
+                    style={{
+                      background:editGate.input.length===6?"hsla(158,80%,45%,0.22)":"hsla(185,60%,30%,0.10)",
+                      border:`1.5px solid ${editGate.input.length===6?"hsla(158,80%,50%,0.55)":"hsla(185,60%,35%,0.22)"}`,
+                      color:editGate.input.length===6?"hsl(158,80%,68%)":"hsla(185,60%,55%,0.35)",
+                      cursor:editGate.input.length===6?"pointer":"not-allowed"
+                    }}>
+                    VERIFY
+                  </button>
+                </div>
+              </>)}
+
             </motion.div>
           </motion.div>
         )}
@@ -1050,13 +1236,11 @@ Respond ONLY with valid JSON — no markdown:
                   <button onClick={()=>{setPreview(null);setShowAllAttach(false);}} className="w-8 h-8 flex items-center justify-center rounded transition-colors" style={{color:"hsla(185,80%,60%,0.5)"}}>
                     <X className="w-4 h-4"/>
                   </button>
-                  {getCurrentUser()?.role === "admin" && (
-                    <button onClick={()=>openPinGate("edit", preview)}
-                      className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-all"
-                      style={{border:"1.5px solid hsla(33,100%,52%,0.55)",background:"hsla(33,100%,52%,0.14)",color:"hsl(33,100%,70%)"}}>
-                      <Pencil className="w-3.5 h-3.5"/> EDIT
-                    </button>
-                  )}
+                  <button onClick={()=>openPinGate("edit", preview)}
+                    className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-all"
+                    style={{border:"1.5px solid hsla(33,100%,52%,0.55)",background:"hsla(33,100%,52%,0.14)",color:"hsl(33,100%,70%)"}}>
+                    <Pencil className="w-3.5 h-3.5"/> EDIT
+                  </button>
                 </div>
               </div>
 
