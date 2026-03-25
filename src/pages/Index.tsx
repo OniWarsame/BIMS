@@ -158,6 +158,12 @@ const Index = () => {
   const navigate = useNavigate();
   const [scanState, setScanState] = useState<"idle"|"scanning"|"match"|"no-match">("idle");
   const [showDeepSearch, setShowDeepSearch] = useState(false);
+  const [showFaceSearch, setShowFaceSearch] = useState(false);
+  const [faceFile, setFaceFile] = useState<string|null>(null);
+  const [faceLoading, setFaceLoading] = useState(false);
+  const [faceStage, setFaceStage] = useState("");
+  const [faceResults, setFaceResults] = useState<any>(null);
+  const faceInputRef = useRef<HTMLInputElement>(null);
   const lang = useLang();
   const [showSupport, setShowSupport] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
@@ -840,6 +846,29 @@ Respond ONLY with valid JSON (no markdown):
                   )}
                 </div>
                 <span style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,210,240,0.62)",lineHeight:1.35,position:"relative" as const}}>{sub}</span>
+                {osint && (
+                  <button
+                    onClick={e=>{e.stopPropagation();setShowFaceSearch(true);}}
+                    style={{marginTop:10,width:"100%",padding:"7px 0",borderRadius:9,
+                      background:"linear-gradient(135deg,rgba(0,180,255,0.16),rgba(0,120,220,0.22))",
+                      border:"1px solid rgba(0,200,255,0.40)",
+                      color:"rgba(0,230,255,0.95)",
+                      fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:700,
+                      letterSpacing:"0.10em",cursor:"pointer",
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:5,
+                      boxShadow:"0 0 14px rgba(0,180,255,0.18)"}}
+                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="linear-gradient(135deg,rgba(0,200,255,0.26),rgba(0,140,240,0.32))";}}
+                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="linear-gradient(135deg,rgba(0,180,255,0.16),rgba(0,120,220,0.22))";}}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke="rgba(0,230,255,0.95)" strokeWidth="1.8"/>
+                      <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="rgba(0,230,255,0.95)" strokeWidth="1.8" strokeLinecap="round"/>
+                      <circle cx="18" cy="6" r="3" stroke="rgba(0,230,255,0.6)" strokeWidth="1.4" strokeDasharray="2 1.5"/>
+                      <line x1="20" y1="4" x2="22" y2="2" stroke="rgba(0,230,255,0.6)" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    FACIAL RECOGNITION
+                  </button>
+                )}
               </motion.button>
             ))}
           </div>
@@ -914,6 +943,230 @@ Respond ONLY with valid JSON (no markdown):
 
       {/* ─── DEEP SEARCH MODAL ─── */}
       <AnimatePresence>
+        {showFaceSearch && (
+          <motion.div
+            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,4,20,0.82)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}
+            onClick={()=>{setShowFaceSearch(false);setFaceFile(null);setFaceResults(null);}}>
+            <motion.div
+              initial={{scale:0.92,y:20}} animate={{scale:1,y:0}} exit={{scale:0.92,y:20}}
+              transition={{type:"spring",stiffness:320,damping:28}}
+              onClick={e=>e.stopPropagation()}
+              style={{width:"100%",maxWidth:580,borderRadius:20,background:"linear-gradient(160deg,rgba(0,12,40,0.92),rgba(0,6,24,0.95))",border:"1px solid rgba(0,200,255,0.28)",borderTop:"2px solid rgba(0,220,255,0.55)",boxShadow:"0 32px 80px rgba(0,0,0,0.82),0 0 60px rgba(0,150,255,0.10)",padding:"24px 26px"}}>
+              {/* Header */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:38,height:38,borderRadius:10,background:"rgba(0,180,255,0.14)",border:"1px solid rgba(0,200,255,0.36)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 18px rgba(0,180,255,0.22)"}}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke="rgba(0,220,255,0.95)" strokeWidth="1.8"/>
+                      <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="rgba(0,220,255,0.95)" strokeWidth="1.8" strokeLinecap="round"/>
+                      <circle cx="18" cy="6" r="3" stroke="rgba(0,180,255,0.6)" strokeWidth="1.4" strokeDasharray="2 1.5"/>
+                      <line x1="20" y1="4" x2="22" y2="2" stroke="rgba(0,180,255,0.6)" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:800,color:"rgba(0,230,255,0.96)"}}>FACIAL RECOGNITION</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,color:"rgba(0,180,255,0.55)",marginTop:2,letterSpacing:"0.10em"}}>REVERSE IMAGE · OSINT NETWORK SCAN</div>
+                  </div>
+                </div>
+                <button onClick={()=>{setShowFaceSearch(false);setFaceFile(null);setFaceResults(null);}}
+                  style={{width:30,height:30,borderRadius:"50%",border:"1px solid rgba(0,180,255,0.2)",background:"rgba(0,180,255,0.06)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(0,200,255,0.6)"}}>
+                  <X style={{width:14,height:14}}/>
+                </button>
+              </div>
+
+              {/* Upload zone */}
+              {!faceFile && (
+                <div>
+                  <input ref={faceInputRef} type="file" accept="image/*" style={{display:"none"}}
+                    onChange={e=>{
+                      const file=e.target.files?.[0]; if(!file) return;
+                      const reader=new FileReader();
+                      reader.onload=ev=>setFaceFile(ev.target?.result as string);
+                      reader.readAsDataURL(file);
+                    }}/>
+                  <div
+                    onClick={()=>faceInputRef.current?.click()}
+                    onDragOver={e=>e.preventDefault()}
+                    onDrop={e=>{e.preventDefault();const file=e.dataTransfer.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>setFaceFile(ev.target?.result as string);reader.readAsDataURL(file);}}
+                    style={{border:"2px dashed rgba(0,200,255,0.30)",borderRadius:14,padding:"36px 20px",textAlign:"center" as const,cursor:"pointer",background:"rgba(0,120,200,0.05)",transition:"all .2s"}}
+                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.border="2px dashed rgba(0,220,255,0.55)";(e.currentTarget as HTMLElement).style.background="rgba(0,140,220,0.09)";}}
+                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.border="2px dashed rgba(0,200,255,0.30)";(e.currentTarget as HTMLElement).style.background="rgba(0,120,200,0.05)";}}>
+                    <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(0,180,255,0.12)",border:"2px solid rgba(0,200,255,0.30)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="9" r="5" stroke="rgba(0,220,255,0.80)" strokeWidth="1.8"/>
+                        <path d="M3 20c0-4.42 4.03-8 9-8s9 3.58 9 8" stroke="rgba(0,220,255,0.80)" strokeWidth="1.8" strokeLinecap="round"/>
+                        <rect x="7" y="4" width="10" height="10" rx="2" stroke="rgba(0,180,255,0.35)" strokeWidth="1" strokeDasharray="2 2"/>
+                      </svg>
+                    </div>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:700,color:"rgba(0,220,255,0.85)",marginBottom:6}}>DROP PHOTO HERE</div>
+                    <div style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,color:"rgba(0,180,255,0.52)"}}>or click to browse · JPG, PNG, WEBP</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,160,200,0.38)",marginTop:8}}>Upload any face photo to scan public networks</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Preview + Scan */}
+              {faceFile && !faceResults && !faceLoading && (
+                <div style={{textAlign:"center" as const}}>
+                  <div style={{position:"relative" as const,display:"inline-block",marginBottom:16}}>
+                    <img src={faceFile} alt="face" style={{width:160,height:160,objectFit:"cover" as const,borderRadius:"50%",border:"3px solid rgba(0,200,255,0.55)",boxShadow:"0 0 36px rgba(0,180,255,0.30)"}}/>
+                    <div style={{position:"absolute" as const,inset:0,borderRadius:"50%",border:"2px dashed rgba(0,220,255,0.40)",animation:"spin 8s linear infinite"}}/>
+                    <div style={{position:"absolute" as const,top:-8,right:-8,width:26,height:26,borderRadius:"50%",background:"rgba(0,200,80,0.22)",border:"1.5px solid rgba(0,220,100,0.60)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="rgba(0,220,120,0.95)" strokeWidth="1.8" strokeLinecap="round" fill="none"/></svg>
+                    </div>
+                  </div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,200,255,0.55)",marginBottom:14}}>IMAGE LOADED · FACE DETECTED</div>
+                  <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                    <button onClick={()=>{setFaceFile(null);setFaceResults(null);}}
+                      style={{padding:"9px 18px",borderRadius:10,background:"rgba(255,60,60,0.10)",border:"1px solid rgba(255,80,80,0.28)",color:"rgba(255,120,120,0.80)",fontFamily:"'Exo 2',sans-serif",fontSize:12,cursor:"pointer"}}>
+                      Clear
+                    </button>
+                    <button onClick={async()=>{
+                      if(!faceFile) return;
+                      setFaceLoading(true); setFaceStage("Analysing face with AI…");
+                      try {
+                        const img2=new Image(); img2.src=faceFile;
+                        await new Promise(r=>{img2.onload=r;});
+                        const scale=Math.min(1,800/img2.width);
+                        const cv2=document.createElement("canvas");
+                        cv2.width=Math.round(img2.width*scale);cv2.height=Math.round(img2.height*scale);
+                        cv2.getContext("2d")!.drawImage(img2,0,0,cv2.width,cv2.height);
+                        const b64=cv2.toDataURL("image/jpeg",.88).replace(/^data:image\/\w+;base64,/,"");
+                        setFaceStage("AI scanning facial features…");
+                        const resp=await fetch("https://api.anthropic.com/v1/messages",{
+                          method:"POST",headers:{"Content-Type":"application/json"},
+                          body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:[
+                            {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
+                            {type:"text",text:`Analyse this face image for OSINT search.
+Respond ONLY with valid JSON (no markdown):
+{
+  "face_visible": true/false,
+  "age": "e.g. 25-35",
+  "gender": "Male/Female",
+  "ethnicity": "e.g. East African",
+  "hair": "e.g. black short",
+  "features": ["prominent feature1","feature2"],
+  "visible_text": "any @handle or username visible in image or empty string",
+  "platform_hint": "instagram/tiktok/twitter/facebook or empty",
+  "background": "location clue or empty",
+  "queries": ["targeted google query 1","query 2 with name if visible","query 3 social media focused","query 4 image search","query 5"]
+}`}
+                          ]}]})
+                        });
+                        if(!resp.ok) throw new Error("API "+resp.status);
+                        const data=await resp.json();
+                        const txt=data.content?.map((b:any)=>b.text||"").join("")||"";
+                        const face=JSON.parse(txt.replace(/```json|```/g,"").trim());
+                        setFaceStage("Building search targets…");
+                        const enc=encodeURIComponent;
+                        const links:any[]=[];
+                        // Reverse image search engines
+                        links.push({cat:"🔍 Reverse Image Search",items:[
+                          {label:"Google Images",url:`https://images.google.com/searchbyimage?image_url=&sbisrc=4`,note:"Open → paste image",hue:"188,80%,62%",action:"upload"},
+                          {label:"TinEye",url:`https://tineye.com/`,note:"Exact image matches",hue:"188,80%,62%",action:"upload"},
+                          {label:"Yandex Images",url:`https://yandex.com/images/`,note:"Best for faces",hue:"188,80%,62%",action:"upload"},
+                          {label:"Bing Visual",url:`https://www.bing.com/visualsearch`,note:"Microsoft search",hue:"188,80%,62%",action:"upload"},
+                        ]});
+                        // If visible text (handle) found
+                        if(face.visible_text){
+                          const h=face.visible_text.replace(/[@\s]/g,"");
+                          links.push({cat:"📱 Detected Handle: @"+face.visible_text,items:[
+                            {label:"Instagram",url:`https://www.instagram.com/${h}/`,hue:"320,85%,62%"},
+                            {label:"TikTok",url:`https://www.tiktok.com/@${h}`,hue:"172,100%,50%"},
+                            {label:"X / Twitter",url:`https://x.com/${h}`,hue:"0,0%,88%"},
+                            {label:"Facebook",url:`https://www.facebook.com/search/people/?q=${enc(face.visible_text)}`,hue:"220,85%,62%"},
+                            {label:"YouTube",url:`https://www.youtube.com/@${h}`,hue:"0,90%,62%"},
+                            {label:"LinkedIn",url:`https://www.linkedin.com/search/results/people/?keywords=${enc(face.visible_text)}`,hue:"210,80%,60%"},
+                          ]});
+                        }
+                        // AI-generated queries
+                        const qs=face.queries||[];
+                        links.push({cat:"🧠 AI-Generated OSINT Queries",items:qs.map((q:string)=>({label:q.slice(0,55),url:`https://www.google.com/search?q=${enc(q)}`,hue:"270,80%,68%"}))});
+                        // Social profile search by description
+                        const desc=`${face.age||""} ${face.gender||""} ${face.ethnicity||""} ${face.hair||""}`.trim();
+                        links.push({cat:"👤 Profile Search by Description",items:[
+                          {label:"Instagram profiles",url:`https://www.google.com/search?q=${enc(desc+" site:instagram.com")}`,hue:"320,85%,62%"},
+                          {label:"Facebook profiles",url:`https://www.google.com/search?q=${enc(desc+" site:facebook.com")}`,hue:"220,85%,62%"},
+                          {label:"TikTok profiles",url:`https://www.google.com/search?q=${enc(desc+" site:tiktok.com")}`,hue:"172,100%,50%"},
+                          {label:"LinkedIn profiles",url:`https://www.google.com/search?q=${enc(desc+" site:linkedin.com")}`,hue:"210,80%,60%"},
+                          {label:"Twitter/X profiles",url:`https://www.google.com/search?q=${enc(desc+" site:x.com OR site:twitter.com")}`,hue:"0,0%,88%"},
+                        ]});
+                        setFaceResults({ok:true,face,links,desc});
+                      } catch(err) {
+                        setFaceResults({error:true});
+                      }
+                      setFaceLoading(false); setFaceStage("");
+                    }}
+                    style={{padding:"9px 22px",borderRadius:10,background:"linear-gradient(135deg,rgba(0,160,255,0.85),rgba(0,120,220,0.90))",border:"0",color:"white",fontFamily:"'Orbitron',sans-serif",fontSize:11,fontWeight:700,cursor:"pointer",letterSpacing:"0.06em",boxShadow:"0 4px 20px rgba(0,150,255,0.35)"}}>
+                      SCAN NETWORK
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Loading */}
+              {faceLoading && (
+                <div style={{textAlign:"center" as const,padding:"30px 0"}}>
+                  <div style={{width:56,height:56,borderRadius:"50%",border:"3px solid rgba(0,200,255,0.15)",borderTopColor:"rgba(0,200,255,0.85)",animation:"spin .8s linear infinite",margin:"0 auto 16px"}}/>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:12,color:"rgba(0,200,255,0.85)",marginBottom:6}}>SCANNING NETWORK</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"rgba(0,180,255,0.50)"}}>{faceStage}</div>
+                </div>
+              )}
+
+              {/* Results */}
+              {faceResults?.ok && (
+                <div style={{maxHeight:"52vh",overflowY:"auto" as const,paddingRight:4}}>
+                  {/* Face analysis */}
+                  <div style={{background:"rgba(0,100,200,0.10)",border:"1px solid rgba(0,180,255,0.20)",borderRadius:10,padding:"12px 14px",marginBottom:14}}>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,color:"rgba(0,200,255,0.60)",letterSpacing:"0.12em",marginBottom:8}}>FACIAL ANALYSIS</div>
+                    <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+                      {[["Age",faceResults.face.age],["Gender",faceResults.face.gender],["Origin",faceResults.face.ethnicity],["Hair",faceResults.face.hair]].filter(([,v])=>v).map(([k,v])=>(
+                        <div key={k as string} style={{background:"rgba(0,150,255,0.12)",border:"1px solid rgba(0,180,255,0.22)",borderRadius:6,padding:"4px 10px"}}>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(0,180,255,0.50)"}}>{k as string}: </span>
+                          <span style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,color:"rgba(0,220,255,0.88)",fontWeight:600}}>{v as string}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {faceResults.face.visible_text && (
+                      <div style={{marginTop:8,padding:"6px 10px",background:"rgba(0,220,100,0.10)",border:"1px solid rgba(0,220,100,0.30)",borderRadius:6}}>
+                        <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,color:"rgba(0,220,100,0.70)"}}>DETECTED HANDLE: </span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"rgba(0,250,140,0.90)",fontWeight:700}}>@{faceResults.face.visible_text}</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Search links by category */}
+                  {faceResults.links.map((cat:any)=>(
+                    <div key={cat.cat} style={{marginBottom:14}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,fontWeight:700,color:"rgba(0,200,255,0.65)",letterSpacing:"0.10em",marginBottom:7}}>{cat.cat}</div>
+                      <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
+                        {cat.items.map((lk:any)=>(
+                          <a key={lk.label} href={lk.url} target="_blank" rel="noopener noreferrer"
+                            style={{padding:"5px 11px",borderRadius:7,background:`hsla(${lk.hue},0.12)`,border:`1px solid hsla(${lk.hue},0.28)`,color:`hsla(${lk.hue},0.90)`,fontFamily:"'Exo 2',sans-serif",fontSize:10.5,textDecoration:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
+                            {lk.label}
+                            {lk.note && <span style={{fontSize:8.5,opacity:.55}}>({lk.note})</span>}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{marginTop:10,padding:"10px 14px",background:"rgba(255,180,20,0.07)",border:"1px solid rgba(255,180,20,0.20)",borderRadius:8}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(255,180,20,0.65)",lineHeight:1.55}}>
+                      ⚠ For reverse image search: click TinEye, Yandex Images or Google Images above, then upload your photo manually. AI has analysed facial features to generate targeted queries.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {faceResults?.error && (
+                <div style={{textAlign:"center" as const,padding:"20px",color:"rgba(255,100,100,0.7)",fontFamily:"'JetBrains Mono',monospace",fontSize:11}}>
+                  Scan failed. Check your connection and try again.
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+
         {showDeepSearch && (
           <motion.div
             initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
