@@ -159,6 +159,12 @@ const Index = () => {
   const [scanState, setScanState] = useState<"idle"|"scanning"|"match"|"no-match">("idle");
   const [showDeepSearch, setShowDeepSearch] = useState(false);
   const [showGhostTrace, setShowGhostTrace] = useState(false);
+  const [showFaceDetect, setShowFaceDetect] = useState(false);
+  const [fdImage, setFdImage]     = useState<string|null>(null);
+  const [fdLoading, setFdLoading] = useState(false);
+  const [fdStage, setFdStage]     = useState("");
+  const [fdResult, setFdResult]   = useState<any>(null);
+  const fdInputRef = useRef<HTMLInputElement>(null);
   const [ghostPhone, setGhostPhone] = useState("");
   const [ghostLoading, setGhostLoading] = useState(false);
   const [ghostResults, setGhostResults] = useState<any>(null);
@@ -660,8 +666,9 @@ Respond ONLY with valid JSON (no markdown):
     ] : [
       { label:"Create",  sub:"Generate Documents",      Icon:FileText, path:"/create",   hue:216, color:"hsl(216,100%,68%)", shape:"chip"    },
     ]),
+    { label:"Face Detection", sub:"Reverse Image · Face Search", Icon:Search, path:null, hue:315, color:"hsl(315,90%,65%)", shape:"eye", facedetect:true },
     { label:"Ghost Trace", sub:"Phone Signal Intelligence", Icon:Search, path:null, hue:165, color:"hsl(165,90%,55%)", shape:"ghost", ghost:true },
-  ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean; ghost?:boolean }[];
+  ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean; ghost?:boolean; facedetect?:boolean }[];
 
   const scanColor = isMatch?"hsl(158,80%,55%)":isNoMatch?"hsl(354,85%,62%)":isScanning?"hsl(36,100%,58%)":"hsl(200,100%,65%)";
   const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(44,178,212,0.6)";
@@ -686,6 +693,7 @@ Respond ONLY with valid JSON (no markdown):
         <line x1="12" y1="2" x2="12" y2="0" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
         <circle cx="12" cy="0.5" r="1" fill={c} opacity=".6"/>
       </svg>;
+      case "eye": return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="12" rx="9" ry="6" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".10"/><circle cx="12" cy="12" r="3.5" stroke={c} strokeWidth="1.4" fill={c} fillOpacity=".20"/><circle cx="12" cy="12" r="1.5" fill={c}/><path d="M3 12c0 0 3.5-7 9-7s9 7 9 7" stroke={c} strokeWidth=".8" strokeDasharray="2 2" opacity=".5"/></svg>;
       default: return null;
     }
   };
@@ -981,7 +989,7 @@ Respond ONLY with valid JSON (no markdown):
                 initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
                 transition={{delay:0.4+i*0.05}}
                 whileHover={{y:-4,scale:1.025}} whileTap={{scale:0.97}}
-                onClick={()=>osint?setShowDeepSearch(true):(cmd as any).ghost?setShowGhostTrace(true):path?navigate(path):null}
+                onClick={()=>osint?setShowDeepSearch(true):(cmd as any).ghost?setShowGhostTrace(true):(cmd as any).facedetect?setShowFaceDetect(true):path?navigate(path):null}
                 style={{display:"flex",flexDirection:"column" as const,alignItems:"flex-start",
                   padding:"14px 15px",
                   background:"linear-gradient(160deg,rgba(4,18,52,0.78),rgba(2,10,36,0.78))",
@@ -1653,6 +1661,544 @@ Respond ONLY with valid JSON (no markdown):
             </motion.div>
           </motion.div>
         )}
+
+        {showFaceDetect && (
+          <motion.div
+            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(2,0,14,0.97)",
+              backdropFilter:"blur(24px)",display:"flex",alignItems:"center",
+              justifyContent:"center",padding:"16px"}}
+            onClick={()=>{if(!fdLoading){setShowFaceDetect(false);setFdImage(null);setFdResult(null);setFdStage("");}}}>
+            <motion.div
+              initial={{scale:0.93,y:24,opacity:0}} animate={{scale:1,y:0,opacity:1}}
+              exit={{scale:0.93,y:24,opacity:0}}
+              transition={{type:"spring",stiffness:340,damping:30}}
+              onClick={e=>e.stopPropagation()}
+              style={{width:"100%",maxWidth:620,maxHeight:"93vh",overflowY:"auto",
+                borderRadius:24,
+                background:"linear-gradient(165deg,rgba(10,0,24,0.995),rgba(5,0,16,1))",
+                border:"1px solid rgba(255,80,200,0.16)",
+                borderTop:"2.5px solid rgba(255,90,210,0.70)",
+                boxShadow:"0 48px 120px rgba(0,0,0,0.94),0 0 90px rgba(200,40,180,0.07)",
+                overflow:"hidden"}}>
+
+              {/* hidden file input */}
+              <input ref={fdInputRef} type="file" accept="image/*" style={{display:"none"}}
+                onChange={e=>{
+                  const f=e.target.files?.[0]; if(!f) return;
+                  const reader=new FileReader();
+                  reader.onload=ev=>{setFdImage(ev.target?.result as string);setFdResult(null);};
+                  reader.readAsDataURL(f);
+                  if(fdInputRef.current) fdInputRef.current.value="";
+                }}/>
+
+              {/* ── HEADER ── */}
+              <div style={{padding:"20px 24px 14px",
+                background:"linear-gradient(180deg,rgba(28,0,40,0.60),transparent)",
+                borderBottom:"1px solid rgba(255,80,200,0.07)",
+                display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{display:"flex",alignItems:"center",gap:13}}>
+                  <motion.div
+                    animate={{boxShadow:["0 0 18px rgba(255,80,200,0.28)","0 0 40px rgba(255,80,200,0.58)","0 0 18px rgba(255,80,200,0.28)"]}}
+                    transition={{duration:2.8,repeat:Infinity,ease:"easeInOut"}}
+                    style={{width:44,height:44,borderRadius:13,flexShrink:0,
+                      background:"linear-gradient(135deg,rgba(200,40,180,0.20),rgba(140,20,120,0.12))",
+                      border:"1.5px solid rgba(255,80,200,0.45)",
+                      display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <ellipse cx="12" cy="12" rx="9" ry="5.5" stroke="rgba(255,100,220,0.95)" strokeWidth="1.6" fill="rgba(255,80,200,0.10)"/>
+                      <circle cx="12" cy="12" r="3.6" stroke="rgba(255,100,220,0.88)" strokeWidth="1.4"/>
+                      <circle cx="12" cy="12" r="1.5" fill="rgba(255,120,230,0.95)"/>
+                      <path d="M3 12c3-5 6-7 9-7s6 2 9 7" stroke="rgba(255,80,200,0.30)" strokeWidth="1" strokeLinecap="round"/>
+                    </svg>
+                  </motion.div>
+                  <div>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:19,fontWeight:900,
+                      letterSpacing:"0.07em",
+                      background:"linear-gradient(90deg,rgba(255,110,225,1),rgba(195,45,175,0.65))",
+                      WebkitBackgroundClip:"text" as any,WebkitTextFillColor:"transparent" as any}}>
+                      FACE DETECTION
+                    </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
+                      color:"rgba(195,70,175,0.42)",marginTop:2,letterSpacing:"0.13em"}}>
+                      REVERSE IMAGE · AI VISION · OSINT SEARCH
+                    </div>
+                  </div>
+                </div>
+                <button onClick={()=>{setShowFaceDetect(false);setFdImage(null);setFdResult(null);setFdStage("");}}
+                  style={{width:32,height:32,borderRadius:"50%",border:"1px solid rgba(255,80,200,0.16)",
+                    background:"rgba(255,80,200,0.05)",cursor:"pointer",display:"flex",
+                    alignItems:"center",justifyContent:"center",color:"rgba(195,75,175,0.52)",
+                    transition:"all .18s",flexShrink:0}}
+                  onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(255,80,200,0.16)";}}
+                  onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(255,80,200,0.05)";}}>
+                  <X style={{width:14,height:14}}/>
+                </button>
+              </div>
+
+              <div style={{padding:"20px 24px 26px"}}>
+
+                {/* ── UPLOAD ZONE ── */}
+                {!fdImage && !fdLoading && (
+                  <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}>
+                    <div
+                      onClick={()=>fdInputRef.current?.click()}
+                      onDragOver={e=>e.preventDefault()}
+                      onDrop={e=>{
+                        e.preventDefault();
+                        const f=e.dataTransfer.files[0]; if(!f||!f.type.startsWith("image/")) return;
+                        const reader=new FileReader();
+                        reader.onload=ev=>{setFdImage(ev.target?.result as string);setFdResult(null);};
+                        reader.readAsDataURL(f);
+                      }}
+                      style={{border:"2.5px dashed rgba(255,80,200,0.25)",borderRadius:20,
+                        padding:"48px 24px",textAlign:"center" as const,cursor:"pointer",
+                        background:"rgba(200,40,180,0.03)",transition:"all .22s"}}
+                      onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(255,80,200,0.52)";(e.currentTarget as HTMLElement).style.background="rgba(200,40,180,0.08)";}}
+                      onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="rgba(255,80,200,0.25)";(e.currentTarget as HTMLElement).style.background="rgba(200,40,180,0.03)";}}>
+                      <motion.div
+                        animate={{scale:[1,1.05,1]}} transition={{duration:3,repeat:Infinity,ease:"easeInOut"}}
+                        style={{width:64,height:64,borderRadius:"50%",margin:"0 auto 18px",
+                          background:"rgba(200,40,180,0.12)",border:"2px solid rgba(255,80,200,0.38)",
+                          display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>
+                        👁️
+                      </motion.div>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:15,fontWeight:800,
+                        color:"rgba(255,110,225,0.90)",marginBottom:10,letterSpacing:"0.05em"}}>
+                        DROP A FACE PHOTO HERE
+                      </div>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,
+                        color:"rgba(195,70,175,0.48)",marginBottom:10}}>
+                        or click to browse · JPG · PNG · WEBP
+                      </div>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
+                        color:"rgba(160,50,145,0.32)",lineHeight:1.8}}>
+                        AI scans face features · reads any visible text / username · finds matches online
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ── PREVIEW: ready to scan ── */}
+                {fdImage && !fdLoading && !fdResult && (
+                  <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
+                    style={{textAlign:"center" as const}}>
+                    <div style={{position:"relative" as const,display:"inline-block",marginBottom:22}}>
+                      <img src={fdImage} alt="face"
+                        style={{width:180,height:180,objectFit:"cover" as const,
+                          borderRadius:"50%",border:"3px solid rgba(255,80,200,0.55)",
+                          boxShadow:"0 0 52px rgba(200,40,180,0.35)"}}/>
+                      <motion.div animate={{rotate:360}} transition={{duration:5,repeat:Infinity,ease:"linear"}}
+                        style={{position:"absolute" as const,inset:-9,borderRadius:"50%",
+                          border:"2px dashed rgba(255,80,200,0.33)"}}/>
+                      <motion.div animate={{rotate:-360}} transition={{duration:8,repeat:Infinity,ease:"linear"}}
+                        style={{position:"absolute" as const,inset:-18,borderRadius:"50%",
+                          border:"1px dashed rgba(200,40,180,0.18)"}}/>
+                    </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                      color:"rgba(195,75,175,0.52)",marginBottom:20,letterSpacing:"0.09em"}}>
+                      PHOTO LOADED · READY TO SCAN
+                    </div>
+                    <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+                      <button onClick={()=>{setFdImage(null);setFdResult(null);}}
+                        style={{padding:"10px 20px",borderRadius:11,cursor:"pointer",
+                          background:"rgba(255,60,60,0.07)",border:"1px solid rgba(255,80,80,0.22)",
+                          color:"rgba(255,120,120,0.72)",fontFamily:"'Exo 2',sans-serif",
+                          fontSize:12,fontWeight:600,transition:"all .18s"}}
+                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(255,60,60,0.15)";}}
+                        onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(255,60,60,0.07)";}}>
+                        🗑 Clear
+                      </button>
+                      <button
+                        onClick={async()=>{
+                          if(!fdImage) return;
+                          setFdLoading(true);
+
+                          // ── Step 1: resize + extract base64 ──
+                          setFdStage("Preparing image…");
+                          const img2=new Image(); img2.src=fdImage;
+                          await new Promise<void>(res=>{img2.onload=()=>res();img2.onerror=()=>res();});
+                          const maxDim=900;
+                          const scale=Math.min(1,maxDim/Math.max(img2.naturalWidth||500,img2.naturalHeight||500));
+                          const cv2=document.createElement("canvas");
+                          cv2.width=Math.round((img2.naturalWidth||500)*scale);
+                          cv2.height=Math.round((img2.naturalHeight||500)*scale);
+                          const ctx2=cv2.getContext("2d")!;
+                          ctx2.drawImage(img2,0,0,cv2.width,cv2.height);
+                          const b64=cv2.toDataURL("image/jpeg",0.90).replace(/^data:image\/\w+;base64,/,"");
+                          const dataUrl=cv2.toDataURL("image/jpeg",0.90);
+                          const blob:Blob = await new Promise(res=>cv2.toBlob(b=>res(b!),"image/jpeg",0.90));
+
+                          // ── Step 2: AI face analysis ──
+                          setFdStage("AI analysing face — reading features and any text in image…");
+                          let face:any={face_detected:false,age:"",gender:"",ethnicity:"",hair:"",skin:"",
+                            features:[],handle:"",name:"",platform:"",background:"",description:""};
+                          let aiOk=false;
+                          try {
+                            const resp=await fetch("https://api.anthropic.com/v1/messages",{
+                              method:"POST",
+                              headers:{"Content-Type":"application/json",
+                                "anthropic-version":"2023-06-01",
+                                "anthropic-dangerous-direct-browser-access":"true"},
+                              body:JSON.stringify({
+                                model:"claude-sonnet-4-20250514",
+                                max_tokens:700,
+                                messages:[{role:"user",content:[
+                                  {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
+                                  {type:"text",text:`You are a forensic face analysis AI. Analyse this image VERY carefully.
+Look for:
+1. Any visible TEXT, USERNAMES, WATERMARKS, HANDLES (e.g. @username, TikTok/Instagram overlays, name tags)
+2. Any platform UI visible (TikTok frame, Instagram grid, Facebook header)
+3. Physical face features for search purposes
+4. Background clues (location, landmarks, flags, signage)
+
+Reply ONLY with this exact JSON (no markdown):
+{"face_detected":true,"age":"estimated age range","gender":"Male/Female","ethnicity":"specific ethnicity","hair":"hair description","skin":"skin tone","features":["feature1","feature2"],"handle":"@username_EXACTLY_as_visible_or_empty","name":"full_name_if_visible_or_empty","platform":"instagram/tiktok/facebook/twitter/youtube/empty","background":"location_or_landmark_clue_or_empty","description":"Precise 1-sentence physical description useful for reverse image searching"}`}
+                                ]}]})
+                            });
+                            if(resp.ok){
+                              const d=await resp.json();
+                              const txt=(d.content||[]).map((b:any)=>b.text||"").join("").trim();
+                              try{
+                                const parsed=JSON.parse(txt.replace(/```json|```/g,"").trim());
+                                Object.assign(face,parsed); aiOk=true;
+                              }catch{}
+                            }
+                          }catch{}
+
+                          // ── Step 3: BIMS database face compare ──
+                          setFdStage("Scanning BIMS database for face matches…");
+                          const allRecs=getRecords().filter((r:any)=>r.photo);
+                          let dbFaceMatches:any[]=[];
+                          if(allRecs.length>0 && face.face_detected){
+                            // pixel-level similarity on downscaled thumbnails
+                            const getPixels=(src:string,size:number):Promise<Uint8ClampedArray>=>{
+                              return new Promise(res=>{
+                                const im=new Image(); im.src=src;
+                                im.onload=()=>{
+                                  const c3=document.createElement("canvas");
+                                  c3.width=c3.height=size;
+                                  c3.getContext("2d")!.drawImage(im,0,0,size,size);
+                                  res(c3.getContext("2d")!.getImageData(0,0,size,size).data);
+                                };
+                                im.onerror=()=>res(new Uint8ClampedArray(size*size*4));
+                              });
+                            };
+                            const queryPx=await getPixels(dataUrl,24);
+                            for(const rec of allRecs.slice(0,80)){
+                              try{
+                                const recPx=await getPixels(rec.photo,24);
+                                let diff=0;
+                                for(let i=0;i<queryPx.length;i+=4){
+                                  diff+=Math.abs(queryPx[i]-recPx[i])+Math.abs(queryPx[i+1]-recPx[i+1])+Math.abs(queryPx[i+2]-recPx[i+2]);
+                                }
+                                const sim=1-diff/(queryPx.length/4*3*255);
+                                if(sim>=0.74) dbFaceMatches.push({rec,sim:Math.round(sim*100)});
+                              }catch{}
+                            }
+                            dbFaceMatches.sort((a,b)=>b.sim-a.sim);
+                          }
+
+                          // ── Step 4: build search sections ──
+                          setFdStage("Building reverse image search links…");
+                          const enc=encodeURIComponent;
+                          const handle=(face.handle||"").replace(/[@\s]/g,"");
+                          const name=(face.name||"").trim();
+                          const desc=face.description||[face.age,face.gender,face.ethnicity].filter(Boolean).join(" ");
+                          const background=(face.background||"").trim();
+                          const sections:any[]=[];
+
+                          // Section A — Reverse image engines (with auto-upload note)
+                          sections.push({id:"reverse",
+                            title:"🔍 REVERSE IMAGE SEARCH ENGINES",
+                            note:"Best approach: copy your photo → open site → paste or upload there",
+                            autoUpload:true,
+                            items:[
+                              {label:"Yandex Images",  url:"https://yandex.com/images/",             note:"BEST for faces",    star:true,  col:"255,55,55"},
+                              {label:"Google Lens",    url:"https://lens.google.com/",               note:"Drag & drop photo", star:true,  col:"66,133,244"},
+                              {label:"TinEye",         url:"https://tineye.com/",                    note:"Exact copy finder", star:true,  col:"255,135,0"},
+                              {label:"FaceCheck.ID",   url:"https://facecheck.id/",                  note:"Face-only search",  star:true,  col:"200,40,180"},
+                              {label:"PimEyes",        url:"https://pimeyes.com/en",                 note:"Face database",     star:true,  col:"150,80,220"},
+                              {label:"Search4Faces",   url:"https://search4faces.com/",              note:"Social faces",      star:false, col:"255,80,200"},
+                              {label:"Bing Visual",    url:"https://www.bing.com/visualsearch",      note:"MS AI search",      star:false, col:"0,120,215"},
+                              {label:"Lenso.ai",       url:"https://lenso.ai/en",                    note:"AI face search",    star:false, col:"80,180,255"},
+                            ]
+                          });
+
+                          // Section B — handle detected
+                          if(handle){
+                            sections.push({id:"handle",
+                              title:`🎯 USERNAME DETECTED IN IMAGE: @${handle}`,
+                              note:`Found in the photo — direct account links`,
+                              highlight:true,
+                              items:[
+                                {label:"Instagram",  url:`https://instagram.com/${enc(handle)}/`,                              star:true,  col:"200,60,150"},
+                                {label:"TikTok",     url:`https://tiktok.com/@${enc(handle)}`,                                 star:true,  col:"255,0,80"},
+                                {label:"Twitter/X",  url:`https://x.com/${enc(handle)}`,                                       star:true,  col:"150,150,150"},
+                                {label:"YouTube",    url:`https://youtube.com/@${enc(handle)}`,                                 star:true,  col:"255,50,50"},
+                                {label:"Facebook",   url:`https://facebook.com/${enc(handle)}`,                                 star:false, col:"24,119,242"},
+                                {label:"Snapchat",   url:`https://snapchat.com/add/${enc(handle)}`,                            star:false, col:"255,220,0"},
+                                {label:"Pinterest",  url:`https://pinterest.com/${enc(handle)}/`,                              star:false, col:"230,0,35"},
+                                {label:"Twitch",     url:`https://twitch.tv/${enc(handle)}`,                                   star:false, col:"145,70,255"},
+                                {label:"Reddit",     url:`https://reddit.com/user/${enc(handle)}`,                             star:false, col:"255,80,0"},
+                                {label:"GitHub",     url:`https://github.com/${enc(handle)}`,                                  star:false, col:"130,130,130"},
+                              ]
+                            });
+                          }
+
+                          // Section C — name detected
+                          if(name){
+                            sections.push({id:"name",
+                              title:`🪪 NAME DETECTED: "${name}"`,
+                              note:"Visible name/text found in image — searching by identity",
+                              items:[
+                                {label:"Facebook People", url:`https://facebook.com/search/people/?q=${enc(name)}`,             star:true,  col:"24,119,242"},
+                                {label:"LinkedIn People", url:`https://linkedin.com/search/results/people/?keywords=${enc(name)}`,star:true, col:"10,102,194"},
+                                {label:"Twitter/X",       url:`https://x.com/search?q="${enc(name)}"&f=user`,                   star:true,  col:"150,150,150"},
+                                {label:"Google",          url:`https://google.com/search?q="${enc(name)}"`,                     star:true,  col:"80,180,255"},
+                                {label:"Pipl",            url:`https://pipl.com/`,                                              star:false, col:"150,80,220"},
+                                {label:"Spokeo",          url:`https://spokeo.com/search?q=${enc(name)}`,                       star:false, col:"200,80,180"},
+                                {label:"BeenVerified",    url:`https://beenverified.com/people/?q=${enc(name)}`,                star:false, col:"200,80,180"},
+                                {label:"Instagram",       url:`https://instagram.com/${enc(name.replace(/\s+/g,"").toLowerCase())}/`,star:false,col:"200,60,150"},
+                              ]
+                            });
+                          }
+
+                          // Section D — appearance search (always)
+                          if(desc){
+                            sections.push({id:"appearance",
+                              title:"👤 SEARCH BY APPEARANCE",
+                              note:`AI description: "${desc}"${background?" · Background: "+background:""}`,
+                              items:[
+                                {label:"Instagram",  url:`https://google.com/search?q=${enc('"'+desc+'" site:instagram.com')}`,  star:true,  col:"200,60,150"},
+                                {label:"TikTok",     url:`https://google.com/search?q=${enc('"'+desc+'" site:tiktok.com')}`,     star:true,  col:"255,0,80"},
+                                {label:"Facebook",   url:`https://google.com/search?q=${enc('"'+desc+'" site:facebook.com')}`,   star:false, col:"24,119,242"},
+                                {label:"Twitter/X",  url:`https://google.com/search?q=${enc('"'+desc+'" site:x.com')}`,         star:false, col:"150,150,150"},
+                                {label:"LinkedIn",   url:`https://google.com/search?q=${enc('"'+desc+'" site:linkedin.com')}`,  star:false, col:"10,102,194"},
+                                {label:"YouTube",    url:`https://google.com/search?q=${enc('"'+desc+'" site:youtube.com')}`,   star:false, col:"255,50,50"},
+                                ...(background?[
+                                  {label:`Location: ${background}`,url:`https://google.com/maps/search/${enc(background)}`,star:false,col:"80,200,120"},
+                                ]:[]),
+                              ]
+                            });
+                          }
+
+                          // Section E — OSINT tools
+                          sections.push({id:"osint",
+                            title:"🕵️ OSINT & IDENTITY TOOLS",
+                            note:"Paste name or details found above into these tools",
+                            items:[
+                              {label:"IntelligenceX", url:"https://intelx.io/",          note:"Dark web search",   star:true,  col:"150,80,220"},
+                              {label:"Pipl",          url:"https://pipl.com/",            note:"Deep identity",     star:true,  col:"150,80,220"},
+                              {label:"Webmii",        url:name?`https://webmii.com/people?n=${enc(name)}`:"https://webmii.com/",note:"Web presence",star:false,col:"200,80,180"},
+                              {label:"IDCrawl",       url:name?`https://idcrawl.com/${enc(name)}`:"https://idcrawl.com/",note:"Multi-platform",star:false,col:"200,80,180"},
+                              {label:"Social Searcher",url:`https://social-searcher.com/social-buzz/?q=${enc(name||desc)}`,note:"Social media",star:false,col:"200,80,180"},
+                            ]
+                          });
+
+                          setFdLoading(false); setFdStage("");
+                          setFdResult({ok:true,face,sections,desc,handle,name,aiOk,dataUrl,dbFaceMatches,blob,background});
+                        }}
+                        style={{padding:"13px 30px",borderRadius:13,cursor:"pointer",
+                          background:"linear-gradient(135deg,rgba(210,45,185,0.90),rgba(155,20,140,0.88))",
+                          border:"0",color:"rgba(255,220,255,0.97)",
+                          fontFamily:"'Orbitron',sans-serif",fontSize:12,fontWeight:900,
+                          letterSpacing:"0.10em",
+                          boxShadow:"0 4px 30px rgba(200,40,180,0.48)"}}>
+                        👁 SCAN &amp; SEARCH
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ── LOADING ── */}
+                {fdLoading && (
+                  <div style={{padding:"44px 0",textAlign:"center" as const}}>
+                    <div style={{position:"relative" as const,width:80,height:80,margin:"0 auto 22px"}}>
+                      <motion.div animate={{rotate:360}} transition={{duration:3,repeat:Infinity,ease:"linear"}}
+                        style={{position:"absolute" as const,inset:0,borderRadius:"50%",
+                          border:"2.5px solid transparent",
+                          borderTopColor:"rgba(255,80,200,0.90)",
+                          borderRightColor:"rgba(255,80,200,0.40)"}}/>
+                      <motion.div animate={{rotate:-360}} transition={{duration:5,repeat:Infinity,ease:"linear"}}
+                        style={{position:"absolute" as const,inset:8,borderRadius:"50%",
+                          border:"2px solid transparent",
+                          borderTopColor:"rgba(200,40,180,0.60)",
+                          borderLeftColor:"rgba(200,40,180,0.30)"}}/>
+                      <div style={{position:"absolute" as const,inset:0,display:"flex",
+                        alignItems:"center",justifyContent:"center",fontSize:22}}>👁️</div>
+                    </div>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,
+                      color:"rgba(255,100,220,0.88)",letterSpacing:"0.13em",marginBottom:10}}>
+                      SCANNING
+                    </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                      color:"rgba(195,70,175,0.50)",letterSpacing:"0.08em",lineHeight:1.6}}>
+                      {fdStage}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── RESULTS ── */}
+                {fdResult?.ok && !fdLoading && (
+                  <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.22}}>
+
+                    {/* ── COPY PHOTO HELPER ── */}
+                    <div style={{marginBottom:18,padding:"12px 16px",borderRadius:14,
+                      background:"rgba(255,80,200,0.07)",border:"1.5px solid rgba(255,80,200,0.24)",
+                      display:"flex",alignItems:"center",gap:14}}>
+                      <img src={fdResult.dataUrl} alt="" style={{width:48,height:48,borderRadius:10,
+                        objectFit:"cover" as const,border:"2px solid rgba(255,80,200,0.45)",flexShrink:0}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
+                          color:"rgba(255,100,220,0.70)",letterSpacing:"0.12em",marginBottom:5}}>
+                          {fdResult.aiOk
+                            ? fdResult.face.face_detected
+                              ? "✓ FACE ANALYSED BY AI"
+                              : "⚠ NO FACE DETECTED — RUNNING IMAGE SEARCH ANYWAY"
+                            : "IMAGE READY FOR SEARCH"}
+                        </div>
+                        {fdResult.aiOk && fdResult.desc && (
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                            color:"rgba(255,160,235,0.75)",lineHeight:1.5}}>
+                            {fdResult.desc}
+                          </div>
+                        )}
+                        {fdResult.background && (
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
+                            color:"rgba(80,200,120,0.65)",marginTop:3}}>
+                            📍 Background: {fdResult.background}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={async()=>{
+                          try{
+                            const item=new ClipboardItem({"image/png":fdResult.blob});
+                            await navigator.clipboard.write([item]);
+                            alert("✓ Photo copied to clipboard!\nNow open Yandex or Google Lens and paste (Ctrl+V).");
+                          }catch{
+                            alert("Right-click the photo and choose 'Copy Image', then paste in Yandex/Google Lens.");
+                          }
+                        }}
+                        style={{padding:"8px 14px",borderRadius:9,cursor:"pointer",
+                          background:"rgba(255,80,200,0.16)",border:"1.5px solid rgba(255,80,200,0.45)",
+                          color:"rgba(255,160,235,0.90)",fontFamily:"'Orbitron',sans-serif",
+                          fontSize:9,fontWeight:800,letterSpacing:"0.06em",flexShrink:0}}>
+                        📋 COPY PHOTO
+                      </button>
+                    </div>
+
+                    {/* ── BIMS DATABASE FACE MATCHES ── */}
+                    {fdResult.dbFaceMatches?.length>0 && (
+                      <div style={{marginBottom:18}}>
+                        <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
+                          color:"rgba(0,255,160,0.55)",letterSpacing:"0.14em",marginBottom:10,
+                          display:"flex",alignItems:"center",gap:8}}>
+                          <motion.div animate={{opacity:[0.4,1,0.4]}} transition={{duration:1.4,repeat:Infinity}}
+                            style={{width:7,height:7,borderRadius:"50%",background:"rgba(0,255,160,0.90)",
+                              boxShadow:"0 0 14px rgba(0,255,160,0.80)"}}/>
+                          FACE MATCH IN BIMS DATABASE ({fdResult.dbFaceMatches.length})
+                        </div>
+                        {fdResult.dbFaceMatches.map((m:any,i:number)=>(
+                          <motion.div key={i}
+                            initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} transition={{delay:i*0.06}}
+                            style={{marginBottom:8,padding:"12px 14px",borderRadius:14,
+                              background:"linear-gradient(135deg,rgba(0,36,24,0.90),rgba(0,22,15,0.95))",
+                              border:"2px solid rgba(0,255,160,0.30)"}}>
+                            <div style={{display:"flex",alignItems:"center",gap:12}}>
+                              {m.rec.photo
+                                ?<img src={m.rec.photo} alt="" style={{width:50,height:50,borderRadius:11,
+                                    objectFit:"cover" as const,border:"2px solid rgba(0,255,160,0.45)",flexShrink:0}}/>
+                                :<div style={{width:50,height:50,borderRadius:11,flexShrink:0,
+                                    background:"rgba(0,180,100,0.16)",border:"2px solid rgba(0,255,160,0.30)",
+                                    display:"flex",alignItems:"center",justifyContent:"center",
+                                    fontFamily:"'Orbitron',sans-serif",fontSize:18,color:"rgba(0,255,160,0.75)"}}>
+                                  {m.rec.name?.charAt(0)||"?"}
+                                </div>}
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:900,
+                                  color:"rgba(0,255,180,0.97)",marginBottom:3}}>
+                                  {m.rec.surname}, {m.rec.name}
+                                </div>
+                                <div style={{display:"flex",gap:10,flexWrap:"wrap" as const}}>
+                                  {[["🆔",m.rec.id],["📞",m.rec.phoneNo||"—"],["🌍",m.rec.nationality||"—"]].map(([ic,val])=>(
+                                    <span key={ic as string} style={{fontFamily:"'JetBrains Mono',monospace",
+                                      fontSize:9.5,color:"rgba(0,200,140,0.65)"}}>
+                                      {ic as string} <span style={{color:"rgba(0,230,160,0.88)"}}>{val as string}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div style={{padding:"4px 10px",borderRadius:8,flexShrink:0,
+                                background:m.sim>=88?"rgba(0,255,160,0.18)":"rgba(255,180,0,0.14)",
+                                border:`1px solid ${m.sim>=88?"rgba(0,255,160,0.40)":"rgba(255,180,0,0.35)"}`,
+                                fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:800,
+                                color:m.sim>=88?"rgba(0,255,160,0.95)":"rgba(255,190,30,0.90)"}}>
+                                {m.sim}%
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* ── SEARCH SECTIONS ── */}
+                    {fdResult.sections.map((sec:any)=>(
+                      <div key={sec.id} style={{marginBottom:18}}>
+                        <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,fontWeight:800,
+                          color:sec.highlight?"rgba(255,220,60,0.70)":"rgba(195,75,175,0.55)",
+                          letterSpacing:"0.14em",marginBottom:4}}>
+                          {sec.title}
+                        </div>
+                        {sec.note && (
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
+                            color:sec.highlight?"rgba(255,200,40,0.45)":"rgba(160,50,145,0.38)",
+                            marginBottom:9,lineHeight:1.55}}>
+                            {sec.note}
+                          </div>
+                        )}
+                        <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
+                          {sec.items.map((item:any)=>(
+                            <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                              style={{padding:item.star?"8px 14px":"6px 12px",borderRadius:9,
+                                textDecoration:"none",cursor:"pointer",
+                                background:`rgba(${item.col},${item.star?"0.15":"0.07"})`,
+                                border:`${item.star?"2":"1.5"}px solid rgba(${item.col},${item.star?"0.50":"0.24"})`,
+                                color:`rgba(${item.col},${item.star?"1.0":"0.82"})`,
+                                fontFamily:"'Exo 2',sans-serif",
+                                fontSize:item.star?11.5:10.5,
+                                fontWeight:item.star?700:500,
+                                display:"inline-flex",alignItems:"center",gap:5,
+                                boxShadow:item.star?`0 0 12px rgba(${item.col},0.18)`:"none",
+                                transition:"all .18s"}}
+                              onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${item.col},0.26)`;(e.currentTarget as HTMLElement).style.transform="translateY(-1px)";}}
+                              onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=`rgba(${item.col},${item.star?"0.15":"0.07"})`;(e.currentTarget as HTMLElement).style.transform="translateY(0)";}}>
+                              {item.label}
+                              {item.note&&<span style={{fontSize:8.5,opacity:0.48,fontWeight:400}}>{item.note}</span>}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* new search button */}
+                    <button onClick={()=>{setFdImage(null);setFdResult(null);}}
+                      style={{width:"100%",padding:"11px",borderRadius:12,cursor:"pointer",marginTop:4,
+                        background:"rgba(255,80,200,0.06)",border:"1.5px solid rgba(255,80,200,0.22)",
+                        color:"rgba(255,120,220,0.72)",fontFamily:"'Orbitron',sans-serif",
+                        fontSize:10,fontWeight:700,letterSpacing:"0.10em",transition:"all .18s"}}
+                      onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(255,80,200,0.14)";}}
+                      onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(255,80,200,0.06)";}}>
+                      + NEW SEARCH
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
 
         {showDeepSearch && (
           <motion.div
