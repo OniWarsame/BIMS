@@ -29,7 +29,7 @@ const PageShell = ({ children }: { children: React.ReactNode }) => {
   const [showSupport, setShowSupport] = React.useState(false);
   return (
     <div style={{minHeight:"100vh",position:"relative",display:"flex",flexDirection:"column" as const,
-      alignItems:"center",justifyContent:"center",padding:"20px 16px",
+      alignItems:"center",justifyContent:"center",padding:"20px 16px 56px",
       background:"transparent"}}>
       <CyberBackground/>
 
@@ -108,6 +108,7 @@ const LoginScreen = () => {
   const [matchUser,     setMatchUser]     = useState<BIMSUser | null>(null);
   const [matchRecord,   setMatchRecord]   = useState<any>(null);
   const [showManual,    setShowManual]    = useState(false);
+  const [loginTab,      setLoginTab]      = useState<"fingerprint"|"password">("fingerprint");
   const [manualUser,    setManualUser]    = useState("");
   const [manualPass,    setManualPass]    = useState("");
   const [manualErr,     setManualErr]     = useState("");
@@ -219,14 +220,30 @@ const LoginScreen = () => {
         </p>
       </div>
 
-      {/* ── SCANNER SECTION ── */}
-      <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"center",marginBottom:16}}>
-        <div style={{height:1,flex:1,background:"linear-gradient(90deg,transparent,rgba(55,155,255,0.25))"}}/>
-        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,letterSpacing:"0.14em",
-          color:"rgba(0,195,255,0.38)",textTransform:"uppercase" as const}}>Biometric Authentication</span>
-        <div style={{height:1,flex:1,background:"linear-gradient(90deg,rgba(55,155,255,0.25),transparent)"}}/>
+      {/* ── LOGIN METHOD TABS ── */}
+      <div style={{display:"flex",gap:0,marginBottom:20,borderRadius:12,overflow:"hidden",
+        border:"1px solid rgba(0,175,250,0.18)",background:"rgba(0,10,30,0.4)"}}>
+        {([
+          {id:"fingerprint", icon:"🖐", label:"FINGERPRINT"},
+          {id:"password",    icon:"🔑", label:"USERNAME / PASSWORD"},
+        ] as const).map(tab=>(
+          <button key={tab.id} onClick={()=>{setLoginTab(tab.id);setManualErr("");setManualUser("");setManualPass("");setManualPreview(null);resetScan();}}
+            style={{flex:1,padding:"11px 8px",border:"none",cursor:"pointer",transition:"all .18s",
+              fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:700,letterSpacing:"0.08em",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+              background:loginTab===tab.id
+                ?"linear-gradient(135deg,rgba(0,175,250,0.22),rgba(0,100,200,0.18))"
+                :"transparent",
+              color:loginTab===tab.id?"rgba(0,220,255,0.95)":"rgba(80,140,200,0.45)",
+              borderBottom:loginTab===tab.id?"2px solid rgba(0,200,255,0.65)":"2px solid transparent",
+            }}>
+            <span>{tab.icon}</span> {tab.label}
+          </button>
+        ))}
       </div>
 
+      {/* ── FINGERPRINT TAB ── */}
+      {loginTab==="fingerprint" && (
       <AnimatePresence mode="wait">
         {!isPreview && !isGrant && (
           <motion.div key="scanner" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
@@ -437,96 +454,121 @@ const LoginScreen = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      )} {/* end loginTab===fingerprint */}
 
-      {/* ── MANUAL LOGIN ── */}
-      <div style={{marginTop:14,borderTop:"1px solid rgba(0,175,250,0.14)",paddingTop:14}}>
-        <button onClick={()=>{setShowManual(v=>!v);setManualPreview(null);setManualErr("");}}
-          style={{display:"flex",alignItems:"center",gap:6,margin:"0 auto",cursor:"pointer",
-            background:"none",border:"none",padding:0,
-            fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:500,
-            letterSpacing:"0.04em",color:"rgba(50,140,255,0.38)",transition:"color .15s"}}
-          onMouseEnter={e=>(e.currentTarget.style.color="rgba(55,195,222,0.7)")}
-          onMouseLeave={e=>(e.currentTarget.style.color="rgba(50,140,255,0.38)")}>
-          {showManual?<ChevronUp style={{width:12,height:12}}/>:<ChevronDown style={{width:12,height:12}}/>}
-          Manual login (admin / owner)
-        </button>
+      {/* ── PASSWORD TAB ── */}
+      {loginTab==="password" && (
+        <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.2}}>
 
-        <AnimatePresence>
-          {showManual && (
-            <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}}
-              style={{overflow:"hidden",marginTop:14}}>
-
-              {/* Manual identity preview */}
-              <AnimatePresence>
-                {manualPreview && (
-                  <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0}}
-                    style={{marginBottom:14,padding:"12px 14px",borderRadius:12,
-                      background:"rgba(0,175,250,0.08)",border:"1px solid rgba(55,155,255,0.25)"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      {manualPreview.rec.photo
-                        ? <img src={manualPreview.rec.photo} alt="" style={{width:44,height:44,borderRadius:8,objectFit:"cover" as const,border:"1px solid rgba(0,195,255,0.3)",flexShrink:0}}/>
-                        : <div style={{width:44,height:44,borderRadius:8,
-                            background:"rgba(50,140,255,0.12)",border:"1px solid rgba(55,155,255,0.28)",
-                            display:"flex",alignItems:"center",justifyContent:"center",
-                            fontSize:18,fontWeight:800,color:"hsl(218,100%,66%)",flexShrink:0}}>
-                            {manualPreview.user.fullName.charAt(0).toUpperCase()}
-                          </div>}
-                      <div>
-                        <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:700,
-                          color:"rgba(200,235,255,0.95)"}}>{manualPreview.user.fullName}</div>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,
-                          color:"rgba(55,155,255,0.55)"}}>{ROLE_LABELS[manualPreview.user.role]} · @{manualPreview.user.username}</div>
-                      </div>
-                    </div>
-                    <div style={{marginTop:8,height:2,borderRadius:2,background:"rgba(50,140,255,0.12)",overflow:"hidden"}}>
-                      <motion.div style={{height:"100%",
-                        background:"linear-gradient(90deg,hsl(218,100%,55%),hsl(225,100%,65%))",originX:0}}
-                        animate={{width:"100%"}} transition={{duration:1.1,ease:"linear"}}/>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {!manualPreview && (
-                <div style={{display:"flex",flexDirection:"column" as const,gap:12,textAlign:"left" as const}}>
+          {/* Identity preview after match */}
+          <AnimatePresence>
+            {manualPreview && (
+              <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0}}
+                style={{marginBottom:14,padding:"12px 14px",borderRadius:12,
+                  background:"rgba(0,175,250,0.08)",border:"1px solid rgba(55,155,255,0.25)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  {manualPreview.rec.photo
+                    ? <img src={manualPreview.rec.photo} alt="" style={{width:44,height:44,borderRadius:8,objectFit:"cover" as const,border:"1px solid rgba(0,195,255,0.3)",flexShrink:0}}/>
+                    : <div style={{width:44,height:44,borderRadius:8,
+                        background:"rgba(50,140,255,0.12)",border:"1px solid rgba(55,155,255,0.28)",
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        fontSize:18,fontWeight:800,color:"hsl(218,100%,66%)",flexShrink:0}}>
+                        {manualPreview.user.fullName.charAt(0).toUpperCase()}
+                      </div>}
                   <div>
-                    <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,
-                      letterSpacing:"0.12em",textTransform:"uppercase" as const,
-                      color:"rgba(44,178,212,0.45)",display:"block",marginBottom:6}}>Username</label>
-                    <input value={manualUser} onChange={e=>{setManualUser(e.target.value);setManualErr("");}}
-                      onKeyDown={e=>e.key==="Enter"&&handleManual()}
-                      placeholder="Enter username" className="input-cyber" autoComplete="username"/>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:14,fontWeight:700,
+                      color:"rgba(200,235,255,0.95)"}}>{manualPreview.user.fullName}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,
+                      color:"rgba(55,155,255,0.55)"}}>{ROLE_LABELS[manualPreview.user.role]} · @{manualPreview.user.username}</div>
                   </div>
-                  <div>
-                    <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,
-                      letterSpacing:"0.12em",textTransform:"uppercase" as const,
-                      color:"rgba(44,178,212,0.45)",display:"block",marginBottom:6}}>Password</label>
-                    <input type="password" value={manualPass} onChange={e=>{setManualPass(e.target.value);setManualErr("");}}
-                      onKeyDown={e=>e.key==="Enter"&&handleManual()}
-                      placeholder="Enter password" className="input-cyber" autoComplete="current-password"/>
-                  </div>
-                  {manualErr && (
-                    <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,fontWeight:500,
-                      color:"hsl(0,85%,65%)",margin:0}}>{manualErr}</p>
-                  )}
-                  <motion.button onClick={handleManual}
-                    whileHover={{scale:1.015,y:-1}} whileTap={{scale:0.98}}
-                    style={{width:"100%",height:43,borderRadius:12,cursor:"pointer",
-                      display:"flex",alignItems:"center",justifyContent:"center",gap:8,
-                      fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,
-                      letterSpacing:"0.06em",
-                      background:"linear-gradient(135deg,rgba(0,175,250,0.18),rgba(0,120,115,0.12))",
-                      border:"1.5px solid rgba(50,145,255,0.4)",
-                      color:"hsl(218,100%,72%)",transition:"all .18s"}}>
-                    <Shield style={{width:14,height:14,flexShrink:0}}/>
-                    Verify Identity
-                  </motion.button>
+                </div>
+                <div style={{marginTop:8,height:2,borderRadius:2,background:"rgba(50,140,255,0.12)",overflow:"hidden"}}>
+                  <motion.div style={{height:"100%",
+                    background:"linear-gradient(90deg,hsl(218,100%,55%),hsl(225,100%,65%))",originX:0}}
+                    animate={{width:"100%"}} transition={{duration:1.1,ease:"linear"}}/>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!manualPreview && (
+            <div style={{display:"flex",flexDirection:"column" as const,gap:14}}>
+
+              {/* Username */}
+              <div>
+                <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,
+                  letterSpacing:"0.14em",textTransform:"uppercase" as const,
+                  color:"rgba(0,200,255,0.50)",display:"block",marginBottom:7}}>
+                  USERNAME
+                </label>
+                <input
+                  value={manualUser}
+                  onChange={e=>{setManualUser(e.target.value);setManualErr("");}}
+                  onKeyDown={e=>e.key==="Enter"&&handleManual()}
+                  placeholder="Enter your username"
+                  className="input-cyber"
+                  autoComplete="username"
+                  autoFocus
+                  style={{width:"100%"}}
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,
+                  letterSpacing:"0.14em",textTransform:"uppercase" as const,
+                  color:"rgba(0,200,255,0.50)",display:"block",marginBottom:7}}>
+                  PASSWORD
+                </label>
+                <input
+                  type="password"
+                  value={manualPass}
+                  onChange={e=>{setManualPass(e.target.value);setManualErr("");}}
+                  onKeyDown={e=>e.key==="Enter"&&handleManual()}
+                  placeholder="Enter your password"
+                  className="input-cyber"
+                  autoComplete="current-password"
+                  style={{width:"100%"}}
+                />
+              </div>
+
+              {/* Error */}
+              {manualErr && (
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:8,
+                  background:"rgba(220,50,50,0.08)",border:"1px solid rgba(220,50,50,0.25)"}}>
+                  <span style={{color:"hsl(0,85%,65%)",fontSize:13}}>⚠</span>
+                  <p style={{fontFamily:"'Exo 2',sans-serif",fontSize:12,fontWeight:500,
+                    color:"hsl(0,85%,65%)",margin:0}}>{manualErr}</p>
                 </div>
               )}
-            </motion.div>
+
+              {/* Login button */}
+              <motion.button
+                onClick={handleManual}
+                whileHover={{scale:1.015,y:-1}} whileTap={{scale:0.98}}
+                style={{width:"100%",height:46,borderRadius:12,cursor:"pointer",
+                  display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                  fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,
+                  letterSpacing:"0.08em",
+                  background:"linear-gradient(135deg,rgba(0,175,250,0.22),rgba(0,100,200,0.18))",
+                  border:"1.5px solid rgba(0,200,255,0.45)",
+                  color:"hsl(198,100%,70%)",
+                  boxShadow:"0 4px 24px rgba(0,170,255,0.15)",
+                  transition:"all .18s"}}>
+                <Shield style={{width:15,height:15,flexShrink:0}}/>
+                SIGN IN
+              </motion.button>
+
+              {/* Hint */}
+              <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
+                color:"rgba(0,180,255,0.28)",textAlign:"center" as const,margin:0,letterSpacing:"0.06em"}}>
+                All registered users can log in · Press Enter to confirm
+              </p>
+            </div>
           )}
-        </AnimatePresence>
-      </div>
+        </motion.div>
+      )} {/* end loginTab===password */}
+
     </PageShell>
   );
 };

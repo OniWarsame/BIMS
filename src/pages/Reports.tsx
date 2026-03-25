@@ -86,7 +86,7 @@ export default function Reports() {
   );
 
   return (
-    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",...mono}}>
+    <div style={{minHeight:"100vh",paddingBottom:56,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",...mono}}>
       <CyberBackground/>
 
       <PageHeader

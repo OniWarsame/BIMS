@@ -521,7 +521,7 @@ const ResultPage = () => {
       <AnimatePresence>
         {showEdit && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-14 overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-14 overflow-y-auto pb-14"
             style={{background:"rgba(0,5,14,0.78)",backdropFilter:"blur(18px)"}}>
             <motion.div initial={{scale:0.94,y:20}} animate={{scale:1,y:0}} exit={{scale:0.94,y:20}} transition={{duration:0.22}}
               className="card-surface rounded-2xl overflow-hidden w-full max-w-3xl mb-8"

@@ -45,7 +45,7 @@ export default function Profile() {
       <div style={{flex:1,padding:"28px",position:"relative",zIndex:1,maxWidth:860,width:"100%",margin:"0 auto"}}>
         {/* Account card */}
         <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}
-          style={{padding:"24px",borderRadius:16,border:`2px solid ${roleColor}55`,background:"rgba(12,22,45,0.78)",marginBottom:20,boxShadow:`0 0 40px ${roleColor}18`}}>
+          style={{padding:"24px 24px 72px",borderRadius:16,border:`2px solid ${roleColor}55`,background:"rgba(12,22,45,0.78)",marginBottom:20,boxShadow:`0 0 40px ${roleColor}18`}}>
           <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap" as const}}>
             {rec?.photo
               ? <img src={rec.photo} style={{width:88,height:88,borderRadius:14,objectFit:"cover",border:`3px solid ${roleColor}66`,flexShrink:0}} alt=""/>

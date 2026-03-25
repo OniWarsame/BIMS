@@ -174,7 +174,7 @@ export default function Create() {
 <title>Application Reference — ${tpl.name} Visa — ${fullName}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:24px;color:#1a202c}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:"24px 24px 72px"px;color:#1a202c}
 .header{background:linear-gradient(135deg,#1a3a5c,#0f2940);color:#fff;padding:20px 24px;border-radius:10px 10px 0 0}
 .header h1{font-size:18px;font-weight:700;margin-bottom:4px}
 .header p{font-size:12px;opacity:0.7}

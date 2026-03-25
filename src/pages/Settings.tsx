@@ -172,7 +172,7 @@ export default function Settings() {
         {/* ── PASSWORD TAB ── */}
         {tab==="password"&&(
           <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}}>
-            <div style={{padding:"24px",borderRadius:14,border:"1px solid rgba(203,178,120,0.28)",background:"rgba(12,22,45,0.78)",display:"flex",flexDirection:"column" as const,gap:18}}>
+            <div style={{padding:"24px 24px 72px",borderRadius:14,border:"1px solid rgba(203,178,120,0.28)",background:"rgba(12,22,45,0.78)",display:"flex",flexDirection:"column" as const,gap:18}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.2em",color:"rgba(203,178,120,0.55)"}}>{t("changepass",lang)}</div>
               {[
                 {label:t("curpass",lang),val:curPass,set:setCurPass,show:showCur,toggle:()=>setShowCur(v=>!v)},

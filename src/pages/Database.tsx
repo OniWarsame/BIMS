@@ -357,7 +357,7 @@ const EditModal = ({record, onSave, onClose}:{record:BiometricRecord;onSave:(upd
         </div>
 
         {/* Modal body — scrollable */}
-        <div className="overflow-y-auto p-6" style={{maxHeight:"calc(92vh - 72px)"}}>
+        <div className="overflow-y-auto p-6 pb-16" style={{maxHeight:"calc(92vh - 72px)"}}>
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
 
             <Divider title="Personal Information"/>

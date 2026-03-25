@@ -1140,7 +1140,7 @@ const Registration = () => {
 
       {/* ── CONTENT ── */}
       <div className="flex-1 relative z-[1]">
-        <div style={{maxWidth:"680px",margin:"0 auto",padding:"16px 16px"}}>
+        <div style={{maxWidth:"680px",margin:"0 auto",padding:"16px 16px 72px"}}>
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{opacity:0,x:24}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-24}} transition={{duration:0.18}}
               className="card-surface rounded-sm" style={{padding:"18px 22px", boxShadow:"0 0 50px rgba(0,0,0,0.72),inset 0 1px 0 rgba(60,140,255,0.08)", borderColor:"rgba(40,110,255,0.2)", borderTop:"1.5px solid rgba(70,160,255,0.32)"}}>

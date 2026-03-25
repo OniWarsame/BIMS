@@ -517,7 +517,7 @@ export default function UserManagement() {
       <AnimatePresence>
         {delTarget&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-            style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(4,8,20,0.82)",backdropFilter:"blur(10px)"}}>
+            style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 24px 72px",background:"rgba(4,8,20,0.82)",backdropFilter:"blur(10px)"}}>
             <motion.div initial={{scale:0.92,y:16}} animate={{scale:1,y:0}} exit={{scale:0.92,y:16}}
               style={{width:"100%",maxWidth:380,padding:32,borderRadius:18,textAlign:"center" as const,background:"rgba(8,15,30,0.78)",border:"1.5px solid rgba(248,113,113,0.45)",boxShadow:"0 0 60px rgba(248,113,113,0.08)"}}>
               <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(248,113,113,0.12)",border:"2px solid rgba(248,113,113,0.4)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
