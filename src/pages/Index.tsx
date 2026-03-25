@@ -211,135 +211,152 @@ const Index = () => {
 
   const runGhostTrace = async () => {
     if (!ghostPhone.trim() || ghostLoading) return;
+
+    // ── Kenya-only validation ──
+    const raw = ghostPhone.trim();
+    const digits = raw.replace(/[^0-9]/g,"");
+
+    // Accept: +254XXXXXXXXX, 254XXXXXXXXX, 07XXXXXXXX, 01XXXXXXXX
+    const isKenya = (
+      raw.startsWith("+254") ||
+      digits.startsWith("254") ||
+      (digits.length === 9 && (digits.startsWith("7") || digits.startsWith("1"))) ||
+      (digits.length === 10 && (digits.startsWith("07") || digits.startsWith("01")))
+    );
+
+    if (!isKenya) {
+      setGhostResults({
+        error: true,
+        errorMsg: "KENYA NUMBERS ONLY — Enter a valid Kenyan number (e.g. +254 712 345678 or 0712 345678)",
+        phone: raw
+      });
+      return;
+    }
+
     setGhostLoading(true);
     setGhostResults(null);
+    const enc = encodeURIComponent;
 
-    const raw  = ghostPhone.trim();
-    // Normalise: strip everything except digits and leading +
-    const digits = raw.replace(/[^0-9]/g,"");
-    // Build E.164-ish (keep leading + if present)
-    const e164  = raw.startsWith("+") ? "+"+digits : digits;
-    const enc   = encodeURIComponent;
+    // Normalise to full international format
+    let norm = digits;
+    if(norm.startsWith("0") && norm.length === 10) norm = "254" + norm.slice(1);
+    if(norm.startsWith("7") || norm.startsWith("1")) norm = "254" + norm;
+    const e164 = "+" + norm; // e.g. +254712345678
+    const local0 = "0" + norm.slice(3); // e.g. 0712345678
 
-    // ── 1. Local DB match ──
+    // ── 1. Detect carrier from prefix ──
+    const prefix = norm.slice(3,6); // first 3 digits after 254
+    const carrierMap: Record<string,string> = {
+      "700":"Safaricom","701":"Safaricom","702":"Safaricom","703":"Safaricom",
+      "704":"Safaricom","705":"Safaricom","706":"Safaricom","707":"Safaricom",
+      "708":"Safaricom","709":"Safaricom","710":"Safaricom","711":"Safaricom",
+      "712":"Safaricom","713":"Safaricom","714":"Safaricom","715":"Safaricom",
+      "716":"Safaricom","717":"Safaricom","718":"Safaricom","719":"Safaricom",
+      "720":"Safaricom","721":"Safaricom","722":"Safaricom","723":"Safaricom",
+      "724":"Safaricom","725":"Safaricom","726":"Safaricom","727":"Safaricom",
+      "728":"Safaricom","729":"Safaricom","740":"Safaricom","741":"Safaricom",
+      "742":"Safaricom","743":"Safaricom","745":"Safaricom","746":"Safaricom",
+      "747":"Safaricom","748":"Safaricom","757":"Safaricom","758":"Safaricom",
+      "759":"Safaricom","768":"Safaricom","769":"Safaricom","790":"Safaricom",
+      "791":"Safaricom","792":"Safaricom","793":"Safaricom","794":"Safaricom",
+      "795":"Safaricom","796":"Safaricom","797":"Safaricom","798":"Safaricom",
+      "799":"Safaricom",
+      "730":"Airtel","731":"Airtel","732":"Airtel","733":"Airtel","734":"Airtel",
+      "735":"Airtel","736":"Airtel","737":"Airtel","738":"Airtel","739":"Airtel",
+      "750":"Airtel","751":"Airtel","752":"Airtel","753":"Airtel","754":"Airtel",
+      "755":"Airtel","756":"Airtel","762":"Airtel",
+      "780":"Telkom","781":"Telkom","782":"Telkom","783":"Telkom","784":"Telkom",
+      "785":"Telkom","786":"Telkom","787":"Telkom","788":"Telkom","789":"Telkom",
+      "770":"Faiba","100":"Safaricom","101":"Safaricom","102":"Safaricom",
+    };
+    const carrier = carrierMap[prefix] || "Kenyan carrier";
+
+    // ── 2. Search local BIMS database first ──
     const allRecords = getRecords();
-    const dbMatch = allRecords.filter(r=>{
+    const dbMatch = allRecords.filter(r => {
       if(!r.phoneNo) return false;
-      const s=r.phoneNo.replace(/[^0-9]/g,"");
-      return s===digits||s.endsWith(digits.slice(-9))||digits.endsWith(s.slice(-9));
+      const s = r.phoneNo.replace(/[^0-9]/g,"");
+      const tail9 = norm.slice(-9);
+      return s === norm || s.endsWith(tail9) || norm.endsWith(s.slice(-9)) ||
+             s === digits || s === local0.replace(/[^0-9]/g,"");
     });
 
-    // ── 2. AI intelligence (runs in background) ──
-    let aiInfo: any = null;
+    // ── 3. AI intelligence ──
+    let aiInfo: any = { country:"Kenya", carrier, type:"mobile", region:"Kenya", risk:"low",
+      whatsapp_likely:true, telegram_likely:false, notes:`${carrier} Kenya number — ${e164}` };
     try {
       const aiResp = await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:250,
           messages:[{role:"user",content:
-            `Analyse this phone number: ${raw}
+            `Phone number: ${e164} (Kenya, likely ${carrier})
 
-Respond ONLY with valid JSON (no markdown):
-{"country":"","country_code":"+XX","carrier":"likely carrier","type":"mobile|landline|voip","region":"city or region","format_valid":true,"risk":"low|medium|high","whatsapp_likely":true,"telegram_likely":true,"notes":"one sentence intel summary","google_dorks":["site:facebook.com ${raw}","site:linkedin.com ${raw}","site:instagram.com ${raw}"]}`
+Respond ONLY with valid JSON:
+{"carrier":"${carrier} Kenya","type":"mobile","region":"Kenya","risk":"low","whatsapp_likely":true,"telegram_likely":false,"notes":"${carrier} Kenya mobile number — WhatsApp very common in Kenya"}`
           }]})
       });
       if(aiResp.ok){
         const d=await aiResp.json();
         const txt=(d.content||[]).map((b:any)=>b.text||"").join("").trim();
-        try{ aiInfo=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch{}
+        try{ aiInfo={...aiInfo,...JSON.parse(txt.replace(/```json|```/g,"").trim())}; }catch{}
       }
     }catch{}
 
-    // ── 3. Build comprehensive OSINT links ──
+    // ── 4. Build Kenya-focused OSINT links ──
     const links: any[] = [];
 
-    // DIRECT social media — open platform URLs with the number
-    links.push({cat:"📱 Social Media Direct Links", sub:"Click to open — platform opens if account exists", items:[
-      {label:"WhatsApp",      url:`https://wa.me/${digits}`,                                bold:true,  note:"Opens chat if registered",   icon:"💬"},
-      {label:"Telegram",      url:`https://t.me/+${digits}`,                               bold:true,  note:"Opens if number exists",     icon:"✈️"},
-      {label:"Viber",         url:`viber://chat?number=%2B${digits}`,                       bold:true,  note:"Opens Viber if installed",   icon:"📲"},
-      {label:"Signal",        url:`https://signal.me/#p/+${digits}`,                       bold:false, note:"Signal profile link",        icon:"🔒"},
-      {label:"Instagram Search",url:`https://www.google.com/search?q=site:instagram.com+"${enc(raw)}"`, bold:false, icon:"📸"},
-      {label:"Facebook",      url:`https://www.facebook.com/search/people/?q=${enc(raw)}`, bold:false, icon:"👥"},
-      {label:"Twitter/X",     url:`https://x.com/search?q="${enc(raw)}"&f=user`,           bold:false, icon:"🐦"},
-      {label:"TikTok Search", url:`https://www.google.com/search?q=site:tiktok.com+"${enc(raw)}"`, bold:false, icon:"🎵"},
-      {label:"LinkedIn",      url:`https://www.google.com/search?q=site:linkedin.com+"${enc(raw)}"`, bold:false, icon:"💼"},
-      {label:"YouTube",       url:`https://www.google.com/search?q=site:youtube.com+"${enc(raw)}"`, bold:false, icon:"▶️"},
-      {label:"Snapchat",      url:`https://www.snapchat.com/`,                              bold:false, icon:"👻"},
-      {label:"Pinterest",     url:`https://www.google.com/search?q=site:pinterest.com+"${enc(raw)}"`, bold:false, icon:"📌"},
+    // BEST for Kenya: Truecaller has 300M+ African numbers with names from contact books
+    links.push({cat:"🏆 Best Name Lookup — Kenya", sub:"These give the highest chance of finding the owner's name", items:[
+      {label:"Truecaller",  url:`https://www.truecaller.com/search/ke/${enc(local0)}`, bold:true,  note:"#1 for Kenyan names — 300M+ users", primary:true},
+      {label:"Truecaller (intl)",url:`https://www.truecaller.com/search/ke/${enc(e164)}`, bold:true, note:"Same with +254 format", primary:true},
+      {label:"Sync.me",     url:`https://sync.me/search/?q=${enc(e164)}`,              bold:true,  note:"Global caller ID — Kenya coverage"},
+      {label:"CallApp",     url:`https://www.google.com/search?q=callapp+"${enc(e164)}"`, bold:false,note:"CallApp caller ID"},
+      {label:"Google Search",url:`https://www.google.com/search?q="${enc(e164)}" OR "${enc(local0)}"`, bold:false, note:"Public mentions of this number"},
     ]});
 
-    // Carrier & number intelligence
-    links.push({cat:"📡 Carrier & Number Intelligence", sub:"Identify carrier, SIM status and line type", items:[
-      {label:"NumVerify",    url:`https://numverify.com/phone-number-validation?number=${enc(e164)}`, bold:true,  note:"Free carrier lookup"},
-      {label:"Truecaller",   url:`https://www.truecaller.com/search/intl/${enc(raw)}`,     bold:true,  note:"Caller ID + spam rating"},
-      {label:"NumLookup",    url:`https://www.numlookup.com/phone/${enc(raw)}`,            bold:true,  note:"Line type + carrier"},
-      {label:"HLR Lookup",   url:`https://www.hlrlookup.com/`,                             bold:false, note:"Live SIM registration status"},
-      {label:"CNAM Lookup",  url:`https://opencnam.com/`,                                  bold:false, note:"Caller name database"},
-      {label:"MNP Check",    url:`https://www.numberingplans.com/?page=analysis&sub=phonen&input_number=${enc(raw)}`, bold:false, note:"Mobile number portability"},
+    // WhatsApp — wa.me is the real direct check
+    links.push({cat:"💬 WhatsApp & Messaging", sub:"wa.me opens the chat — if no account exists WhatsApp tells you", items:[
+      {label:"WhatsApp Chat",  url:`https://wa.me/${norm}`,                            bold:true,  note:"Opens if registered", primary:true},
+      {label:"WhatsApp API",   url:`https://api.whatsapp.com/send?phone=${norm}`,      bold:true,  note:"Alt WhatsApp link"},
+      {label:"Telegram",       url:`https://t.me/+${norm}`,                           bold:false, note:"Opens if exists"},
+      {label:"Viber",          url:`viber://chat?number=%2B${norm}`,                  bold:false, note:"If Viber installed"},
     ]});
 
-    // Google OSINT dorks
-    const dorks = aiInfo?.google_dorks || [
-      `"${raw}"`,
-      `"${raw}" site:facebook.com OR site:instagram.com OR site:twitter.com`,
-      `"${raw}" site:linkedin.com`,
-      `"${raw}" contact OR profile OR resume`,
-    ];
-    links.push({cat:"🔎 Google OSINT Dorks", sub:"Targeted Google searches to find public profiles", items:
-      dorks.map((q:string)=>({
-        label:q.length>50?q.slice(0,47)+"...":q,
-        url:`https://www.google.com/search?q=${enc(q)}`,
-        bold:false, icon:"🔍"
-      })).concat([
-        {label:`"${raw}" site:truecaller.com`,    url:`https://www.google.com/search?q=${enc('"'+raw+'" site:truecaller.com')}`, bold:false},
-        {label:`"${raw}" site:sync.me`,           url:`https://www.google.com/search?q=${enc('"'+raw+'" site:sync.me')}`,       bold:false},
-      ])
-    });
-
-    // People search engines
-    links.push({cat:"🗂️ People Search & Public Records", sub:"Reverse phone lookup — full identity data", items:[
-      {label:"Spokeo",          url:`https://www.spokeo.com/phone/${enc(raw)}`,             bold:true},
-      {label:"BeenVerified",    url:`https://www.beenverified.com/phone/${enc(raw)}`,       bold:true},
-      {label:"TruePeopleSearch",url:`https://www.truepeoplesearch.com/results?phoneno=${enc(raw)}`, bold:true, note:"Free people search"},
-      {label:"Intelius",        url:`https://www.intelius.com/phone-number/${enc(raw)}`,    bold:false},
-      {label:"That'sThem",      url:`https://thatsthem.com/phone/${enc(raw)}`,              bold:false},
-      {label:"ZabaSearch",      url:`https://www.zabasearch.com/phone/${enc(digits)}/`,     bold:false},
-      {label:"Sync.me",         url:`https://sync.me/search/?q=${enc(raw)}`,               bold:false, note:"Global caller database"},
-      {label:"Eyecon",          url:`https://eyecon.me/search?phone=${enc(raw)}`,           bold:false},
-      {label:"WhoCallsMe",      url:`https://www.whocalledme.com/PhoneNumber/${enc(digits)}`,bold:false},
-      {label:"CallerIDTest",    url:`https://www.calleridtest.com/`,                        bold:false},
+    // Social media search with Kenya context
+    links.push({cat:"📱 Social Media Search — Kenya", sub:"Searches for this number on each platform", items:[
+      {label:"Instagram",   url:`https://www.google.com/search?q=site:instagram.com+"${enc(e164)}" OR site:instagram.com+"${enc(local0)}"`, bold:true},
+      {label:"Facebook",    url:`https://www.facebook.com/search/people/?q=${enc(local0)}`,        bold:true,  note:"Search by phone"},
+      {label:"Twitter/X",   url:`https://x.com/search?q="${enc(e164)}"`,                           bold:false},
+      {label:"TikTok",      url:`https://www.google.com/search?q=site:tiktok.com+"${enc(e164)}"`,  bold:false},
+      {label:"LinkedIn",    url:`https://www.google.com/search?q=site:linkedin.com+"${enc(e164)}"`,bold:false},
+      {label:"YouTube",     url:`https://www.google.com/search?q=site:youtube.com+"${enc(e164)}"`, bold:false},
+      {label:"Snapchat",    url:`https://www.snapchat.com/`,                                        bold:false},
     ]});
 
-    // Breach & dark web checks
-    links.push({cat:"🕵️ OSINT & Breach Databases", sub:"Check if number appears in data breaches or dark web", items:[
-      {label:"PhoneInfoga",     url:`https://github.com/sundowndev/phoneinfoga`,            bold:true,  note:"Run locally — full OSINT scan"},
-      {label:"HaveIBeenPwned",  url:`https://haveibeenpwned.com/`,                          bold:true,  note:"Check email/number breach"},
-      {label:"IntelligenceX",   url:`https://intelx.io/?s=${enc(raw)}`,                    bold:false, note:"Dark web search"},
-      {label:"Pipl",            url:`https://pipl.com/`,                                   bold:false, note:"Deep web identity"},
-      {label:"LeakCheck",       url:`https://leakcheck.io/`,                               bold:false, note:"Breach data check"},
-      {label:"OSINT Framework", url:`https://osintframework.com/`,                         bold:false, note:"Full OSINT toolkit"},
+    // Kenya-specific lookups
+    links.push({cat:"🇰🇪 Kenya-Specific Intelligence", sub:"Safaricom, M-Pesa, and Kenya public records", items:[
+      {label:"NumVerify",   url:`https://api.numlookupapi.com/v1/validate/${enc(e164)}`,            bold:true,  note:"Carrier + validity"},
+      {label:"Safaricom Portal",url:`https://selfcare.safaricom.co.ke`,                             bold:false, note:"Safaricom self-service"},
+      {label:"KRA iTax",    url:`https://itax.kra.go.ke/KRA-Portal/`,                              bold:false, note:"Tax records — Kenya"},
+      {label:"M-Pesa Lookup",url:`https://www.google.com/search?q="${enc(e164)}" mpesa kenya`,     bold:false, note:"M-Pesa public traces"},
+      {label:"eCitizen",    url:`https://www.ecitizen.go.ke`,                                       bold:false, note:"Kenya govt records"},
+      {label:"Kenya OSINT", url:`https://www.google.com/search?q="${enc(e164)}" kenya`,            bold:false},
     ]});
 
-    // Regional East Africa
-    const cc = digits.slice(0,3);
-    const isEastAfrica = ["252","254","251","255","250","256","257","253"].includes(cc)||
-                         ["252","254","251","255"].includes(digits.slice(0,3));
-    if(isEastAfrica){
-      links.push({cat:"🌍 East Africa Carrier Lookup", sub:"Somalia · Kenya · Ethiopia · Tanzania · Uganda", items:[
-        {label:"Hormuud Telecom",  url:`https://www.hormuud.com`,                           bold:true,  note:"+252 — Somalia"},
-        {label:"Somtel",           url:`https://www.somtel.so`,                             bold:false, note:"+252 — Somalia"},
-        {label:"Golis Telecom",    url:`https://www.golis.net`,                             bold:false, note:"+252 — Somalia"},
-        {label:"Safaricom",        url:`https://www.safaricom.co.ke`,                       bold:true,  note:"+254 — Kenya"},
-        {label:"Ethio Telecom",    url:`https://www.ethiotelecom.et`,                       bold:false, note:"+251 — Ethiopia"},
-        {label:"Airtel Africa",    url:`https://airtel.africa`,                             bold:false, note:"Multi-country"},
-        {label:"Google Maps",      url:`https://www.google.com/maps/search/${enc(raw)}`,   bold:false, note:"Location traces"},
-      ]});
-    }
+    // People search / OSINT
+    links.push({cat:"🔍 Reverse Lookup & OSINT", sub:"People search and breach databases", items:[
+      {label:"PhoneInfoga", url:`https://github.com/sundowndev/phoneinfoga`,                        bold:true,  note:"Run locally for full scan"},
+      {label:"That'sThem",  url:`https://thatsthem.com/phone/${enc(e164)}`,                        bold:false},
+      {label:"Spokeo",      url:`https://www.spokeo.com/phone/${enc(e164)}`,                       bold:false},
+      {label:"IntelligenceX",url:`https://intelx.io/?s=${enc(e164)}`,                             bold:false, note:"Dark web traces"},
+      {label:"HaveIBeenPwned",url:`https://haveibeenpwned.com/`,                                   bold:false, note:"Breach check"},
+    ]});
 
-    setGhostResults({ dbMatch, links, phone:raw, e164, digits, ai:aiInfo });
+    setGhostResults({ dbMatch, links, phone:raw, e164, local0, norm, carrier, ai:aiInfo });
     setGhostLoading(false);
   };
+
 
   const handleDeepSearch = () => {
     if (!dsInput.trim() || dsLoading) return;
@@ -1127,9 +1144,9 @@ Respond ONLY with valid JSON (no markdown):
                 <div style={{flex:1,position:"relative" as const}}>
                   <input
                     value={ghostPhone}
-                    onChange={e=>{setGhostPhone(e.target.value.replace(/[^0-9+\-\s()]/g,""));setGhostResults(null);}}
+                    onChange={e=>{setGhostPhone(e.target.value.replace(/[^0-9+\-\s()]/g,""));setGhostResults(null);setGhostLoading(false);}}
                     onKeyDown={e=>{if(e.key==="Enter")runGhostTrace();}}
-                    placeholder="+252 61 234 5678 — any format accepted"
+                    placeholder="+254 712 345678 — Kenya numbers only"
                     style={{width:"100%",padding:"11px 14px",borderRadius:11,
                       background:"rgba(0,180,110,0.07)",
                       border:`1.5px solid ${ghostPhone?"rgba(0,220,140,0.50)":"rgba(0,180,110,0.22)"}`,
@@ -1148,6 +1165,26 @@ Respond ONLY with valid JSON (no markdown):
                 </button>
               </div>
 
+              {/* ── Kenya validation error ── */}
+              {ghostResults?.error && (
+                <motion.div initial={{opacity:0,y:4}} animate={{opacity:1,y:0}}
+                  style={{marginTop:12,padding:"12px 14px",borderRadius:10,
+                    background:"rgba(255,80,60,0.08)",border:"1.5px solid rgba(255,80,60,0.35)"}}>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:700,
+                    color:"rgba(255,100,80,0.90)",letterSpacing:"0.10em",marginBottom:5}}>
+                    ✗ INVALID NUMBER
+                  </div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                    color:"rgba(255,130,110,0.75)",lineHeight:1.5}}>
+                    {ghostResults.errorMsg}
+                  </div>
+                  <div style={{marginTop:8,fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
+                    color:"rgba(0,200,120,0.60)"}}>
+                    ✓ Valid formats: +254 712 345678 · 0712345678 · 712345678
+                  </div>
+                </motion.div>
+              )}
+
               {/* ── Loading ── */}
               {ghostLoading && (
                 <div style={{textAlign:"center" as const,padding:"28px 0"}}>
@@ -1160,7 +1197,7 @@ Respond ONLY with valid JSON (no markdown):
                     TRACING SIGNAL…
                   </div>
                   <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,color:"rgba(0,180,110,0.45)",marginTop:6,letterSpacing:"0.08em"}}>
-                    Querying AI · Matching database · Building 40+ OSINT links
+                    Scanning BIMS database · Querying AI · Building Kenya OSINT links
                   </div>
                 </div>
               )}
@@ -1175,7 +1212,7 @@ Respond ONLY with valid JSON (no markdown):
                       background:"rgba(0,180,110,0.08)",border:"1.5px solid rgba(0,200,130,0.28)"}}>
                       <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,color:"rgba(0,200,130,0.60)",
                         letterSpacing:"0.14em",marginBottom:8}}>
-                        🧠 AI PHONE INTELLIGENCE — {ghostResults.phone}
+                        🧠 KENYA NUMBER INTELLIGENCE — {ghostResults.e164||ghostResults.phone}
                       </div>
                       <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
                         {(["country","carrier","type","region","risk","whatsapp_likely","telegram_likely"] as const).map((k)=>
@@ -1213,7 +1250,7 @@ Respond ONLY with valid JSON (no markdown):
                         letterSpacing:"0.12em",marginBottom:10}}>⚡ QUICK SOCIAL LAUNCH</div>
                       <div style={{display:"flex",gap:6,flexWrap:"wrap" as const}}>
                         {[
-                          {label:"💬 WhatsApp",   url:`https://wa.me/${ghostResults.digits}`,                                 col:"rgba(37,211,102,0.9)"},
+                          {label:"💬 WhatsApp",   url:`https://wa.me/${ghostResults.norm||ghostResults.digits}`,                                 col:"rgba(37,211,102,0.9)"},
                           {label:"✈️ Telegram",   url:`https://t.me/+${ghostResults.digits}`,                                col:"rgba(0,136,204,0.9)"},
                           {label:"📸 Instagram",  url:`https://www.google.com/search?q=site:instagram.com+"${ghostResults.phone}"`, col:"rgba(200,60,150,0.9)"},
                           {label:"👥 Facebook",   url:`https://www.facebook.com/search/people/?q=${encodeURIComponent(ghostResults.phone)}`, col:"rgba(24,119,242,0.9)"},
@@ -1246,36 +1283,58 @@ Respond ONLY with valid JSON (no markdown):
                         IDENTITY MATCH IN DATABASE ({ghostResults.dbMatch.length})
                       </div>
                       {ghostResults.dbMatch.map((rec:any,i:number)=>(
-                        <div key={i} style={{marginBottom:8,padding:"12px 14px",borderRadius:12,
-                          background:"rgba(0,180,100,0.08)",
-                          border:"1.5px solid rgba(0,220,140,0.35)",
-                          boxShadow:"0 0 20px rgba(0,180,100,0.10)"}}>
-                          <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <div key={i}
+                          onClick={()=>{setShowGhostTrace(false);navigate(`/result/${rec.id}`);}}
+                          style={{marginBottom:8,padding:"14px 16px",borderRadius:12,
+                            background:"rgba(0,180,100,0.10)",
+                            border:"2px solid rgba(0,220,140,0.50)",
+                            boxShadow:"0 0 24px rgba(0,180,100,0.15)",
+                            cursor:"pointer",transition:"all .18s"}}
+                          onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,200,120,0.18)";(e.currentTarget as HTMLElement).style.borderColor="rgba(0,240,160,0.70)";}}
+                          onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="rgba(0,180,100,0.10)";(e.currentTarget as HTMLElement).style.borderColor="rgba(0,220,140,0.50)";}}>
+                          {/* Green banner: found in database */}
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fontWeight:700,
+                            color:"rgba(0,255,160,0.80)",letterSpacing:"0.14em",marginBottom:10,
+                            display:"flex",alignItems:"center",gap:6}}>
+                            <div style={{width:6,height:6,borderRadius:"50%",background:"rgba(0,255,160,0.90)",
+                              boxShadow:"0 0 8px rgba(0,255,160,0.80)"}}/>
+                            ✓ FOUND IN BIMS DATABASE · CLICK TO VIEW FULL IDENTITY
+                          </div>
+                          <div style={{display:"flex",alignItems:"center",gap:12}}>
                             {rec.photo
-                              ?<img src={rec.photo} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover" as const,border:"2px solid rgba(0,220,140,0.50)",flexShrink:0}}/>
-                              :<div style={{width:44,height:44,borderRadius:"50%",background:"rgba(0,180,100,0.18)",
-                                border:"2px solid rgba(0,220,140,0.40)",display:"flex",alignItems:"center",
+                              ?<img src={rec.photo} alt="" style={{width:58,height:58,borderRadius:"50%",objectFit:"cover" as const,border:"3px solid rgba(0,220,140,0.70)",flexShrink:0,boxShadow:"0 0 18px rgba(0,200,120,0.40)"}}/>
+                              :<div style={{width:58,height:58,borderRadius:"50%",background:"rgba(0,180,100,0.20)",
+                                border:"3px solid rgba(0,220,140,0.65)",display:"flex",alignItems:"center",
                                 justifyContent:"center",flexShrink:0,fontFamily:"'Orbitron',sans-serif",
-                                fontSize:16,fontWeight:800,color:"rgba(0,220,140,0.80)"}}>
+                                fontSize:22,fontWeight:800,color:"rgba(0,235,150,0.90)",
+                                boxShadow:"0 0 18px rgba(0,200,120,0.30)"}}>
                                 {rec.name?.charAt(0)||"?"}
                               </div>}
                             <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,
-                                color:"rgba(0,230,150,0.96)",marginBottom:3}}>
-                                {rec.surname}, {rec.name}
+                              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:800,
+                                color:"rgba(0,240,165,0.98)",marginBottom:5,letterSpacing:"0.01em"}}>
+                                {rec.name} {rec.surname}
                               </div>
-                              <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
+                              <div style={{display:"flex",gap:8,flexWrap:"wrap" as const,marginBottom:6}}>
                                 {[
-                                  ["ID",rec.id],
                                   ["📞",rec.phoneNo||"—"],
                                   ["🌍",rec.nationality||"—"],
+                                  ["🎂",rec.dateOfBirth||"—"],
                                   ["⚧",rec.gender||"—"],
+                                  ["🏙",rec.city||"—"],
                                 ].map(([l,v])=>(
                                   <span key={l as string} style={{fontFamily:"'JetBrains Mono',monospace",
-                                    fontSize:9.5,color:"rgba(0,180,110,0.70)"}}>
-                                    <span style={{opacity:0.6}}>{l as string} </span>{v as string}
+                                    fontSize:9.5,color:"rgba(0,210,135,0.80)"}}>
+                                    <span style={{opacity:0.60}}>{l as string} </span>{v as string}
                                   </span>
                                 ))}
+                              </div>
+                              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,fontWeight:700,
+                                color:"rgba(0,220,140,0.55)",letterSpacing:"0.10em",display:"flex",
+                                alignItems:"center",gap:6}}>
+                                <span style={{padding:"2px 8px",borderRadius:5,background:"rgba(0,200,120,0.12)",
+                                  border:"1px solid rgba(0,200,120,0.30)"}}>ID: {rec.id}</span>
+                                <span>→ TAP TO OPEN FULL PROFILE</span>
                               </div>
                             </div>
                           </div>
