@@ -1,4 +1,3 @@
-import { useLang, t } from "@/lib/i18n";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,7 +54,6 @@ const AttachModal = ({title,src,isImg,onClose}:{title:string;src:string;isImg:bo
 
 /* ── Password-Only Lock Screen ── */
 const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => void }) => {
-  const lang = useLang();
   type ScanState = "idle"|"scanning"|"preview"|"granting"|"error";
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [matchUser, setMatchUser] = useState<any>(null);
@@ -101,8 +99,8 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
 
   const sideLeft = [
     {icon:"🔒", label:"VAULT LOCK", val:"AES-256"},
-    {icon:"⚡", label:"SESSION", val:t("db_active",lang)},
-    {icon:"🛡️", label:t("db_clearance",lang), val:"L3 RESTRICTED"},
+    {icon:"⚡", label:"SESSION", val:"ACTIVE"},
+    {icon:"🛡️", label:"CLEARANCE", val:"L3 RESTRICTED"},
     {icon:"🔐", label:"PROTOCOL", val:"TLS 1.3"},
     {icon:"◉", label:"STATUS", val:"STANDBY"},
   ];
@@ -198,7 +196,7 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
               </motion.div>
             )}
             <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:"0.22em",color:`${fpColor}80`,textTransform:"uppercase" as const}}>
-              {scanState==="scanning"?t("db_scanning",lang):scanState==="preview"||scanState==="granting"?"VERIFIED":scanState==="error"?"ERROR":"PLACE FINGER"}
+              {scanState==="scanning"?"SCANNING…":scanState==="preview"||scanState==="granting"?"VERIFIED":scanState==="error"?"ERROR":"PLACE FINGER"}
             </span>
           </div>
         </div>
@@ -362,7 +360,7 @@ const EditModal = ({record, onSave, onClose}:{record:BiometricRecord;onSave:(upd
         <div className="overflow-y-auto p-6 pb-16" style={{maxHeight:"calc(92vh - 72px)"}}>
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
 
-            <Divider title={t("res_personal",lang)}/>
+            <Divider title="Personal Information"/>
             <F label="Name"><Inp name="name" value={form.name} placeholder="First name"/></F>
             <F label="Surname"><Inp name="surname" value={form.surname} placeholder="Last name"/></F>
             <F label="Gender">
@@ -403,7 +401,7 @@ const EditModal = ({record, onSave, onClose}:{record:BiometricRecord;onSave:(upd
             <F label="Passport Issue Date"><Inp name="passportIssueDate" value={form.passportIssueDate} type="date"/></F>
             <F label="Passport Expiry Date"><Inp name="passportExpiryDate" value={form.passportExpiryDate} type="date"/></F>
 
-            <Divider title={t("reg_occupation",lang)}/>
+            <Divider title="Work Experience"/>
             <div className="col-span-2">
               <F label="Work Experience / History"><TA name="workExperience" value={form.workExperience} rows={4} placeholder="Positions held, companies, durations…"/></F>
             </div>
@@ -470,7 +468,6 @@ const AttachPanel = ({preview, onView}:{preview:any; onView:(title:string,src:st
 };
 
 const DatabasePage = () => {
-  const lang = useLang();
   const currentUserRole = getCurrentUser()?.role;
   const canExport = currentUserRole === "admin" || currentUserRole === "analyst";
   const navigate   = useNavigate();
@@ -762,7 +759,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
               {/* Title */}
               <h3 className="font-display text-lg font-bold mb-1"
                 style={{color:pinGate.mode==="delete"?"hsl(0,90%,72%)":"hsl(33,100%,72%)"}}>
-                {pinGate.mode==="delete"?t("lbl_confirm_del",lang):t("lbl_confirm_edt",lang)}
+                {pinGate.mode==="delete"?"CONFIRM DELETION":"CONFIRM EDIT"}
               </h3>
               <p className="font-mono text-xs mb-1 tracking-wider" style={{color:"hsla(185,70%,65%,0.6)"}}>
                 {pinGate.mode==="delete"
@@ -803,7 +800,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                     border:`1.5px solid ${pinGate.mode==="delete"?"hsla(0,90%,55%,0.55)":"hsla(33,100%,52%,0.55)"}`,
                     color:pinGate.mode==="delete"?"hsl(0,90%,72%)":"hsl(33,100%,72%)",
                   }}>
-                  {pinGate.mode==="delete"?t("db_delete",lang):t("db_edit",lang)}
+                  {pinGate.mode==="delete"?"DELETE":"EDIT"}
                 </button>
               </div>
             </motion.div>
@@ -832,7 +829,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   }}/>
                 </div>
                 <h3 className="font-display text-lg font-bold mb-1" style={{color:"hsl(193,100%,72%)"}}>
-                  {editGate.step==="scanning"?t("db_scanning",lang):t("db_fp_required",lang)}
+                  {editGate.step==="scanning"?"SCANNING…":"FINGERPRINT REQUIRED"}
                 </h3>
                 <p className="font-mono text-xs mb-1 tracking-wider" style={{color:"hsla(185,70%,65%,0.6)"}}>
                   EDIT: {editGate.record.surname}, {editGate.record.name}
@@ -1093,7 +1090,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                     <p className="font-mono text-[10px] tracking-wider" style={{color:"hsla(270,60%,60%,0.5)"}}>Upload a photo · AI matches face against all database records</p>
                   </div>
                   <div className="flex items-center gap-4 font-mono text-[9px] tracking-wider" style={{color:"hsla(270,50%,55%,0.4)"}}>
-                    {["FACIAL ANALYSIS" , t("db_biometric_match",lang) ,"VERIFIED"].map((l,i)=>(
+                    {["FACIAL ANALYSIS" ,"BIOMETRIC MATCH" ,"VERIFIED"].map((l,i)=>(
                       <span key={i} className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full inline-block" style={{background:"hsla(270,80%,60%,0.4)"}}/>
                         {l}
@@ -1207,7 +1204,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
         {/* Table */}
         <div className="card-surface rounded-lg overflow-hidden">
           <div className="grid border-b" style={{borderColor:"hsla(185,55%,22%,0.4)",gridTemplateColumns:"110px 1fr 100px 120px 110px 110px 130px"}}>
-            {["ID", t("db_col_name",lang), t("db_col_gender",lang), t("db_col_nat",lang),"DOB","REGISTERED", t("db_col_action",lang)].map(h=>(
+            {["ID","FULL NAME","GENDER","NATIONALITY","DOB","REGISTERED","ACTION"].map(h=>(
               <div key={h} className="px-4 py-3.5 font-mono text-[10px] font-bold tracking-[0.18em] uppercase" style={{color:"hsl(185,100%,62%)"}}>{h}</div>
             ))}
           </div>
@@ -1311,7 +1308,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   <button onClick={()=>openPinGate("edit", preview)}
                     className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-all"
                     style={{border:"1.5px solid hsla(33,100%,52%,0.55)",background:"hsla(33,100%,52%,0.14)",color:"hsl(33,100%,70%)"}}>
-                    <Pencil className="w-3.5 h-3.5"/>{t("btn_edit",lang)}
+                    <Pencil className="w-3.5 h-3.5"/> EDIT
                   </button>
                 </div>
               </div>
@@ -1328,7 +1325,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   const fullName = `${preview.name} ${preview.surname}`.trim();
                   const username = preview.name.toLowerCase();
                   const options = [
-                    { key:"name",    label:t("db_col_name",lang),  value:fullName,        icon:"👤", color:"38,85%,62%",
+                    { key:"name",    label:"FULL NAME",  value:fullName,        icon:"👤", color:"38,85%,62%",
                       platforms:[
                         {n:"Google",       url:`https://www.google.com/search?q="${enc(fullName)}"`},
                         {n:"Facebook",     url:`https://www.facebook.com/search/people/?q=${enc(fullName)}`},
@@ -1417,25 +1414,25 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
               {/* Preview body */}
               <div className="p-6 space-y-6">
 
-                <Section title={t("res_personal",lang)}>
+                <Section title="PERSONAL INFORMATION">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-                    <PF label={t("db_col_name",lang)}      value={`${preview.surname}, ${preview.name}`}/>
-                    <PF label={t("db_col_gender",lang)}         value={preview.gender}/>
+                    <PF label="FULL NAME"      value={`${preview.surname}, ${preview.name}`}/>
+                    <PF label="GENDER"         value={preview.gender}/>
                     <PF label="DATE OF BIRTH"  value={preview.dateOfBirth}/>
                     <PF label="PLACE OF BIRTH" value={preview.placeOfBirth}/>
-                    <PF label={t("db_col_nat",lang)}    value={preview.nationality}/>
+                    <PF label="NATIONALITY"    value={preview.nationality}/>
                     <PF label="NATIONAL ID"    value={preview.noNationalId?"NO NATIONAL ID":preview.nationalId}/>
-                    <PF label={t("lbl_blood",lang)}     value={preview.bloodType}/>
+                    <PF label="BLOOD TYPE"     value={preview.bloodType}/>
                     <PF label="MARITAL STATUS" value={preview.maritalStatus}/>
                     <PF label="OCCUPATION"     value={preview.occupation}/>
                     <PF label="EMAIL"          value={preview.email}/>
                     <PF label="PHONE NUMBER"   value={preview.phoneNo}/>
                     <PF label="WHATSAPP"       value={(preview as any).whatsapp}/>
-                    <div className="col-span-2 md:col-span-4"><PF label={t("lbl_address",lang)} value={preview.address}/></div>
+                    <div className="col-span-2 md:col-span-4"><PF label="ADDRESS" value={preview.address}/></div>
                   </div>
                 </Section>
 
-                <Section title={t("db_text_search",lang)}>
+                <Section title="SOCIAL MEDIA ACCOUNTS">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                     <PF label="FACEBOOK"   value={(preview as any).facebook}/>
                     <PF label="INSTAGRAM"  value={(preview as any).instagram}/>
@@ -1444,7 +1441,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   </div>
                 </Section>
 
-                <Section title={t("res_documents",lang)}>
+                <Section title="DOCUMENTS & CREDENTIALS">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                     {preview.noPassport
                       ? <PF label="PASSPORT" value="NO PASSPORT ON RECORD" warn/>
@@ -1458,7 +1455,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   </div>
                 </Section>
 
-                <Section title={t("res_kin",lang)}>
+                <Section title="FAMILY INFORMATION">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                     <PF label="FATHER'S NAME"  value={preview.fatherName}/>
                     <PF label="FATHER'S PHONE" value={preview.fatherPhone}/>
@@ -1478,7 +1475,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                 </Section>
 
                 {(preview.emergencyContact1?.name||preview.emergencyContact2?.name)&&(
-                  <Section title={t("reg_emergency",lang)}>
+                  <Section title="EMERGENCY CONTACTS">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                       <PF label="CONTACT 1 NAME"  value={preview.emergencyContact1?.name}/>
                       <PF label="CONTACT 1 PHONE" value={preview.emergencyContact1?.phone}/>
@@ -1488,7 +1485,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   </Section>
                 )}
 
-                <Section title={t("res_documents",lang)}>
+                <Section title="EDUCATIONAL RECORD">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                     <PF label="STUDENT STATUS" value={preview.isStudent?"CURRENTLY ENROLLED":"NOT ENROLLED"}/>
                     {preview.isStudent&&<>
@@ -1511,7 +1508,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   </div>
                 </Section>
 
-                <Section title={t("reg_occupation",lang)}>
+                <Section title="WORK EXPERIENCE">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                     <PF label="CURRENTLY WORKING" value={preview.isCurrentlyWorking?"YES":"NO"}/>
                     {preview.isCurrentlyWorking&&preview.currentWorkInfo&&<>
@@ -1523,15 +1520,15 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   </div>
                 </Section>
 
-                <Section title={t("res_biometrics",lang)}>
+                <Section title="HEALTH & RECORDS">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     <PF label="HEALTH RECORD"                 value={preview.healthRecord}/>
                     <PF label="HISTORY OF PRESENT ILLNESS"    value={(preview as any).historyOfPresentIllness}/>
-                    <PF label={t("lbl_crime",lang)}                  value={preview.crimeRecord}/>
+                    <PF label="CRIME RECORD"                  value={preview.crimeRecord}/>
                   </div>
                 </Section>
 
-                <Section title={t("res_biometrics",lang)}>
+                <Section title="BIOMETRIC HASHES">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
                     {preview.fingerHashes
                       ?[{l:"RIGHT THUMB",k:"rightThumb"},{l:"RIGHT INDEX FINGER",k:"rightIndex"},{l:"LEFT THUMB",k:"leftThumb"},{l:"LEFT INDEX FINGER",k:"leftIndex"}]

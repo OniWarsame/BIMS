@@ -1,4 +1,3 @@
-import { useLang, t } from "@/lib/i18n";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -12,9 +11,7 @@ interface PageHeaderProps {
   rightContent?: React.ReactNode;
 }
 
-export default function PageHeader({
-  title, subtitle, icon, showLogo, rightContent }: PageHeaderProps) {
-  const lang = useLang();
+export default function PageHeader({ title, subtitle, icon, showLogo, rightContent }: PageHeaderProps) {
   const navigate = useNavigate();
   return (
     <div style={{
@@ -41,7 +38,7 @@ export default function PageHeader({
                 Nexus<span style={{color:"hsl(218,100%,70%)",marginLeft:4}}>BIMS</span>
               </div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(80,140,220,0.4)",letterSpacing:"0.06em",marginTop:1}}>
-                {t("login_title",lang).split(" ")[0]+" PLATFORM"}
+                BIOMETRIC PLATFORM
               </div>
             </div>
           </div>

@@ -181,10 +181,10 @@ const LoginScreen = () => {
   const borderCol= isError ? "rgba(220,60,60,0.5)"  : isActive ? "rgba(0,225,210,0.7)"  : isPreview ? "rgba(55,195,222,0.65)" : "rgba(0,175,250,0.22)";
 
   const stateLabel = {
-    idle:t("scan_place",lang),
-    scanning:t("scan_biometric",lang),
+    idle:      "PLACE FINGER ON SCANNER",
+    scanning:  "SCANNING BIOMETRIC DATA...",
     preview:   `✓ IDENTITY VERIFIED — ENTERING IN ${countdown}s`,
-    granting:t("scan_granting",lang),
+    granting:  "GRANTING ACCESS...",
     not_in_db: "✗ NOT FOUND IN DATABASE",
     no_users:  "⚠ NO USERS REGISTERED",
   }[fpState];
@@ -224,8 +224,8 @@ const LoginScreen = () => {
       <div style={{display:"flex",gap:0,marginBottom:20,borderRadius:12,overflow:"hidden",
         border:"1px solid rgba(0,175,250,0.18)",background:"rgba(0,10,30,0.4)"}}>
         {([
-          {id:"fingerprint", icon:"🖐", label:t("login_fp_tab",lang)},
-          {id:"password",    icon:"🔑", label:t("login_pw_tab",lang)},
+          {id:"fingerprint", icon:"🖐", label:"FINGERPRINT"},
+          {id:"password",    icon:"🔑", label:"USERNAME / PASSWORD"},
         ] as const).map(tab=>(
           <button key={tab.id} onClick={()=>{setLoginTab(tab.id);setManualErr("");setManualUser("");setManualPass("");setManualPreview(null);resetScan();}}
             style={{flex:1,padding:"11px 8px",border:"none",cursor:"pointer",transition:"all .18s",
@@ -420,8 +420,8 @@ const LoginScreen = () => {
                     <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:700,
                       color:"rgba(210,238,255,0.98)",marginBottom:6}}>{matchUser.fullName}</div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 14px",marginBottom:10}}>
-                      {[["ID",matchRecord.id],[t("lbl_role",lang),ROLE_LABELS[matchUser.role]],
-                        ["USERNAME",`@${matchUser.username}`],[t("lbl_nationality",lang),matchRecord.nationality||"—"]].map(([l,v])=>(
+                      {[["ID",matchRecord.id],["ROLE",ROLE_LABELS[matchUser.role]],
+                        ["USERNAME",`@${matchUser.username}`],["NATIONALITY",matchRecord.nationality||"—"]].map(([l,v])=>(
                         <div key={l}>
                           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,fontWeight:700,
                             letterSpacing:"0.14em",color:"rgba(50,140,255,0.38)",textTransform:"uppercase" as const}}>{l}</div>
@@ -505,7 +505,7 @@ const LoginScreen = () => {
                   value={manualUser}
                   onChange={e=>{setManualUser(e.target.value);setManualErr("");}}
                   onKeyDown={e=>e.key==="Enter"&&handleManual()}
-                  placeholder={t("login_user",lang)}
+                  placeholder="Enter your username"
                   className="input-cyber"
                   autoComplete="username"
                   autoFocus
@@ -525,7 +525,7 @@ const LoginScreen = () => {
                   value={manualPass}
                   onChange={e=>{setManualPass(e.target.value);setManualErr("");}}
                   onKeyDown={e=>e.key==="Enter"&&handleManual()}
-                  placeholder={t("login_pass",lang)}
+                  placeholder="Enter your password"
                   className="input-cyber"
                   autoComplete="current-password"
                   style={{width:"100%"}}

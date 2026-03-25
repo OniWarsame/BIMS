@@ -1,4 +1,3 @@
-import { useLang, t } from "@/lib/i18n";
 import React, { useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,7 +28,7 @@ const FINGERS: {key:FingerKey;label:string;short:string}[] = [
 
 const STEPS = [
   {id:0, label:"Personal Info",    icon:IdCard},
-  {id:1, label:t("reg_step_creds",lang),      icon:CreditCard},
+  {id:1, label:"Credentials",      icon:CreditCard},
   {id:2, label:"Family",           icon:Users},
   {id:3, label:"Education",        icon:GraduationCap},
   {id:4, label:"Work",             icon:Building2},
@@ -38,7 +37,7 @@ const STEPS = [
   {id:7, label:"Insurance",        icon:Shield},
   {id:8, label:"Emergency",        icon:AlertTriangle},
   {id:9, label:"Social Media",     icon:Share2},
-  {id:10, label:t("reg_step_bio",lang),       icon:Fingerprint},
+  {id:10, label:"Biometrics",       icon:Fingerprint},
 ];
 
 /* ── Attachment viewer modal ── */
@@ -179,37 +178,36 @@ const UploadBox=({label,file,onClear,onClick,accept="*"}:{label:string;file:stri
 
 /* STEP 0 — Personal Info */
 const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
-  const lang = useLang();
   const hc=(e:any)=>setForm((p:any)=>({...p,[e.target.name]:e.target.value}));
   return(
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
-      <SectionHeader icon={IdCard} title={t("res_personal",lang)}/>
+      <SectionHeader icon={IdCard} title="Personal Information"/>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-        <F label={t("reg_first_name",lang)} required><input name="name" value={form.name} onChange={hc} placeholder="First name" className="input-cyber"/></F>
+        <F label="FIRST NAME" required><input name="name" value={form.name} onChange={hc} placeholder="First name" className="input-cyber"/></F>
         <F label="SURNAME" required><input name="surname" value={form.surname} onChange={hc} placeholder="Last name" className="input-cyber"/></F>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-        <F label={t("reg_gender",lang)} required>
+        <F label="GENDER" required>
           <select name="gender" value={form.gender} onChange={hc} className="input-cyber">
             <option value="">Select gender</option>
             <option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option>
           </select>
         </F>
-        <F label={t("reg_blood_type",lang)}>
+        <F label="BLOOD TYPE">
           <select name="bloodType" value={form.bloodType} onChange={hc} className="input-cyber">
             <option value="">Select blood type</option>
             {BLOOD_TYPES.map(bt=><option key={bt}>{bt}</option>)}
           </select>
         </F>
       </div>
-      <F label={t("reg_dob",lang)} required><DateInput value={form.dateOfBirth} onChange={v=>setForm((p:any)=>({...p,dateOfBirth:v}))}/></F>
+      <F label="DATE OF BIRTH" required><DateInput value={form.dateOfBirth} onChange={v=>setForm((p:any)=>({...p,dateOfBirth:v}))}/></F>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
         <F label="PLACE OF BIRTH"><input name="placeOfBirth" value={form.placeOfBirth} onChange={hc} placeholder="City, Country" className="input-cyber"/></F>
         <F label="NUMBER OF SIBLINGS"><input name="siblings" value={form.siblings} onChange={hc} placeholder="e.g. 2" type="number" min="0" className="input-cyber"/></F>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
         <F label="NATIONALITY"><input name="nationality" value={form.nationality} onChange={hc} placeholder="e.g. Kenyan" className="input-cyber"/></F>
-        <F label={t("lbl_marital",lang)}>
+        <F label="MARITAL STATUS">
           <select name="maritalStatus" value={form.maritalStatus} onChange={hc} className="input-cyber">
             <option value="">Select status</option>
             <option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option>
@@ -236,17 +234,17 @@ const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
           </span>
         </label>
       </F>
-      <F label={t("reg_occupation",lang)}><input name="occupation" value={form.occupation} onChange={hc} placeholder="Job title" className="input-cyber"/></F>
-      <F label={t("reg_email",lang)} required><input name="email" value={form.email} onChange={hc} type="email" placeholder="email@domain.com" className="input-cyber"/></F>
+      <F label="OCCUPATION"><input name="occupation" value={form.occupation} onChange={hc} placeholder="Job title" className="input-cyber"/></F>
+      <F label="EMAIL" required><input name="email" value={form.email} onChange={hc} type="email" placeholder="email@domain.com" className="input-cyber"/></F>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-        <F label={t("reg_phone",lang)}><input name="phoneNo" value={form.phoneNo} onChange={hc} placeholder="+254-700-000-000" className="input-cyber"/></F>
+        <F label="PHONE NUMBER"><input name="phoneNo" value={form.phoneNo} onChange={hc} placeholder="+254-700-000-000" className="input-cyber"/></F>
         <F label={<span className="flex items-center gap-1">
           <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style={{color:"hsl(142,70%,50%)"}}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           WHATSAPP
         </span> as any}>
           <input name="whatsapp" value={form.whatsapp} onChange={hc} placeholder="+254-700-000-000" className="input-cyber"/></F>
       </div>
-      <F label={t("lbl_address",lang)}><textarea name="address" value={form.address} onChange={hc} rows={2} placeholder="Full residential address" className="textarea-cyber"/></F>
+      <F label="ADDRESS"><textarea name="address" value={form.address} onChange={hc} rows={2} placeholder="Full residential address" className="textarea-cyber"/></F>
       {/* Profile photo */}
       <div>
         <label className="text-label">PROFILE PHOTO</label>
@@ -287,7 +285,7 @@ const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
           <div className="upload-zone h-36 flex-col gap-2 cursor-pointer" onClick={()=>photoRef.current?.click()}>
             {photoPreview
               ?<img src={photoPreview} alt="Subject" className="w-full h-full object-cover rounded"/>
-              :<><Camera className="w-7 h-7" style={{color:"hsla(192,100%,55%,0.3)"}}/><span className="font-mono text-[10px] tracking-widest" style={{color:"hsla(192,100%,58%,0.45)"}}>{t("reg_upload",lang)}</span></>}
+              :<><Camera className="w-7 h-7" style={{color:"hsla(192,100%,55%,0.3)"}}/><span className="font-mono text-[10px] tracking-widest" style={{color:"hsla(192,100%,58%,0.45)"}}>CLICK TO UPLOAD PHOTO</span></>}
           </div>
         )}
         {/* Upload vs Selfie buttons */}
@@ -325,11 +323,10 @@ const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
 
 /* STEP 1 — Credentials */
 const StepCredentials=({form,setForm,noPassport,setNoPassport,noLicense,setNoLicense,passportFile,setPassportFile,licenseFile,setLicenseFile,passportRef,licenseRef,onView}:any)=>{
-  const lang = useLang();
   const hc=(e:any)=>setForm((p:any)=>({...p,[e.target.name]:e.target.value}));
   return(
     <div className="space-y-6">
-      <SectionHeader icon={CreditCard} title={t("reg_step_creds",lang)}/>
+      <SectionHeader icon={CreditCard} title="Credentials"/>
       {/* ── PASSPORT ── */}
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         <label className="text-label" style={{color:"hsla(192,100%,62%,0.7)",fontSize:"0.68rem"}}>PASSPORT</label>
@@ -378,7 +375,7 @@ const StepCredentials=({form,setForm,noPassport,setNoPassport,noLicense,setNoLic
             {licenseFile&&<button onClick={()=>onView("DRIVING LICENSE",licenseFile)} className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-wider px-2 py-1 rounded" style={{border:"1px solid hsla(192,100%,55%,0.35)",background:"hsla(192,100%,55%,0.08)",color:"hsl(193,100%,62%)"}}><Eye className="w-3 h-3"/> VIEW</button>}
           </div>
           <input ref={licenseRef} type="file" accept=".pdf,image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)setLicenseFile(f.name);e.target.value="";}}/>
-          <UploadBox label={t("reg_license",lang)} file={licenseFile} onClear={()=>setLicenseFile(null)} onClick={()=>licenseRef.current?.click()}/>
+          <UploadBox label="Driving License" file={licenseFile} onClear={()=>setLicenseFile(null)} onClick={()=>licenseRef.current?.click()}/>
         </div>
         <div className="check-row">
           <Checkbox id="noLicense" checked={noLicense} onCheckedChange={v=>setNoLicense(v===true)}/>
@@ -394,7 +391,7 @@ const StepFamily=({form,setForm,fatherDeceased,setFatherDeceased,motherDeceased,
   const hc=(e:any)=>setForm((p:any)=>({...p,[e.target.name]:e.target.value}));
   return(
     <div className="space-y-5">
-      <SectionHeader icon={Users} title={t("res_kin",lang)}/>
+      <SectionHeader icon={Users} title="Family Information"/>
       <div className="space-y-4 pb-4 border-b" style={{borderColor:"hsla(192,60%,18%,0.3)"}}>
         <label className="text-label" style={{color:"hsla(192,100%,62%,0.6)",fontSize:"0.68rem"}}>FATHER</label>
         <F label="FATHER'S FULL NAME"><input name="fatherName" value={form.fatherName} onChange={hc} placeholder="Full name" className="input-cyber"/></F>
@@ -414,11 +411,11 @@ const StepFamily=({form,setForm,fatherDeceased,setFatherDeceased,motherDeceased,
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         <label className="font-display text-base font-bold tracking-wide" style={{color:"hsl(193,100%,68%)"}}>NEXT OF KIN</label>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          <F label={t("reg_first_name",lang)}><input value={kin.name} onChange={e=>setKin((p:any)=>({...p,name:e.target.value}))} placeholder="First name" className="input-cyber"/></F>
+          <F label="FIRST NAME"><input value={kin.name} onChange={e=>setKin((p:any)=>({...p,name:e.target.value}))} placeholder="First name" className="input-cyber"/></F>
           <F label="SURNAME"><input value={kin.surname} onChange={e=>setKin((p:any)=>({...p,surname:e.target.value}))} placeholder="Last name" className="input-cyber"/></F>
         </div>
         <F label="PHONE NO."><input value={kin.phone} onChange={e=>setKin((p:any)=>({...p,phone:e.target.value}))} placeholder="+254-700-000-000" className="input-cyber"/></F>
-        <F label={t("lbl_address",lang)}><input value={kin.address} onChange={e=>setKin((p:any)=>({...p,address:e.target.value}))} placeholder="Full address" className="input-cyber"/></F>
+        <F label="ADDRESS"><input value={kin.address} onChange={e=>setKin((p:any)=>({...p,address:e.target.value}))} placeholder="Full address" className="input-cyber"/></F>
         <F label="RELATION">
           <select value={kin.relation} onChange={e=>setKin((p:any)=>({...p,relation:e.target.value}))} className="input-cyber">
             <option value="">Select relation</option>
@@ -527,7 +524,7 @@ const StepWork=({form,setForm,isWorking,setIsWorking,workInfo,setWorkInfo,cvFile
   const hc=(e:any)=>setForm((p:any)=>({...p,[e.target.name]:e.target.value}));
   return(
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
-      <SectionHeader icon={Building2} title={t("reg_occupation",lang)}/>
+      <SectionHeader icon={Building2} title="Work Experience"/>
       <div className="check-row">
         <Checkbox id="isWorking" checked={isWorking} onCheckedChange={v=>setIsWorking(v===true)}/><label htmlFor="isWorking">CURRENTLY WORKING</label>
       </div>
@@ -537,7 +534,7 @@ const StepWork=({form,setForm,isWorking,setIsWorking,workInfo,setWorkInfo,cvFile
             className="space-y-4 pl-4 overflow-hidden" style={{borderLeft:"2px solid hsla(33,100%,52%,0.35)"}}>
             <F label="COMPANY NAME"><input value={workInfo.company} onChange={e=>setWorkInfo((p:any)=>({...p,company:e.target.value}))} placeholder="Company name" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <F label={t("lbl_employer",lang)}><input value={workInfo.employer} onChange={e=>setWorkInfo((p:any)=>({...p,employer:e.target.value}))} placeholder="Name" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
+              <F label="EMPLOYER / MANAGER"><input value={workInfo.employer} onChange={e=>setWorkInfo((p:any)=>({...p,employer:e.target.value}))} placeholder="Name" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
               <F label="DEPARTMENT"><input value={workInfo.department} onChange={e=>setWorkInfo((p:any)=>({...p,department:e.target.value}))} placeholder="Department" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
             </div>
           </motion.div>
@@ -586,7 +583,7 @@ const StepHealth=({form,setForm,crimeFile,setCrimeFile,crimeRef}:any)=>{
       <F label="HISTORY OF PRESENT ILLNESS">
         <textarea name="historyOfPresentIllness" rows={3} value={form.historyOfPresentIllness} onChange={hc} placeholder="Current illness, symptoms, onset, duration…" className="textarea-cyber"/>
       </F>
-      <F label={t("lbl_crime",lang)}>
+      <F label="CRIME RECORD">
         <textarea name="crimeRecord" rows={3} value={form.crimeRecord} onChange={hc} placeholder="None / details if applicable…" className="textarea-cyber"/>
       </F>
       <div>
@@ -667,7 +664,7 @@ const StepInsurance=({form,setForm,noInsurance,setNoInsurance,insuranceFile,setI
 /* STEP 7 — Emergency */
 const StepEmergency=({ec1,setEc1,ec2,setEc2}:any)=>(
   <div className="space-y-5">
-    <SectionHeader icon={AlertTriangle} title={t("reg_emergency",lang)}/>
+    <SectionHeader icon={AlertTriangle} title="Emergency Contacts"/>
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
       <label className="text-label" style={{color:"hsla(192,100%,62%,0.6)",fontSize:"0.68rem"}}>CONTACT 1</label>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -696,7 +693,7 @@ const StepSocial=({form,setForm}:any)=>{
   ];
   return(
     <div className="space-y-5">
-      <SectionHeader icon={Share2} title={t("db_col_name",lang)}/>
+      <SectionHeader icon={Share2} title="Social Media Accounts"/>
       <p className="font-mono text-xs" style={{color:"hsla(192,100%,60%,0.5)"}}>All social media fields are optional.</p>
       <div className="grid grid-cols-2 gap-5">
         {platforms.map(({key,label,placeholder,color,glow,icon})=>(
@@ -740,7 +737,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
 
   return(
     <div className="space-y-6">
-      <SectionHeader icon={Fingerprint} title={t("res_biometrics",lang)}/>
+      <SectionHeader icon={Fingerprint} title="Biometric Enrollment"/>
       <p className="font-mono text-xs" style={{color:"hsla(192,100%,60%,0.5)"}}>Tap each finger pad to scan. All 4 fingers required.</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
         {FINGERS.map(({key,label})=>(
@@ -916,7 +913,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
           cursor:allDone?"pointer":"not-allowed",
         }}>
         <Fingerprint className="w-5 h-5"/>
-        {allDone?t("db_commit",lang):"SCAN ALL FINGERS TO PROCEED"}
+        {allDone?"COMMIT RECORD TO DATABASE":"SCAN ALL FINGERS TO PROCEED"}
       </button>
     </div>
   );
@@ -926,7 +923,6 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
    MAIN REGISTRATION COMPONENT
 ═══════════════════════════════════════════════════════════ */
 const Registration = () => {
-  const lang = useLang();
   const navigate = useNavigate();
   const {toast}  = useToast();
   const [step, setStep] = useState(0);
@@ -1108,7 +1104,7 @@ const Registration = () => {
           </div>
           <div>
             <span className="font-display text-base font-bold tracking-wider text-foreground block leading-tight">NEW REGISTRATION</span>
-            <span className="font-mono text-[10px] tracking-widest" style={{color:"rgba(100,185,255,0.78)",fontFamily:"'DM Mono',monospace"}}> {t("db_scanning",lang).replace("…","")} {step+1}/{STEPS.length} — {STEPS[step].label.toUpperCase()}</span>
+            <span className="font-mono text-[10px] tracking-widest" style={{color:"rgba(100,185,255,0.78)",fontFamily:"'DM Mono',monospace"}}> STEP {step+1} OF {STEPS.length} — {STEPS[step].label.toUpperCase()}</span>
           </div>
         </div>
         <span className="font-mono text-[10px] hidden md:block" style={{color:"hsla(192,100%,62%,0.4)"}}>CIVIL_REGISTRATION_v3</span>
@@ -1163,7 +1159,7 @@ const Registration = () => {
                   color:step===0?"hsla(38,50%,45%,0.3)":"hsl(38,80%,72%)",
                   cursor:step===0?"not-allowed":"pointer",
                 }}>
-                <ChevronLeft className="w-4 h-4"/>{t("reg_back",lang)}
+                <ChevronLeft className="w-4 h-4"/> BACK
               </button>
               <div className="font-mono text-xs" style={{color:"hsla(192,80%,55%,0.5)"}}>
                 {step+1} / {STEPS.length}
