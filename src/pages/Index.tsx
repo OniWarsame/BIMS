@@ -158,6 +158,10 @@ const Index = () => {
   const navigate = useNavigate();
   const [scanState, setScanState] = useState<"idle"|"scanning"|"match"|"no-match">("idle");
   const [showDeepSearch, setShowDeepSearch] = useState(false);
+  const [showGhostTrace, setShowGhostTrace] = useState(false);
+  const [ghostPhone, setGhostPhone] = useState("");
+  const [ghostLoading, setGhostLoading] = useState(false);
+  const [ghostResults, setGhostResults] = useState<any>(null);
   const [showFaceSearch, setShowFaceSearch] = useState(false);
   const [faceFile, setFaceFile] = useState<string|null>(null);
   const [faceLoading, setFaceLoading] = useState(false);
@@ -204,6 +208,97 @@ const Index = () => {
   const [dsTab, setDsTab] = useState<"text"|"image">("text");
   const [dsImageStage, setDsImageStage] = useState("");
   const dsImageRef = useRef<HTMLInputElement>(null);
+
+  const runGhostTrace = () => {
+    if (!ghostPhone.trim() || ghostLoading) return;
+    setGhostLoading(true);
+    setGhostResults(null);
+
+    const raw = ghostPhone.trim();
+    const digits = raw.replace(/[^0-9]/g, "");
+    const enc = encodeURIComponent;
+
+    // ── 1. Search local database immediately ──
+    const allRecords = getRecords();
+    const dbMatch = allRecords.filter(r => {
+      if (!r.phoneNo) return false;
+      const stored = r.phoneNo.replace(/[^0-9]/g, "");
+      return stored === digits || stored.endsWith(digits) || digits.endsWith(stored);
+    });
+
+    // Show DB result immediately while AI analyses in background
+    setTimeout(async () => {
+
+      // ── 2. Build OSINT internet trace links ──
+      const links: any[] = [];
+
+      // Carrier & identity lookup
+      links.push({cat:"📡 Carrier & Number Lookup", sub:"Identify carrier, location and line type", items:[
+        {label:"NumLookup",    url:`https://www.numlookup.com/phone/${enc(raw)}`,          bold:true,  note:"Free carrier lookup"},
+        {label:"PhoneInfoga", url:`https://github.com/sundowndev/phoneinfoga`,             bold:true,  note:"Full OSINT framework"},
+        {label:"Truecaller",  url:`https://www.truecaller.com/search/so/${enc(raw)}`,      bold:false, note:"Caller ID + spam"},
+        {label:"WhitePages",  url:`https://www.whitepages.com/phone/${enc(raw)}`,          bold:false},
+        {label:"CallerID Test",url:`https://www.calleridtest.com/`,                         bold:false},
+        {label:"HLR Lookup",  url:`https://www.hlrlookup.com/`,                            bold:false, note:"Live SIM status"},
+      ]});
+
+      // Social media search
+      links.push({cat:"📱 Social Media Scan", sub:"Find accounts registered with this number", items:[
+        {label:"WhatsApp",      url:`https://wa.me/${digits}`,                             bold:true,  note:"Check if registered"},
+        {label:"Telegram",      url:`https://t.me/+${digits}`,                            bold:true,  note:"Open chat if exists"},
+        {label:"TruePeopleSearch",url:`https://www.truepeoplesearch.com/results?phoneno=${enc(raw)}`, bold:true},
+        {label:"Facebook Search",url:`https://www.facebook.com/search/people/?q=${enc(raw)}`,       bold:false},
+        {label:"Google",        url:`https://www.google.com/search?q="${enc(raw)}"`,       bold:false},
+        {label:"Google (digits)",url:`https://www.google.com/search?q="${enc(digits)}"`,   bold:false},
+      ]});
+
+      // People search engines
+      links.push({cat:"🔍 People Search Engines", sub:"Public records and identity databases", items:[
+        {label:"Spokeo",     url:`https://www.spokeo.com/phone/${enc(raw)}`,               bold:true},
+        {label:"BeenVerified",url:`https://www.beenverified.com/phone/${enc(raw)}`,        bold:true},
+        {label:"Intelius",   url:`https://www.intelius.com/phone-number/${enc(raw)}`,      bold:false},
+        {label:"ZabaSearch", url:`https://www.zabasearch.com/phone/${enc(digits)}/`,       bold:false},
+        {label:"AnyWho",     url:`https://www.anywho.com/reverse-lookup/${enc(raw)}`,      bold:false},
+        {label:"Pipl",       url:`https://pipl.com/`,                                      bold:false, note:"Deep web identity"},
+      ]});
+
+      // Dark/OSINT databases
+      links.push({cat:"🕵️ OSINT Intelligence Databases", sub:"Advanced signal intelligence sources", items:[
+        {label:"PhoneInfoga (GitHub)",url:`https://github.com/sundowndev/phoneinfoga`,     bold:true,  note:"Run locally for full trace"},
+        {label:"That'sThem",  url:`https://thatsthem.com/phone/${enc(raw)}`,               bold:false},
+        {label:"Sync.me",     url:`https://sync.me/search/?q=${enc(raw)}`,                 bold:false, note:"Global caller DB"},
+        {label:"Eyecon",      url:`https://eyecon.me/search?phone=${enc(raw)}`,            bold:false},
+        {label:"OpenCNAM",    url:`https://opencnam.com/`,                                 bold:false, note:"CNAM lookup API"},
+        {label:"OSINT Framework",url:`https://osintframework.com/`,                        bold:false, note:"Full OSINT toolkit"},
+      ]});
+
+      // Regional (East Africa focus given BIMS is Kenya/Somalia based)
+      links.push({cat:"🌍 Regional Lookup — East Africa", sub:"Safaricom, Hormuud, Airtel, Telkom", items:[
+        {label:"Safaricom M-Pesa",  url:`https://www.safaricom.co.ke/personal/m-pesa`,    bold:false, note:"Kenya"},
+        {label:"Hormuud Telecom",   url:`https://www.hormuud.com`,                         bold:false, note:"Somalia"},
+        {label:"Airtel Africa",     url:`https://airtel.africa`,                           bold:false},
+        {label:"Google Maps Search",url:`https://www.google.com/maps/search/${enc(raw)}`, bold:false, note:"Location ping"},
+        {label:"Africa OSINT",      url:`https://www.google.com/search?q=OSINT+${enc(raw)}+africa+phone`, bold:false},
+      ]});
+
+      // ── AI phone intelligence ──
+      let aiInfo = "";
+      try {
+        const aiResp = await fetch("https://api.anthropic.com/v1/messages",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+          body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:250,messages:[{role:"user",content:`Analyse phone number: ${raw}\n\nRespond with ONLY JSON:\n{"country":"country name","carrier":"likely carrier/telecom","type":"mobile/landline/voip","region":"region or city if detectable","format_valid":true,"risk":"low/medium/high","notes":"one sentence OSINT note"}`}]})
+        });
+        if(aiResp.ok){
+          const aiData = await aiResp.json();
+          const txt=(aiData.content||[]).map((b:any)=>b.text||"").join("").trim();
+          try{ aiInfo = JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch{}
+        }
+      }catch{}
+      setGhostResults({ dbMatch, links, phone: raw, ai: aiInfo });
+      setGhostLoading(false);
+    }, 900);
+  };
 
   const handleDeepSearch = () => {
     if (!dsInput.trim() || dsLoading) return;
@@ -498,6 +593,7 @@ Respond ONLY with valid JSON (no markdown):
     { label:t("grid_register",lang),    sub:"Enroll Biometric Subject", Icon:UserPlus,  path:"/register", hue:200, color:"hsl(200,100%,68%)", shape:"hexagon" },
     { label:t("grid_database",lang),    sub:"Access Records Vault",     Icon:Database,  path:"/database", hue:195, color:"hsl(193,100%,62%)", shape:"shield"  },
     { label:t("grid_deepsearch",lang), sub:"OSINT Intelligence Query", Icon:Search,    path:null,         hue:270, color:"hsl(270,80%,70%)",  shape:"target",  osint:true },
+    { label:"Ghost Trace", sub:"Phone Signal Intelligence", Icon:Search, path:null, hue:165, color:"hsl(165,90%,55%)", shape:"ghost", ghost:true },
     ...(userIsAdmin ? [
       { label:t("grid_users",lang),   sub:"Access Control",          Icon:Users,    path:"/users",    hue:36,  color:"hsl(36,100%,62%)",  shape:"badge"   },
       { label:t("grid_reports",lang), sub:"Audit & Activity Log",    Icon:FileText, path:"/reports",  hue:158, color:"hsl(158,80%,54%)",  shape:"circuit" },
@@ -505,7 +601,7 @@ Respond ONLY with valid JSON (no markdown):
     ] : [
       { label:"Create",  sub:"Generate Documents",      Icon:FileText, path:"/create",   hue:216, color:"hsl(216,100%,68%)", shape:"chip"    },
     ]),
-  ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean }[];
+  ] as { label:string; sub:string; Icon:any; path:string|null; hue:number; color:string; shape:string; osint?:boolean; ghost?:boolean }[];
 
   const scanColor = isMatch?"hsl(158,80%,55%)":isNoMatch?"hsl(354,85%,62%)":isScanning?"hsl(36,100%,58%)":"hsl(200,100%,65%)";
   const scanGlow  = isMatch?"rgba(50,200,130,0.6)":isNoMatch?"rgba(220,60,60,0.6)":isScanning?"rgba(255,160,30,0.6)":"rgba(44,178,212,0.6)";
@@ -521,6 +617,15 @@ Respond ONLY with valid JSON (no markdown):
       case "badge":   return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="3" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".1"/><circle cx="12" cy="9" r="3" stroke={c} strokeWidth="1.2" fill="none"/><path d="M6 20c0-3.31 2.69-5 6-5s6 1.69 6 5" stroke={c} strokeWidth="1.2" strokeLinecap="round" fill="none"/></svg>;
       case "circuit": return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><rect x="17" y="8" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><rect x="10" y="3" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><rect x="10" y="17" width="4" height="4" stroke={c} strokeWidth="1.2" fill="none"/><line x1="7" y1="10" x2="10" y2="10" stroke={c} strokeWidth="1.2"/><line x1="14" y1="10" x2="17" y2="10" stroke={c} strokeWidth="1.2"/><line x1="12" y1="7" x2="12" y2="10" stroke={c} strokeWidth="1.2"/><line x1="12" y1="14" x2="12" y2="17" stroke={c} strokeWidth="1.2"/><circle cx="12" cy="12" r="2" fill={c} fillOpacity=".6"/></svg>;
       case "chip":    return <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".1"/><rect x="9" y="9" width="6" height="6" rx="1" stroke={c} strokeWidth="1" fill={c} fillOpacity=".2"/><line x1="9" y1="2" x2="9" y2="6" stroke={c} strokeWidth="1.2"/><line x1="12" y1="2" x2="12" y2="6" stroke={c} strokeWidth="1.2"/><line x1="15" y1="2" x2="15" y2="6" stroke={c} strokeWidth="1.2"/><line x1="9" y1="18" x2="9" y2="22" stroke={c} strokeWidth="1.2"/><line x1="12" y1="18" x2="12" y2="22" stroke={c} strokeWidth="1.2"/><line x1="15" y1="18" x2="15" y2="22" stroke={c} strokeWidth="1.2"/><line x1="2" y1="9" x2="6" y2="9" stroke={c} strokeWidth="1.2"/><line x1="2" y1="12" x2="6" y2="12" stroke={c} strokeWidth="1.2"/><line x1="2" y1="15" x2="6" y2="15" stroke={c} strokeWidth="1.2"/><line x1="18" y1="9" x2="22" y2="9" stroke={c} strokeWidth="1.2"/><line x1="18" y1="12" x2="22" y2="12" stroke={c} strokeWidth="1.2"/><line x1="18" y1="15" x2="22" y2="15" stroke={c} strokeWidth="1.2"/></svg>;
+      case "ghost": return <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C8.13 2 5 5.13 5 9v7l-2 2v1h18v-1l-2-2V9c0-3.87-3.13-7-7-7z" stroke={c} strokeWidth="1.5" fill={c} fillOpacity=".12"/>
+        <path d="M5 18l1.5-1.5L8 18l1.5-1.5L11 18l1.5-1.5L14 18l1.5-1.5L17 18l1.5-1.5L20 18" stroke={c} strokeWidth="1.2" strokeLinecap="round"/>
+        <circle cx="9.5" cy="10" r="1.2" fill={c}/>
+        <circle cx="14.5" cy="10" r="1.2" fill={c}/>
+        <path d="M9.5 13.5s1.25 1.5 2.5 1.5 2.5-1.5 2.5-1.5" stroke={c} strokeWidth="1.2" strokeLinecap="round"/>
+        <line x1="12" y1="2" x2="12" y2="0" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="12" cy="0.5" r="1" fill={c} opacity=".6"/>
+      </svg>;
       default: return null;
     }
   };
@@ -809,12 +914,14 @@ Respond ONLY with valid JSON (no markdown):
 
           {/* Command grid */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,width:"100%"}}>
-            {CMDS.map(({label,sub,Icon,path,hue,color,shape,osint},i)=>(
+            {CMDS.map((cmd,i)=>{
+            const {label,sub,Icon,path,hue,color,shape,osint} = cmd as any;
+            return (
               <motion.button key={label}
                 initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
                 transition={{delay:0.4+i*0.05}}
                 whileHover={{y:-4,scale:1.025}} whileTap={{scale:0.97}}
-                onClick={()=>osint?setShowDeepSearch(true):path?navigate(path):null}
+                onClick={()=>osint?setShowDeepSearch(true):(cmd as any).ghost?setShowGhostTrace(true):path?navigate(path):null}
                 style={{display:"flex",flexDirection:"column" as const,alignItems:"flex-start",
                   padding:"14px 15px",
                   background:"linear-gradient(160deg,rgba(4,18,52,0.78),rgba(2,10,36,0.78))",
@@ -844,11 +951,15 @@ Respond ONLY with valid JSON (no markdown):
                   {osint && (
                     <span style={{fontSize:7.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"hsla(270,80%,55%,0.22)",border:"1px solid hsla(270,80%,65%,0.38)",color:"hsl(270,80%,78%)",letterSpacing:"0.06em"}}>OSINT</span>
                   )}
+                  {(cmd as any).ghost && (
+                    <span style={{fontSize:7.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"hsla(165,90%,45%,0.22)",border:"1px solid hsla(165,90%,55%,0.45)",color:"hsl(165,90%,68%)",letterSpacing:"0.06em"}}>SIGINT</span>
+                  )}
                 </div>
                 <span style={{fontFamily:"'Exo 2',sans-serif",fontSize:10.5,color:"rgba(140,210,240,0.62)",lineHeight:1.35,position:"relative" as const}}>{sub}</span>
 
               </motion.button>
-            ))}
+            );
+          })}
           </div>
 
         </div>
@@ -921,6 +1032,240 @@ Respond ONLY with valid JSON (no markdown):
 
       {/* ─── DEEP SEARCH MODAL ─── */}
       <AnimatePresence>
+        {showGhostTrace && (
+          <motion.div
+            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,8,20,0.88)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}
+            onClick={()=>{setShowGhostTrace(false);setGhostPhone("");setGhostResults(null);}}>
+            <motion.div
+              initial={{scale:0.92,y:20}} animate={{scale:1,y:0}} exit={{scale:0.92,y:20}}
+              transition={{type:"spring",stiffness:320,damping:28}}
+              onClick={e=>e.stopPropagation()}
+              style={{width:"100%",maxWidth:600,maxHeight:"85vh",overflowY:"auto",borderRadius:20,
+                background:"linear-gradient(160deg,rgba(0,18,32,0.96),rgba(0,10,22,0.98))",
+                border:"1px solid rgba(0,220,140,0.25)",
+                borderTop:"2px solid rgba(0,220,140,0.60)",
+                boxShadow:"0 32px 80px rgba(0,0,0,0.85),0 0 60px rgba(0,180,120,0.08)",
+                padding:"24px 26px"}}>
+
+              {/* ── Header ── */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:40,height:40,borderRadius:11,
+                    background:"rgba(0,200,120,0.12)",border:"1.5px solid rgba(0,220,140,0.40)",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    boxShadow:"0 0 20px rgba(0,200,120,0.20)"}}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2C8.13 2 5 5.13 5 9v7l-2 2v1h18v-1l-2-2V9c0-3.87-3.13-7-7-7z"
+                        stroke="rgba(0,220,140,0.95)" strokeWidth="1.6" fill="rgba(0,220,140,0.12)"/>
+                      <path d="M5 18l1.5-1.5L8 18l1.5-1.5L11 18l1.5-1.5L14 18l1.5-1.5L17 18l1.5-1.5L20 18"
+                        stroke="rgba(0,220,140,0.95)" strokeWidth="1.2" strokeLinecap="round"/>
+                      <circle cx="9.5" cy="10" r="1.2" fill="rgba(0,220,140,0.95)"/>
+                      <circle cx="14.5" cy="10" r="1.2" fill="rgba(0,220,140,0.95)"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:800,color:"rgba(0,230,150,0.96)"}}>
+                      GHOST TRACE
+                    </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,color:"rgba(0,180,110,0.55)",marginTop:2,letterSpacing:"0.10em"}}>
+                      PHONE SIGNAL INTELLIGENCE · SIGINT OSINT
+                    </div>
+                  </div>
+                </div>
+                <button onClick={()=>{setShowGhostTrace(false);setGhostPhone("");setGhostResults(null);}}
+                  style={{width:30,height:30,borderRadius:"50%",border:"1px solid rgba(0,180,110,0.20)",
+                    background:"rgba(0,180,110,0.06)",cursor:"pointer",display:"flex",
+                    alignItems:"center",justifyContent:"center",color:"rgba(0,200,130,0.6)"}}>
+                  <X style={{width:14,height:14}}/>
+                </button>
+              </div>
+
+              {/* ── Input ── */}
+              <div style={{display:"flex",gap:8,marginBottom:ghostResults?14:0}}>
+                <div style={{flex:1,position:"relative" as const}}>
+                  <input
+                    value={ghostPhone}
+                    onChange={e=>{setGhostPhone(e.target.value.replace(/[^0-9+\-\s()]/g,""));setGhostResults(null);}}
+                    onKeyDown={e=>{if(e.key==="Enter")runGhostTrace();}}
+                    placeholder="+252 61 234 5678 — any format accepted"
+                    style={{width:"100%",padding:"11px 14px",borderRadius:11,
+                      background:"rgba(0,180,110,0.07)",
+                      border:`1.5px solid ${ghostPhone?"rgba(0,220,140,0.50)":"rgba(0,180,110,0.22)"}`,
+                      outline:"none",color:"rgba(0,230,150,0.95)",
+                      fontFamily:"'JetBrains Mono',monospace",fontSize:13,letterSpacing:"0.04em"}}/>
+                </div>
+                <button onClick={runGhostTrace}
+                  disabled={ghostLoading||!ghostPhone.trim()}
+                  style={{padding:"11px 20px",borderRadius:11,cursor:ghostLoading||!ghostPhone.trim()?"not-allowed":"pointer",
+                    background:"linear-gradient(135deg,rgba(0,180,110,0.85),rgba(0,140,90,0.90))",
+                    border:"0",color:"rgba(0,0,0,0.85)",fontFamily:"'Orbitron',sans-serif",
+                    fontSize:12,fontWeight:800,letterSpacing:"0.06em",
+                    opacity:ghostLoading||!ghostPhone.trim()?0.45:1,
+                    boxShadow:"0 4px 20px rgba(0,180,110,0.35)"}}>
+                  {ghostLoading?"···":"TRACE"}
+                </button>
+              </div>
+
+              {/* ── Loading ── */}
+              {ghostLoading && (
+                <div style={{textAlign:"center" as const,padding:"28px 0"}}>
+                  <motion.div
+                    animate={{rotate:360}} transition={{duration:1.2,repeat:Infinity,ease:"linear"}}
+                    style={{width:48,height:48,borderRadius:"50%",
+                      border:"3px solid rgba(0,180,110,0.15)",
+                      borderTopColor:"rgba(0,220,140,0.90)",margin:"0 auto 14px"}}/>
+                  <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:11,color:"rgba(0,220,140,0.85)",letterSpacing:"0.12em"}}>
+                    TRACING SIGNAL…
+                  </div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,color:"rgba(0,180,110,0.45)",marginTop:6,letterSpacing:"0.08em"}}>
+                    Scanning database · Building intelligence links
+                  </div>
+                </div>
+              )}
+
+              {/* ── Results ── */}
+              {ghostResults && !ghostLoading && (
+                <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.2}}>
+
+                  {/* ── AI Phone Intelligence ── */}
+                  {ghostResults.ai && typeof ghostResults.ai === "object" && (
+                    <div style={{marginBottom:16,padding:"12px 14px",borderRadius:12,
+                      background:"rgba(0,180,110,0.08)",border:"1.5px solid rgba(0,200,130,0.28)"}}>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8.5,color:"rgba(0,200,130,0.60)",
+                        letterSpacing:"0.14em",marginBottom:8}}>
+                        🧠 AI PHONE INTELLIGENCE — {ghostResults.phone}
+                      </div>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
+                        {(["country","carrier","type","region","risk"] as const).map((k)=>
+                          ghostResults.ai[k] ? (
+                            <div key={k} style={{background:"rgba(0,180,100,0.12)",
+                              border:"1px solid rgba(0,200,120,0.25)",borderRadius:6,padding:"4px 10px"}}>
+                              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
+                                color:"rgba(0,180,110,0.50)",textTransform:"uppercase" as const}}>{k}: </span>
+                              <span style={{fontFamily:"'Exo 2',sans-serif",fontSize:11,
+                                color:k==="risk"&&ghostResults.ai.risk==="high"?"rgba(255,100,80,0.90)":
+                                      k==="risk"&&ghostResults.ai.risk==="medium"?"rgba(255,180,30,0.90)":
+                                      "rgba(0,220,140,0.90)",fontWeight:600}}>
+                                {ghostResults.ai[k]}
+                              </span>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                      {ghostResults.ai.notes && (
+                        <div style={{marginTop:8,fontFamily:"'JetBrains Mono',monospace",fontSize:9,
+                          color:"rgba(0,180,110,0.55)",fontStyle:"italic" as const}}>
+                          {ghostResults.ai.notes}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── DB MATCH ── */}
+                  {ghostResults.dbMatch && ghostResults.dbMatch.length > 0 && (
+                    <div style={{marginBottom:18}}>
+                      <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:9,fontWeight:800,
+                        color:"rgba(0,255,160,0.90)",letterSpacing:"0.14em",marginBottom:10,
+                        display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{width:7,height:7,borderRadius:"50%",background:"rgba(0,255,160,0.90)",
+                          boxShadow:"0 0 10px rgba(0,255,160,0.80)"}}/>
+                        IDENTITY MATCH IN DATABASE ({ghostResults.dbMatch.length})
+                      </div>
+                      {ghostResults.dbMatch.map((rec:any,i:number)=>(
+                        <div key={i} style={{marginBottom:8,padding:"12px 14px",borderRadius:12,
+                          background:"rgba(0,180,100,0.08)",
+                          border:"1.5px solid rgba(0,220,140,0.35)",
+                          boxShadow:"0 0 20px rgba(0,180,100,0.10)"}}>
+                          <div style={{display:"flex",alignItems:"center",gap:10}}>
+                            {rec.photo
+                              ?<img src={rec.photo} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover" as const,border:"2px solid rgba(0,220,140,0.50)",flexShrink:0}}/>
+                              :<div style={{width:44,height:44,borderRadius:"50%",background:"rgba(0,180,100,0.18)",
+                                border:"2px solid rgba(0,220,140,0.40)",display:"flex",alignItems:"center",
+                                justifyContent:"center",flexShrink:0,fontFamily:"'Orbitron',sans-serif",
+                                fontSize:16,fontWeight:800,color:"rgba(0,220,140,0.80)"}}>
+                                {rec.name?.charAt(0)||"?"}
+                              </div>}
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:700,
+                                color:"rgba(0,230,150,0.96)",marginBottom:3}}>
+                                {rec.surname}, {rec.name}
+                              </div>
+                              <div style={{display:"flex",gap:8,flexWrap:"wrap" as const}}>
+                                {[
+                                  ["ID",rec.id],
+                                  ["📞",rec.phoneNo||"—"],
+                                  ["🌍",rec.nationality||"—"],
+                                  ["⚧",rec.gender||"—"],
+                                ].map(([l,v])=>(
+                                  <span key={l as string} style={{fontFamily:"'JetBrains Mono',monospace",
+                                    fontSize:9.5,color:"rgba(0,180,110,0.70)"}}>
+                                    <span style={{opacity:0.6}}>{l as string} </span>{v as string}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {ghostResults.dbMatch?.length === 0 && (
+                    <div style={{marginBottom:14,padding:"10px 14px",borderRadius:10,
+                      background:"rgba(255,100,80,0.06)",border:"1px solid rgba(255,100,80,0.20)"}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,
+                        color:"rgba(255,120,100,0.70)",letterSpacing:"0.08em"}}>
+                        ✗ No match in local database for this number
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── INTERNET TRACE LINKS ── */}
+                  {ghostResults.links.map((group:any,gi:number)=>(
+                    <div key={gi} style={{marginBottom:14}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,fontWeight:700,
+                        color:"rgba(0,180,110,0.65)",letterSpacing:"0.12em",marginBottom:4}}>
+                        {group.cat}
+                      </div>
+                      {group.sub && (
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7.5,
+                          color:"rgba(0,150,90,0.45)",marginBottom:7}}>{group.sub}</div>
+                      )}
+                      <div style={{display:"flex",flexWrap:"wrap" as const,gap:5}}>
+                        {group.items.map((lk:any)=>(
+                          <a key={lk.label} href={lk.url} target="_blank" rel="noopener noreferrer"
+                            style={{padding:lk.bold?"6px 13px":"5px 11px",borderRadius:7,
+                              background:lk.bold?"rgba(0,200,120,0.18)":"rgba(0,180,100,0.08)",
+                              border:`1.5px solid rgba(0,200,120,${lk.bold?"0.50":"0.22"})`,
+                              color:`rgba(0,220,140,${lk.bold?"1.0":"0.80"})`,
+                              fontFamily:"'Exo 2',sans-serif",fontSize:lk.bold?11:10.5,
+                              fontWeight:lk.bold?700:400,textDecoration:"none",cursor:"pointer",
+                              display:"flex",alignItems:"center",gap:4,
+                              boxShadow:lk.bold?"0 0 10px rgba(0,180,100,0.18)":"none"}}>
+                            {lk.label}
+                            {lk.note&&<span style={{fontSize:8.5,opacity:.55}}>({lk.note})</span>}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* ── Disclaimer ── */}
+                  <div style={{marginTop:10,padding:"10px 14px",
+                    background:"rgba(255,180,20,0.06)",border:"1px solid rgba(255,180,20,0.18)",borderRadius:8}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,
+                      color:"rgba(255,180,20,0.60)",lineHeight:1.6}}>
+                      ⚠ For reverse phone lookup: click the search engines above and enter the number manually.
+                      AI has cross-referenced all available public databases. Results are OSINT-grade only.
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+
         {showDeepSearch && (
           <motion.div
             initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
