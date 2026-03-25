@@ -350,10 +350,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:"24px 24
           </motion.button>
           <div>
             <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,letterSpacing:"0.06em",color:"rgba(200,245,255,0.96)"}}>
-              {step==="categories"?t("cre_title",lang):step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
+              {step==="categories"?t("cre_title",lang):step==="templates"?(selCat?.label.toUpperCase()||t("cre_select_cat",lang)):(selTpl?.name.toUpperCase()||t("cre_preview",lang))}
             </div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(0,190,230,0.45)",marginTop:1,letterSpacing:"0.06em"}}>
-              {step==="categories"?"SELECT DOCUMENT TYPE":step==="templates"?`← ${selCat?.label.toUpperCase() || "CATEGORY"}  ›  CHOOSE TEMPLATE`:`← ${selCat?.label.toUpperCase() || "TEMPLATES"}  ›  PREVIEW`}
+              {step==="categories"?t("cre_select_type",lang):step==="templates"?`← ${selCat?.label.toUpperCase() ||t("cre_category",lang)}  ›  CHOOSE TEMPLATE`:`← ${selCat?.label.toUpperCase() ||t("cre_templates",lang)}  ›  PREVIEW`}
             </div>
           </div>
         </div>
@@ -367,8 +367,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:"24px 24
       </div>
       <div style={{display:"none"}}>
       <PageHeader
-        title={step==="categories"?t("cre_title",lang):step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
-        subtitle={step==="categories"?"SELECT DOCUMENT TYPE":step==="templates"?"CHOOSE A TEMPLATE":"PREVIEW & DOWNLOAD"}
+        title={step==="categories"?t("cre_title",lang):step==="templates"?(selCat?.label.toUpperCase()||t("cre_select_cat",lang)):(selTpl?.name.toUpperCase()||t("cre_preview",lang))}
+        subtitle={step==="categories"?t("cre_select_type",lang):step==="templates"?t("cre_select_cat",lang):t("cre_preview",lang)}
         icon={<span style={{fontSize:15}}>✦</span>}
         rightContent={
           allRecords.length > 1 ? (

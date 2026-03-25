@@ -97,20 +97,20 @@ export default function Profile() {
               <F label={t("pro_dob",lang)}   value={rec.dateOfBirth}/>
               <F label={t("pro_place_birth",lang)}  value={rec.placeOfBirth}/>
               <F label={t("lbl_gender",lang)}          value={rec.gender}/>
-              <F label="NATIONALITY"     value={rec.nationality}/>
-              <F label="NATIONAL ID"     value={rec.nationalId}/>
-              <F label="PASSPORT NO."    value={rec.passportNo}/>
-              <F label="BLOOD TYPE"      value={rec.bloodType}/>
-              <F label="MARITAL STATUS"  value={rec.maritalStatus}/>
-              <F label="EMAIL"           value={rec.email}/>
-              <F label="PHONE"           value={rec.phoneNo}/>
-              <F label="ADDRESS"         value={rec.address}/>
-              <F label="OCCUPATION"      value={rec.occupation}/>
-              <F label="LANGUAGES"       value={(rec.languages||[]).join(", ")||null}/>
-              <F label="EDUCATION"       value={rec.educationRecord}/>
-              {rec.currentWorkInfo&&<F label="CURRENT EMPLOYER" value={`${rec.currentWorkInfo.company} — ${rec.currentWorkInfo.department}`}/>}
-              <F label="FATHER"          value={rec.fatherName}/>
-              <F label="MOTHER"          value={rec.motherName}/>
+              <F label={t("lbl_nationality",lang)}     value={rec.nationality}/>
+              <F label={t("lbl_national_id",lang)}     value={rec.nationalId}/>
+              <F label={t("lbl_passport_no",lang)}    value={rec.passportNo}/>
+              <F label={t("lbl_blood",lang)}      value={rec.bloodType}/>
+              <F label={t("lbl_marital",lang)}  value={rec.maritalStatus}/>
+              <F label={t("lbl_email",lang)}           value={rec.email}/>
+              <F label={t("lbl_phone",lang)}           value={rec.phoneNo}/>
+              <F label={t("lbl_address",lang)}         value={rec.address}/>
+              <F label={t("lbl_occupation",lang)}      value={rec.occupation}/>
+              <F label={t("lbl_languages",lang)}       value={(rec.languages||[]).join(", ")||null}/>
+              <F label={t("lbl_education",lang)}       value={rec.educationRecord}/>
+              {rec.currentWorkInfo&&<F label={t("lbl_employer",lang)} value={`${rec.currentWorkInfo.company} — ${rec.currentWorkInfo.department}`}/>}
+              <F label={t("lbl_father",lang)}          value={rec.fatherName}/>
+              <F label={t("lbl_mother",lang)}          value={rec.motherName}/>
             </div>
           </motion.div>
         ):(

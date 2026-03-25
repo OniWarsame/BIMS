@@ -576,18 +576,18 @@ const ResultPage = () => {
                     <EF label="NATIONAL ID"       v={editDraft.nationalId||""}   k="nationalId"  hc={hc}/>
                   </Row2>
                   <Row2>
-                    <EFSel label="MARITAL STATUS" v={editDraft.maritalStatus||""} k="maritalStatus" hc={hc}
+                    <EFSel label={t("lbl_marital",lang)} v={editDraft.maritalStatus||""} k="maritalStatus" hc={hc}
                       opts={["Single","Married","Divorced","Widowed"]}/>
-                    <EFSel label="BLOOD TYPE" v={editDraft.bloodType||""} k="bloodType" hc={hc}
+                    <EFSel label={t("lbl_blood",lang)} v={editDraft.bloodType||""} k="bloodType" hc={hc}
                       opts={["A+","A-","B+","B-","AB+","AB-","O+","O-"]}/>
                   </Row2>
-                  <EF label="OCCUPATION"     v={editDraft.occupation||""} k="occupation" hc={hc}/>
+                  <EF label={t("lbl_occupation",lang)}     v={editDraft.occupation||""} k="occupation" hc={hc}/>
                   <EF label="EMAIL"          v={editDraft.email||""}      k="email"      hc={hc}/>
                   <Row2>
                     <EF label="PHONE"       v={editDraft.phoneNo||""}  k="phoneNo"  hc={hc}/>
                     <EF label="WHATSAPP"    v={(editDraft as any).whatsapp||""} k="whatsapp" hc={hc}/>
                   </Row2>
-                  <EFArea label="ADDRESS"   v={editDraft.address||""} k="address" hc={hc}/>
+                  <EFArea label={t("lbl_address",lang)}   v={editDraft.address||""} k="address" hc={hc}/>
                 </Section>
 
                 {/* Passport */}
@@ -606,7 +606,7 @@ const ResultPage = () => {
                 <Section label="DRIVING LICENSE" color="142,70%">
                   <Row2>
                     <EF label="LICENSE NO."      v={(editDraft as any).licenseNo||""}       k="licenseNo"      hc={hc}/>
-                    <EF label="COUNTRY"          v={(editDraft as any).licenseCountry||""}  k="licenseCountry" hc={hc}/>
+                    <EF label={t("lbl_country",lang)}          v={(editDraft as any).licenseCountry||""}  k="licenseCountry" hc={hc}/>
                   </Row2>
                   <Row2>
                     <EF label="ISSUE DATE"       v={(editDraft as any).licenseIssueDate||""}  k="licenseIssueDate"  hc={hc} placeholder="YYYY-MM-DD"/>
@@ -637,7 +637,7 @@ const ResultPage = () => {
                 </Section>
 
                 {/* Education */}
-                <Section label="EDUCATION" color="33,100%">
+                <Section label={t("lbl_education",lang)} color="33,100%">
                   <Row2>
                     <EF label="UNIVERSITY / COLLEGE" v={(editDraft as any).universityName||""} k="universityName" hc={hc} placeholder="Institution name"/>
                     <EF label="DEPARTMENT"           v={(editDraft as any).department||""}      k="department"     hc={hc} placeholder="e.g. Computer Science"/>
@@ -671,7 +671,7 @@ const ResultPage = () => {
                 <Section label="HEALTH & RECORDS" color="0,80%">
                   <EFArea label="HEALTH RECORD"              v={editDraft.healthRecord||""}              k="healthRecord"           hc={hc}/>
                   <EFArea label="HISTORY OF PRESENT ILLNESS" v={(editDraft as any).historyOfPresentIllness||""} k="historyOfPresentIllness" hc={hc}/>
-                  <EFArea label="CRIME RECORD"               v={editDraft.crimeRecord||""}              k="crimeRecord"            hc={hc}/>
+                  <EFArea label={t("lbl_crime",lang)}               v={editDraft.crimeRecord||""}              k="crimeRecord"            hc={hc}/>
                 </Section>
 
                 {/* Insurance */}
@@ -929,15 +929,15 @@ const ResultPage = () => {
               <F label="PLACE OF BIRTH"   value={record.placeOfBirth}/>
               <F label={t("lbl_nationality",lang)}      value={record.nationality}/>
               <F label="NATIONAL ID"      value={record.noNationalId?"NO NATIONAL ID":record.nationalId}/>
-              <F label="BLOOD TYPE"       value={record.bloodType}/>
-              <F label="MARITAL STATUS"   value={record.maritalStatus}/>
+              <F label={t("lbl_blood",lang)}       value={record.bloodType}/>
+              <F label={t("lbl_marital",lang)}   value={record.maritalStatus}/>
               <F label={t("lbl_gender",lang)}           value={record.gender}/>
-              <F label="OCCUPATION"       value={record.occupation}/>
+              <F label={t("lbl_occupation",lang)}       value={record.occupation}/>
               <F label="NO. OF SIBLINGS"  value={(record as any).siblings}/>
               <F label="EMAIL"            value={record.email}/>
               <F label="PHONE NUMBER"     value={record.phoneNo}/>
               <F label="WHATSAPP"         value={(record as any).whatsapp}/>
-              {record.address && <div className="col-span-2"><F label="ADDRESS" value={record.address}/></div>}
+              {record.address && <div className="col-span-2"><F label={t("lbl_address",lang)} value={record.address}/></div>}
             </div>
           </Sec>
           <Sec icon={Globe} title={t("db_col_name",lang)}>
@@ -990,7 +990,7 @@ const ResultPage = () => {
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <F label="NAME"   value={record.fatherName}/>
                   <F label="PHONE"  value={record.fatherPhone}/>
-                  <F label="STATUS" value={record.fatherDeceased?"DECEASED":"ALIVE"}/>
+                  <F label="STATUS" value={record.fatherDeceased?t("lbl_deceased",lang):t("lbl_alive",lang)}/>
                 </div>
               </div>
               <div className="pt-3 border-t" style={{borderColor:"hsla(38,50%,22%,0.3)"}}>
@@ -998,7 +998,7 @@ const ResultPage = () => {
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <F label="NAME"   value={record.motherName}/>
                   <F label="PHONE"  value={record.motherPhone}/>
-                  <F label="STATUS" value={record.motherDeceased?"DECEASED":"ALIVE"}/>
+                  <F label="STATUS" value={record.motherDeceased?t("lbl_deceased",lang):t("lbl_alive",lang)}/>
                 </div>
               </div>
             </div>
@@ -1008,7 +1008,7 @@ const ResultPage = () => {
               <F label={t("lbl_name",lang)}  value={record.kin1?`${record.kin1.name} ${record.kin1.surname}`:null}/>
               <F label="RELATION"   value={record.kin1?.relation}/>
               <F label="PHONE"      value={record.kin1?.phone}/>
-              <F label="ADDRESS"    value={record.kin1?.address}/>
+              <F label={t("lbl_address",lang)}    value={record.kin1?.address}/>
             </div>
           </Sec>
         </div>
@@ -1064,7 +1064,7 @@ const ResultPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <F label="HEALTH RECORD"              value={record.healthRecord}/>
             <F label="HISTORY OF PRESENT ILLNESS" value={(record as any).historyOfPresentIllness}/>
-            <F label="CRIME RECORD"               value={record.crimeRecord}/>
+            <F label={t("lbl_crime",lang)}               value={record.crimeRecord}/>
             <F label="CRIME RECORD FILE"          value={(record as any).crimeRecordFile||"—"}/>
           </div>
         </Sec>
@@ -1137,7 +1137,7 @@ const ResultPage = () => {
                 <h2 className="font-display text-sm font-bold tracking-widest uppercase" style={{ color:"hsl(195,100%,65%)" }}>SYSTEM ACCESS ACCOUNT</h2>
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{background:linked.active?"#4ade80":"#6b7280",boxShadow:linked.active?"0 0 6px #4ade80":"none"}}/>
-                  <span className="font-mono text-[10px] font-bold" style={{color:linked.active?"#4ade80":"#6b7280"}}>{linked.active?"ACTIVE":"DISABLED"}</span>
+                  <span className="font-mono text-[10px] font-bold" style={{color:linked.active?"#4ade80":"#6b7280"}}>{linked.active?t("lbl_active",lang):"DISABLED"}</span>
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

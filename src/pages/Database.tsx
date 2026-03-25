@@ -101,8 +101,8 @@ const LockScreen = ({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => 
 
   const sideLeft = [
     {icon:"🔒", label:"VAULT LOCK", val:"AES-256"},
-    {icon:"⚡", label:"SESSION", val:"ACTIVE"},
-    {icon:"🛡️", label:"CLEARANCE", val:"L3 RESTRICTED"},
+    {icon:"⚡", label:"SESSION", val:t("db_active",lang)},
+    {icon:"🛡️", label:t("db_clearance",lang), val:"L3 RESTRICTED"},
     {icon:"🔐", label:"PROTOCOL", val:"TLS 1.3"},
     {icon:"◉", label:"STATUS", val:"STANDBY"},
   ];
@@ -762,7 +762,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
               {/* Title */}
               <h3 className="font-display text-lg font-bold mb-1"
                 style={{color:pinGate.mode==="delete"?"hsl(0,90%,72%)":"hsl(33,100%,72%)"}}>
-                {pinGate.mode==="delete"?"CONFIRM DELETION":"CONFIRM EDIT"}
+                {pinGate.mode==="delete"?t("lbl_confirm_del",lang):t("lbl_confirm_edt",lang)}
               </h3>
               <p className="font-mono text-xs mb-1 tracking-wider" style={{color:"hsla(185,70%,65%,0.6)"}}>
                 {pinGate.mode==="delete"
@@ -1093,7 +1093,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                     <p className="font-mono text-[10px] tracking-wider" style={{color:"hsla(270,60%,60%,0.5)"}}>Upload a photo · AI matches face against all database records</p>
                   </div>
                   <div className="flex items-center gap-4 font-mono text-[9px] tracking-wider" style={{color:"hsla(270,50%,55%,0.4)"}}>
-                    {["FACIAL ANALYSIS" ,"BIOMETRIC MATCH" ,"VERIFIED"].map((l,i)=>(
+                    {["FACIAL ANALYSIS" , t("db_biometric_match",lang) ,"VERIFIED"].map((l,i)=>(
                       <span key={i} className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full inline-block" style={{background:"hsla(270,80%,60%,0.4)"}}/>
                         {l}
@@ -1425,13 +1425,13 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                     <PF label="PLACE OF BIRTH" value={preview.placeOfBirth}/>
                     <PF label={t("db_col_nat",lang)}    value={preview.nationality}/>
                     <PF label="NATIONAL ID"    value={preview.noNationalId?"NO NATIONAL ID":preview.nationalId}/>
-                    <PF label="BLOOD TYPE"     value={preview.bloodType}/>
+                    <PF label={t("lbl_blood",lang)}     value={preview.bloodType}/>
                     <PF label="MARITAL STATUS" value={preview.maritalStatus}/>
                     <PF label="OCCUPATION"     value={preview.occupation}/>
                     <PF label="EMAIL"          value={preview.email}/>
                     <PF label="PHONE NUMBER"   value={preview.phoneNo}/>
                     <PF label="WHATSAPP"       value={(preview as any).whatsapp}/>
-                    <div className="col-span-2 md:col-span-4"><PF label="ADDRESS" value={preview.address}/></div>
+                    <div className="col-span-2 md:col-span-4"><PF label={t("lbl_address",lang)} value={preview.address}/></div>
                   </div>
                 </Section>
 
@@ -1527,7 +1527,7 @@ Respond ONLY with JSON (no markdown, no explanation outside JSON):
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     <PF label="HEALTH RECORD"                 value={preview.healthRecord}/>
                     <PF label="HISTORY OF PRESENT ILLNESS"    value={(preview as any).historyOfPresentIllness}/>
-                    <PF label="CRIME RECORD"                  value={preview.crimeRecord}/>
+                    <PF label={t("lbl_crime",lang)}                  value={preview.crimeRecord}/>
                   </div>
                 </Section>
 

@@ -209,7 +209,7 @@ const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
         <F label="NATIONALITY"><input name="nationality" value={form.nationality} onChange={hc} placeholder="e.g. Kenyan" className="input-cyber"/></F>
-        <F label="MARITAL STATUS">
+        <F label={t("lbl_marital",lang)}>
           <select name="maritalStatus" value={form.maritalStatus} onChange={hc} className="input-cyber">
             <option value="">Select status</option>
             <option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option>
@@ -246,7 +246,7 @@ const StepPersonal=({form,setForm,photoPreview,setPhotoPreview,photoRef}:any)=>{
         </span> as any}>
           <input name="whatsapp" value={form.whatsapp} onChange={hc} placeholder="+254-700-000-000" className="input-cyber"/></F>
       </div>
-      <F label="ADDRESS"><textarea name="address" value={form.address} onChange={hc} rows={2} placeholder="Full residential address" className="textarea-cyber"/></F>
+      <F label={t("lbl_address",lang)}><textarea name="address" value={form.address} onChange={hc} rows={2} placeholder="Full residential address" className="textarea-cyber"/></F>
       {/* Profile photo */}
       <div>
         <label className="text-label">PROFILE PHOTO</label>
@@ -418,7 +418,7 @@ const StepFamily=({form,setForm,fatherDeceased,setFatherDeceased,motherDeceased,
           <F label="SURNAME"><input value={kin.surname} onChange={e=>setKin((p:any)=>({...p,surname:e.target.value}))} placeholder="Last name" className="input-cyber"/></F>
         </div>
         <F label="PHONE NO."><input value={kin.phone} onChange={e=>setKin((p:any)=>({...p,phone:e.target.value}))} placeholder="+254-700-000-000" className="input-cyber"/></F>
-        <F label="ADDRESS"><input value={kin.address} onChange={e=>setKin((p:any)=>({...p,address:e.target.value}))} placeholder="Full address" className="input-cyber"/></F>
+        <F label={t("lbl_address",lang)}><input value={kin.address} onChange={e=>setKin((p:any)=>({...p,address:e.target.value}))} placeholder="Full address" className="input-cyber"/></F>
         <F label="RELATION">
           <select value={kin.relation} onChange={e=>setKin((p:any)=>({...p,relation:e.target.value}))} className="input-cyber">
             <option value="">Select relation</option>
@@ -537,7 +537,7 @@ const StepWork=({form,setForm,isWorking,setIsWorking,workInfo,setWorkInfo,cvFile
             className="space-y-4 pl-4 overflow-hidden" style={{borderLeft:"2px solid hsla(33,100%,52%,0.35)"}}>
             <F label="COMPANY NAME"><input value={workInfo.company} onChange={e=>setWorkInfo((p:any)=>({...p,company:e.target.value}))} placeholder="Company name" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <F label="EMPLOYER / MANAGER"><input value={workInfo.employer} onChange={e=>setWorkInfo((p:any)=>({...p,employer:e.target.value}))} placeholder="Name" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
+              <F label={t("lbl_employer",lang)}><input value={workInfo.employer} onChange={e=>setWorkInfo((p:any)=>({...p,employer:e.target.value}))} placeholder="Name" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
               <F label="DEPARTMENT"><input value={workInfo.department} onChange={e=>setWorkInfo((p:any)=>({...p,department:e.target.value}))} placeholder="Department" className="input-cyber" style={{borderColor:"hsla(33,80%,45%,0.45)"}}/></F>
             </div>
           </motion.div>
@@ -586,7 +586,7 @@ const StepHealth=({form,setForm,crimeFile,setCrimeFile,crimeRef}:any)=>{
       <F label="HISTORY OF PRESENT ILLNESS">
         <textarea name="historyOfPresentIllness" rows={3} value={form.historyOfPresentIllness} onChange={hc} placeholder="Current illness, symptoms, onset, duration…" className="textarea-cyber"/>
       </F>
-      <F label="CRIME RECORD">
+      <F label={t("lbl_crime",lang)}>
         <textarea name="crimeRecord" rows={3} value={form.crimeRecord} onChange={hc} placeholder="None / details if applicable…" className="textarea-cyber"/>
       </F>
       <div>
@@ -916,7 +916,7 @@ const StepBiometrics=({fingerStates,fingerHashes,handleScanFinger,allDone,onSubm
           cursor:allDone?"pointer":"not-allowed",
         }}>
         <Fingerprint className="w-5 h-5"/>
-        {allDone?"COMMIT RECORD TO DATABASE":"SCAN ALL FINGERS TO PROCEED"}
+        {allDone?t("db_commit",lang):"SCAN ALL FINGERS TO PROCEED"}
       </button>
     </div>
   );

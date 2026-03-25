@@ -181,10 +181,10 @@ const LoginScreen = () => {
   const borderCol= isError ? "rgba(220,60,60,0.5)"  : isActive ? "rgba(0,225,210,0.7)"  : isPreview ? "rgba(55,195,222,0.65)" : "rgba(0,175,250,0.22)";
 
   const stateLabel = {
-    idle:      "PLACE FINGER ON SCANNER",
-    scanning:  "SCANNING BIOMETRIC DATA...",
+    idle:t("scan_place",lang),
+    scanning:t("scan_biometric",lang),
     preview:   `✓ IDENTITY VERIFIED — ENTERING IN ${countdown}s`,
-    granting:  "GRANTING ACCESS...",
+    granting:t("scan_granting",lang),
     not_in_db: "✗ NOT FOUND IN DATABASE",
     no_users:  "⚠ NO USERS REGISTERED",
   }[fpState];
@@ -420,8 +420,8 @@ const LoginScreen = () => {
                     <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:700,
                       color:"rgba(210,238,255,0.98)",marginBottom:6}}>{matchUser.fullName}</div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 14px",marginBottom:10}}>
-                      {[["ID",matchRecord.id],["ROLE",ROLE_LABELS[matchUser.role]],
-                        ["USERNAME",`@${matchUser.username}`],["NATIONALITY",matchRecord.nationality||"—"]].map(([l,v])=>(
+                      {[["ID",matchRecord.id],[t("lbl_role",lang),ROLE_LABELS[matchUser.role]],
+                        ["USERNAME",`@${matchUser.username}`],[t("lbl_nationality",lang),matchRecord.nationality||"—"]].map(([l,v])=>(
                         <div key={l}>
                           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:7,fontWeight:700,
                             letterSpacing:"0.14em",color:"rgba(50,140,255,0.38)",textTransform:"uppercase" as const}}>{l}</div>

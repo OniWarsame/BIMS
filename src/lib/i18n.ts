@@ -238,6 +238,72 @@ export const STRINGS: Record<string, LangMap> = {
   usr_cant_delete: L("THIS ACTION CANNOT BE UNDONE","FI'ILKAN LAMA BEDDELI KARO","لا يمكن التراجع عن هذا الإجراء","CETTE ACTION EST IRRÉVERSIBLE","HATUA HII HAIWEZI KUTENDULIWA","ይህ ድርጊት ሊቀለበስ አይችልም","BA A IYA MAGANIN WANNAN BA","DIESE AKTION KANN NICHT RÜCKGÄNGIG GEMACHT WERDEN","此操作无法撤销","ESTA ACCIÓN NO SE PUEDE DESHACER"),
   usr_no_found:    L("NO USERS FOUND","ISTICMAALAYAAL LAMA HELIN","لم يُعثر على مستخدمين","AUCUN UTILISATEUR TROUVÉ","HAKUNA WATUMIAJI","ምንም ተጠቃሚዎች አልተገኙም","BABU MASU AMFANI DA AKA SAMU","KEINE BENUTZER GEFUNDEN","未找到用户","NO SE ENCONTRARON USUARIOS"),
 
+  // ── Scan states ──
+  scan_biometric: L("SCANNING BIOMETRIC DATA...","BAARITAANKA BAAYOOLOJIGA...","مسح البيانات البيومترية...","SCAN BIOMÉTRIQUE...","INASCAN BIOMETRIKI...","ባዮሜትሪክ ስካን...","KAFATO BAYOMETRIC...","BIOMETRISCHE DATEN SCANNEN...","正在扫描生物数据...","ESCANEANDO DATOS BIOMÉTRICOS..."),
+  scan_granting:  L("GRANTING ACCESS...","SIINAYA GELITAANKA...","جارٍ منح الوصول...","ACCÈS EN COURS...","INATOA UFIKIAJI...","ፍቃድ እየተሰጠ...","ANA BADA SHIGA...","ZUGANG WIRD GEWÄHRT...","正在授予访问权限...","OTORGANDO ACCESO..."),
+  scan_verified:  L("IDENTITY VERIFIED","AQOONSIGU WAA LA XAQIIJIYEY","الهوية تم التحقق","IDENTITÉ VÉRIFIÉE","UTAMBULISHO UMETHIBITISHWA","ማንነት ተረጋግጧል","AN TABBATAR DA ASALI","IDENTITÄT VERIFIZIERT","身份已验证","IDENTIDAD VERIFICADA"),
+  scan_no_match:  L("NO MATCH FOUND","MUTHWANA LAMA HELIN","لم يتم العثور على تطابق","AUCUNE CORRESPONDANCE","HAKUNA MFANO","ምንም ውጤት አልተገኘም","BA A SAMI MUTHWANA","KEINE ÜBEREINSTIMMUNG","未找到匹配","SIN COINCIDENCIA"),
+  // ── Common labels ──
+  lbl_blood:      L("BLOOD TYPE","NOOCA DHIIGGA","فصيلة الدم","GROUPE SANGUIN","KUNDI LA DAMU","የደም አይነት","NAU'IN JINI","BLUTGRUPPE","血型","TIPO DE SANGRE"),
+  lbl_occupation: L("OCCUPATION","SHAQADA","المهنة","PROFESSION","KAZI","ሙያ","SANA'A","BERUF","职业","OCUPACIÓN"),
+  lbl_employer:   L("CURRENT EMPLOYER","SHAQAALE HADDA","صاحب العمل","EMPLOYEUR","MWAJIRI","ቀጣሪ","MA'AIKACI","ARBEITGEBER","雇主","EMPLEADOR"),
+  lbl_marital:    L("MARITAL STATUS","XAALADDA GUURKA","الحالة الاجتماعية","ÉTAT CIVIL","HALI YA NDOA","የጋብቻ ሁኔታ","YANAYIN AURE","FAMILIENSTAND","婚姻状况","ESTADO CIVIL"),
+  lbl_education:  L("EDUCATION","WAXBARASHADA","التعليم","ÉDUCATION","ELIMU","ትምህርት","ILIMI","BILDUNG","教育","EDUCACIÓN"),
+  lbl_languages:  L("LANGUAGES","LUQADAHA","اللغات","LANGUES","LUGHA","ቋንቋዎች","HARSUNA","SPRACHEN","语言","IDIOMAS"),
+  lbl_crime:      L("CRIME RECORD","DIIWAANKA DAMBIGA","سجل الجرائم","CASIER JUDICIAIRE","REKODI YA UHALIFU","የወንጀል ሰነድ","RIKODIN LAIFI","STRAFREGISTER","犯罪记录","ANTECEDENTES"),
+  lbl_attachments:L("ATTACHMENTS","LIFAAFAYAASHA","المرفقات","PIÈCES JOINTES","VIAMBATISHO","ዓባሪዎች","HAƊIN","ANHÄNGE","附件","ADJUNTOS"),
+  lbl_alive:      L("ALIVE","NOOL","حي","VIVANT","HAI","ሕያው","RAYE","LEBENDIG","在世","VIVO"),
+  lbl_deceased:   L("DECEASED","DHINTAY","متوفى","DÉCÉDÉ","AMEFARIKI","አርፏል","YA MUTU","VERSTORBEN","已故","FALLECIDO"),
+  lbl_passport_no:L("PASSPORT NO.","BAASABOOR AQ","رقم الجواز","N° PASSEPORT","NAMBARI YA PASI","ፓስፖርት ቁ.","LAMBAR FASFO","REISEPASS-NR.","护照号","N° PASAPORTE"),
+  lbl_national_id:L("NATIONAL ID","AQOONSIGA QARAN","الهوية الوطنية","CARTE IDENTITÉ","KITAMBULISHO","ብሄራዊ መ/ቁ","ID NA ƘASA","PERSONALAUSWEIS","身份证","CÉDULA"),
+  lbl_confirm_del:L("CONFIRM DELETION","XAQIIJI TIRTIRKA","تأكيد الحذف","CONFIRMER SUPPRESSION","THIBITISHA KUFUTA","መሰረዝ አረጋግጥ","TABBATAR GOGEWA","LÖSCHEN BESTÄTIGEN","确认删除","CONFIRMAR ELIMINACIÓN"),
+  lbl_confirm_edt:L("CONFIRM EDIT","XAQIIJI BEDDELKA","تأكيد التعديل","CONFIRMER MODIFICATION","THIBITISHA UHARIRI","ማርትዕ አረጋግጥ","TABBATAR GYARA","BEARBEITUNG BESTÄTIGEN","确认编辑","CONFIRMAR EDICIÓN"),
+  // ── Buttons ──
+  btn_post:       L("POST","FAR","نشر","PUBLIER","CHAPISHA","ልጥፍ","WALLAFA","POSTEN","发帖","PUBLICAR"),
+  btn_send:       L("SEND","DIR","إرسال","ENVOYER","TUMA","ላክ","AIKA","SENDEN","发送","ENVIAR"),
+  btn_send_resp:  L("SEND RESPONSE","DIR JAWAAB","إرسال الرد","ENVOYER RÉPONSE","TUMA JIBU","ምላሽ ላክ","AIKA AMSA","ANTWORT SENDEN","发送回复","ENVIAR RESPUESTA"),
+  btn_refresh:    L("REFRESH","CUSBOONEYSII","تحديث","ACTUALISER","ONYESHA UPYA","አዙ","SABUNTA","AKTUALISIEREN","刷新","ACTUALIZAR"),
+  btn_scan:       L("SCAN","BAARO","مسح","SCANNER","SCAN","ስካን","KAFATO","SCANNEN","扫描","ESCANEAR"),
+  // ── Tech Support ──
+  tec_not_logged: L("NOT LOGGED IN","LAMA GELIN","غير مسجل الدخول","NON CONNECTÉ","HAUJAINGIA","አልገባም","BA A SHIGA BA","NICHT ANGEMELDET","未登录","NO CONECTADO"),
+  tec_submitting: L("SUBMITTING...","GUDBINAAYA...","جارٍ الإرسال...","ENVOI EN COURS...","INATUMA...","እያስገባ...","ANA AIKA...","WIRD GESENDET...","提交中...","ENVIANDO..."),
+  tec_ticket_id:  L("TICKET ID","LAMBARKA CODSIGA","رقم التذكرة","ID TICKET","KITAMBULISHO CHA TIKITI","የቲኬት ቁጥር","LAMBAR TIKITI","TICKET-ID","工单编号","ID DE TICKET"),
+  tec_ticket_sum: L("TICKET SUMMARY","SOOGALINTA CODSIGA","ملخص التذكرة","RÉSUMÉ DU TICKET","MUHTASARI WA TIKITI","የቲኬት ማጠቃለያ","TAƘAITACCEN TIKITI","TICKET-ZUSAMMENFASSUNG","工单摘要","RESUMEN DE TICKET"),
+  tec_critical:   L("CRITICAL","MUHIIM ADAG","حرج","CRITIQUE","MUHIMU SANA","ወሳኝ","MUHIMMIN GAGGAWA","KRITISCH","严重","CRÍTICO"),
+  tec_high:       L("HIGH","SARE","عالي","ÉLEVÉ","JUU","ከፍ","MAI GIRMA","HOCH","高","ALTO"),
+  tec_medium:     L("MEDIUM","DHEXE","متوسط","MOYEN","KATI","መካከለኛ","MATSAKAICI","MITTEL","中","MEDIO"),
+  tec_low:        L("LOW","HOOSE","منخفض","BAS","CHINI","ዝቅ","ƘARAMI","NIEDRIG","低","BAJO"),
+  tec_back:       L("BACK","DIBO","رجوع","RETOUR","RUDI","ተመለስ","KOMA","ZURÜCK","返回","VOLVER"),
+  tec_close:      L("CLOSE","XIDH","إغلاق","FERMER","FUNGA","ዝጋ","RUFE","SCHLIESSEN","关闭","CERRAR"),
+  tec_submit_hdr: L("SUBMIT A SUPPORT TICKET","GUDBI CODSI TAAGEERO","إرسال تذكرة دعم","SOUMETTRE UN TICKET","TUMA TIKITI YA MSAADA","የድጋፍ ቲኬት አስገባ","AIKA TIKITI TALLAFI","SUPPORT-TICKET EINREICHEN","提交支持工单","ENVIAR TICKET DE SOPORTE"),
+  // ── Reports ──
+  rep_action:     L("ACTION","FICIL","الإجراء","ACTION","HATUA","ድርጊት","AIKI","AKTION","操作","ACCIÓN"),
+  rep_operator:   L("OPERATOR","HAWLWADEEN","المشغل","OPÉRATEUR","OPERETA","ኦፐሬተር","MAI AIKI","OPERATOR","操作员","OPERADOR"),
+  rep_date:       L("DATE","TAARIIKHDA","التاريخ","DATE","TAREHE","ቀን","KWANAN WATA","DATUM","日期","FECHA"),
+  rep_created:    L("RECORDS CREATED","DIIWAANNO LA SAMEEYEY","سجلات تم إنشاؤها","DOSSIERS CRÉÉS","REKODI ZILIZOTENGENEZWA","የተፈጠሩ ሰነዶች","RIKODIN DA AKA ƘIRƘIRA","ERSTELLTE DATENSÄTZE","已创建记录","REGISTROS CREADOS"),
+  rep_updated:    L("RECORDS UPDATED","DIIWAANNO LA CUSBOONEYSIIYEY","سجلات محدثة","DOSSIERS MIS À JOUR","REKODI ZILIZOSASISHWA","የተዘመኑ ሰነዶች","RIKODIN DA AKA SABUNTA","AKTUALISIERTE DATENSÄTZE","已更新记录","REGISTROS ACTUALIZADOS"),
+  rep_deleted:    L("RECORDS DELETED","DIIWAANNO LA TIRTIREY","سجلات محذوفة","DOSSIERS SUPPRIMÉS","REKODI ZILIZOFUTWA","የተሰረዙ ሰነዶች","RIKODIN DA AKA SHARE","GELÖSCHTE DATENSÄTZE","已删除记录","REGISTROS ELIMINADOS"),
+  rep_clear_logs: L("CLEAR LOGS","NADIIFI DIIWAANNADA","مسح السجلات","EFFACER JOURNAUX","FUTA KUMBUKUMBU","ምዝግቦችን አጽዳ","SHARE RIKODIN","PROTOKOLLE LÖSCHEN","清除日志","BORRAR REGISTROS"),
+  rep_db_size:    L("DB SIZE","CABBIRKA DB","حجم قاعدة البيانات","TAILLE DB","UKUBWA WA DB","የDB መጠን","GIRMAN DB","DB-GRÖSSE","数据库大小","TAMAÑO DB"),
+  rep_failed:     L("FAILED ATTEMPTS","ISKU DAYASHO FASHILANTAY","محاولات فاشلة","TENTATIVES ÉCHOUÉES","MAJARIBIO YALIYOSHINDWA","የከሸፉ ሙከራዎች","YUNƘURIN DA KA KASHE","FEHLVERSUCHE","失败尝试","INTENTOS FALLIDOS"),
+  rep_unlocks:    L("DB UNLOCKS","FURRITAANKA DB","فتح قاعدة البيانات","DÉVERROUILLAGES","KUFUNGUA DB","DB ክፈቶች","BUƊE DB","DB-ENTSPERRUNGEN","数据库解锁","DESBLOQUEOS DB"),
+  // ── User Management ──
+  usr_all_users:  L("ALL USERS","DHAMMAAN ISTICMAALAYAASHA","جميع المستخدمين","TOUS LES UTILISATEURS","WATUMIAJI WOTE","ሁሉም ተጠቃሚዎች","DUKAN MASU AMFANI","ALLE BENUTZER","所有用户","TODOS LOS USUARIOS"),
+  usr_new_user:   L("NEW USER","ISTICMAALE CUSUB","مستخدم جديد","NOUVEL UTILISATEUR","MTUMIAJI MPYA","አዲስ ተጠቃሚ","SABON MAI AMFANI","NEUER BENUTZER","新用户","NUEVO USUARIO"),
+  usr_actions:    L("ACTIONS","FICILADA","الإجراءات","ACTIONS","VITENDO","ድርጊቶች","AYYUKA","AKTIONEN","操作","ACCIONES"),
+  usr_select:     L("SELECT","DOORO","اختر","SÉLECTIONNER","CHAGUA","ምረጥ","ZAƁA","AUSWÄHLEN","选择","SELECCIONAR"),
+  usr_role_ref:   L("ROLE PERMISSIONS","OGOLAANSHAHA DOORKA","صلاحيات الدور","PERMISSIONS RÔLE","RUHUSA ZA JUKUMU","የሚና ፍቃዶች","IZININ MATSAYI","ROLLEN-BERECHTIGUNGEN","角色权限","PERMISOS DE ROL"),
+  // ── Database extra ──
+  db_notifications: L("NOTIFICATIONS","OGEYSIISYADA","الإشعارات","NOTIFICATIONS","ARIFA","ማሳወቂያዎች","SANARWA","BENACHRICHTIGUNGEN","通知","NOTIFICACIONES"),
+  db_commit:      L("COMMIT RECORD TO DATABASE","KAYD DIIWAANKA","حفظ السجل","ENREGISTRER","HIFADHI REKODI","ሰነዱን አስቀምጥ","ADANA RIKODIN","IN DB SPEICHERN","提交到数据库","GUARDAR EN BD"),
+  db_biometric_req: L("BIOMETRIC VERIFICATION REQUIRED","XAQIIJINTA BAAYOOLOJIGA WAA LOOHAHAN","التحقق البيومتري مطلوب","VÉRIFICATION BIOMÉTRIQUE REQUISE","UTHIBITISHAJI WA BIOMETRIKI UNAHITAJIKA","የባዮሜትሪክ ማረጋገጫ ያስፈልጋል","BUKATAR TABBATARWA BAYOMETRIC","BIOMETRISCHE VERIFIZIERUNG ERFORDERLICH","需要生物特征验证","SE REQUIERE VERIFICACIÓN BIOMÉTRICA"),
+  db_biometric_match: L("BIOMETRIC MATCH","MUTHWANA BAAYOOLOJI","تطابق بيومتري","CORRESPONDANCE BIOMÉTRIQUE","MFANO WA BIOMETRIKI","የባዮሜትሪክ ዛምድ","DAIDAITUWAR BAYOMETRIC","BIOMETRISCHE ÜBEREINSTIMMUNG","生物特征匹配","COINCIDENCIA BIOMÉTRICA"),
+  db_active:      L("ACTIVE","FIRFIRCOON","نشط","ACTIF","AMILIFU","ንቁ","AIKI","AKTIV","激活","ACTIVO"),
+  db_clearance:   L("CLEARANCE","OGOLAANSHAHA","التصريح","AUTORISATION","IDHINI","ፍቃድ","IZINI","FREIGABE","许可","AUTORIZACIÓN"),
+  // ── Create extra ──
+  cre_templates:  L("TEMPLATES","QAABABKA","القوالب","MODÈLES","VIOLEZO","አብነቶች","MISALAI","VORLAGEN","模板","PLANTILLAS"),
+  cre_category:   L("CATEGORY","NOOCA","الفئة","CATÉGORIE","AINA","ምድብ","RUKUNI","KATEGORIE","类别","CATEGORÍA"),
+
   // ── Common buttons ──
   btn_save:       L("Save","Keydi","حفظ","Sauvegarder","Hifadhi","አስቀምጥ","Adana","Speichern","保存","Guardar"),
   btn_cancel:     L("Cancel","Jooji","إلغاء","Annuler","Ghairi","ሰርዝ","Soke","Abbrechen","取消","Cancelar"),
@@ -304,3 +370,6 @@ export function applyLang(code: string) {
   document.body.style.direction  = isRtl ? "rtl" : "ltr";
   window.dispatchEvent(new Event("bims_lang_change"));
 }
+
+// ── APPEND: additional keys for full coverage ──
+// (appended below the closing }; of STRINGS — will be merged in next build)

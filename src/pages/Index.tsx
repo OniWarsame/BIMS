@@ -355,7 +355,7 @@ const Index = () => {
             { variant:"Search4Faces",   url:`https://search4faces.com/` },
           ];
           setDsResults({ error:false, original:dsInput.trim(), variants:[], platforms:[
-            { name:"FACE IDENTITY SEARCH", color:"193,100%,55%", icon:"👁️", links: faceLinks.map(l=>({...l})) }
+            { name:t("db_face_recog",lang), color:"193,100%,55%", icon:"👁️", links: faceLinks.map(l=>({...l})) }
           ]});
           setDsLoading(false);
           return;
@@ -390,7 +390,7 @@ const Index = () => {
       /* ── Claude Vision: analyse face ── */
       setDsImageStage("AI analysing face…");
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
+        method:t("btn_post",lang),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
@@ -667,7 +667,7 @@ Respond ONLY with valid JSON (no markdown):
                 style={{display:"inline-block",width:6,height:6,borderRadius:"50%",background:scanColor,boxShadow:`0 0 10px ${scanGlow}`,flexShrink:0}}
               />
               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,letterSpacing:"0.14em",color:`${scanColor}cc`,textTransform:"uppercase" as const}}>
-                {isScanning?"SCANNING…":isMatch?"IDENTITY VERIFIED":isNoMatch?"NO MATCH FOUND":"SYSTEM READY"}
+                {isScanning?"SCANNING…":isMatch?t("scan_verified",lang):isNoMatch?t("scan_no_match",lang):t("home_ready",lang)}
               </span>
             </div>
           </div>
@@ -771,7 +771,7 @@ Respond ONLY with valid JSON (no markdown):
 
               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,
                 letterSpacing:"0.28em",color:`${scanColor}80`,textTransform:"uppercase" as const}}>
-                {isScanning?"SCANNING…":isMatch?"VERIFIED":isNoMatch?"NO MATCH":"PLACE FINGER"}
+                {isScanning?"SCANNING…":isMatch?t("scan_verified",lang):isNoMatch?t("scan_no_match",lang):t("home_place",lang)}
               </span>
             </div>
 
@@ -934,10 +934,10 @@ Respond ONLY with valid JSON (no markdown):
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                 <div>
                   <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:16,fontWeight:800,color:dsType==="face"?"rgba(0,230,255,0.96)":"rgba(220,210,255,0.96)"}}>
-                    {dsType==="face"?"FACIAL RECOGNITION":"Deep Search"}
+                    {dsType==="face"?t("db_face_recog",lang):"Deep Search"}
                   </div>
                   <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:dsType==="face"?"rgba(0,180,255,0.55)":"rgba(140,120,255,0.55)",marginTop:2,letterSpacing:"0.08em"}}>
-                    {dsType==="face"?"REVERSE IMAGE · OSINT NETWORK SCAN":"OSINT INTELLIGENCE QUERY"}
+                    {dsType==="face"?"REVERSE IMAGE · OSINT NETWORK SCAN":t("grid_deepsearch",lang)}
                   </div>
                 </div>
                 <button onClick={()=>setShowDeepSearch(false)} style={{width:30,height:30,borderRadius:"50%",border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(200,190,255,0.6)"}}>
@@ -1009,7 +1009,7 @@ Respond ONLY with valid JSON (no markdown):
                             cv2.getContext("2d")!.drawImage(img2,0,0,cv2.width,cv2.height);
                             const b64=cv2.toDataURL("image/jpeg",.85).replace(/^data:image\/\w+;base64,/,"");
                             setFaceStage("AI analysing…");
-                            const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+                            const resp=await fetch("https://api.anthropic.com/v1/messages",{method:t("btn_post",lang),
                               headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
                               body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,messages:[{role:"user",content:[
                                 {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},

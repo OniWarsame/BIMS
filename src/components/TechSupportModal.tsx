@@ -26,10 +26,10 @@ const ISSUES = [
 ];
 
 const PRIORITY = [
-  { value:"low",      label:"LOW",      sublabel:"Non-urgent",    color:"hsl(142,80%,55%)",  bg:"hsla(142,80%,52%,0.1)"  },
-  { value:"medium",   label:"MEDIUM",   sublabel:"Needs attention",color:"hsl(42,100%,60%)", bg:"hsla(42,100%,58%,0.1)"  },
-  { value:"high",     label:"HIGH",     sublabel:"Blocking work",  color:"hsl(20,100%,60%)",  bg:"hsla(20,100%,58%,0.1)"  },
-  { value:"critical", label:"CRITICAL", sublabel:"System down",    color:"hsl(0,90%,60%)",    bg:"hsla(0,90%,58%,0.1)"    },
+  { value:"low",      label:t("tec_low",lang),      sublabel:"Non-urgent",    color:"hsl(142,80%,55%)",  bg:"hsla(142,80%,52%,0.1)"  },
+  { value:"medium",   label:t("tec_medium",lang),   sublabel:"Needs attention",color:"hsl(42,100%,60%)", bg:"hsla(42,100%,58%,0.1)"  },
+  { value:"high",     label:t("tec_high",lang),     sublabel:"Blocking work",  color:"hsl(20,100%,60%)",  bg:"hsla(20,100%,58%,0.1)"  },
+  { value:"critical", label:t("tec_critical",lang), sublabel:"System down",    color:"hsl(0,90%,60%)",    bg:"hsla(0,90%,58%,0.1)"    },
 ];
 
 export default function TechSupportModal({
@@ -212,7 +212,7 @@ export default function TechSupportModal({
                         TICKET SUMMARY
                       </div>
                       {[
-                        ["TICKET ID", ticketId],
+                        [t("tec_ticket_id",lang), ticketId],
                         ["ISSUE", selectedIssue?.label || ""],
                         ["PRIORITY", selectedPriority.label],
                         ["REPORTER", effectiveReporter || "anonymous"],
@@ -260,7 +260,7 @@ export default function TechSupportModal({
                             boxShadow:"0 0 8px hsla(192,100%,55%,0.8)", flexShrink:0, display:"inline-block" }}/>
                           <span style={{ fontFamily:"'Orbitron',monospace", fontSize:11, fontWeight:700,
                             letterSpacing:"0.1em", color:"hsl(193,100%,72%)" }}>
-                            {liveUsername ? `@${liveUsername.toUpperCase()}` : "NOT LOGGED IN"}
+                            {liveUsername ? `@${liveUsername.toUpperCase()}` :t("tec_not_logged",lang)}
                           </span>
                           <span style={{ marginLeft:"auto", fontFamily:"'Orbitron',monospace", fontSize:7,
                             letterSpacing:"0.18em", color:"hsla(192,80%,55%,0.38)" }}>{t("activelang",lang)}</span>

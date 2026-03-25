@@ -127,11 +127,11 @@ export default function Reports() {
           <div style={{display:"flex",flexDirection:"column" as const,gap:20}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
               <StatCard label="TOTAL EVENTS"      value={stats.total}   color="#e8c870" icon={<Activity size={18}/>}/>
-              <StatCard label="DB UNLOCKS"         value={stats.unlocks} color="#4ade80" icon={<Shield size={18}/>}/>
-              <StatCard label="FAILED ATTEMPTS"    value={stats.failed}  color="#f87171" icon={<AlertTriangle size={18}/>}/>
-              <StatCard label="RECORDS CREATED"    value={stats.created} color="#60a5fa" icon={<Database size={18}/>}/>
-              <StatCard label="RECORDS UPDATED"    value={stats.updated} color="#fb923c" icon={<FileText size={18}/>}/>
-              <StatCard label="RECORDS DELETED"    value={stats.deleted} color="#f87171" icon={<Trash2 size={18}/>}/>
+              <StatCard label={t("rep_unlocks",lang)}         value={stats.unlocks} color="#4ade80" icon={<Shield size={18}/>}/>
+              <StatCard label={t("rep_failed",lang)}    value={stats.failed}  color="#f87171" icon={<AlertTriangle size={18}/>}/>
+              <StatCard label={t("rep_created",lang)}    value={stats.created} color="#60a5fa" icon={<Database size={18}/>}/>
+              <StatCard label={t("rep_updated",lang)}    value={stats.updated} color="#fb923c" icon={<FileText size={18}/>}/>
+              <StatCard label={t("rep_deleted",lang)}    value={stats.deleted} color="#f87171" icon={<Trash2 size={18}/>}/>
               <StatCard label="TOTAL RECORDS"      value={records.length}color="#a78bfa" icon={<Database size={18}/>}/>
               <StatCard label="TOTAL USERS"        value={users.length}  color="#34d399" icon={<Users size={18}/>}/>
             </div>
@@ -141,7 +141,7 @@ export default function Reports() {
               <div style={{padding:"18px 22px",borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)"}}>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)",marginBottom:14}}>STORAGE INFORMATION</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12}}>
-                  {[["TOTAL RECORDS",storage.totalRecords],["TOTAL LOGS",storage.totalLogs],["DB SIZE",storage.dbSize],["LOG SIZE",storage.logSize]].map(([l,v])=>(
+                  {[["TOTAL RECORDS",storage.totalRecords],["TOTAL LOGS",storage.totalLogs],[t("rep_db_size",lang),storage.dbSize],["LOG SIZE",storage.logSize]].map(([l,v])=>(
                     <div key={l as string} style={{padding:"10px 14px",borderRadius:9,background:"rgba(232,200,112,0.12)",border:"1px solid rgba(232,200,112,0.35)"}}>
                       <div style={{fontSize:9,fontWeight:700,letterSpacing:"0.18em",color:"rgba(203,178,120,0.5)",marginBottom:4}}>{l}</div>
                       <div style={{fontSize:16,fontWeight:700,color:"#e8c870"}}>{v}</div>
@@ -191,7 +191,7 @@ export default function Reports() {
 
             <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
               <div style={{display:"grid",gridTemplateColumns:"3fr 2fr 2fr 2fr 1fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
-                {["ACTION","OPERATOR","DATE","TIME", t("db_records",lang)].map(h=>(
+                {[t("rep_action",lang), t("rep_operator",lang), t("rep_date",lang),"TIME", t("db_records",lang)].map(h=>(
                   <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
                 ))}
               </div>
@@ -230,7 +230,7 @@ export default function Reports() {
         {tab==="records"&&(
           <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr 2fr 2fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
-              {["#","NAME","ID","NATIONALITY","REGISTERED"].map(h=>(
+              {["#", t("lbl_name",lang),"ID", t("lbl_nationality",lang),"REGISTERED"].map(h=>(
                 <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
               ))}
             </div>
@@ -286,7 +286,7 @@ export default function Reports() {
                     </span>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
                       <div style={{width:6,height:6,borderRadius:"50%",background:u.active?"#4ade80":"#6b7280",boxShadow:u.active?"0 0 6px #4ade80":"none"}}/>
-                      <span style={{fontSize:11,color:u.active?"#4ade80":"rgba(203,178,120,0.35)"}}>{u.active?"ACTIVE":"DISABLED"}</span>
+                      <span style={{fontSize:11,color:u.active?"#4ade80":"rgba(203,178,120,0.35)"}}>{u.active?t("lbl_active",lang):t("lbl_disabled",lang)}</span>
                     </div>
                     <div>
                       {lastLogin?(

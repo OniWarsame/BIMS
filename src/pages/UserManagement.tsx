@@ -15,10 +15,10 @@ const genId = () => "usr_" + Math.random().toString(36).slice(2, 10);
 const ROLES: UserRole[] = ["owner", "admin", "operator", "analyst"];
 
 const ROLE_META: Record<UserRole, { label: string; color: string; bg: string; border: string; desc: string; perms: string[] }> = {
-  owner:    { label:"OWNER",    color:"#c084fc", bg:"rgba(192,132,252,0.18)", border:"rgba(192,132,252,0.65)", desc:"Full ownership — unrestricted access",  perms:["Everything in Admin","Assign/revoke roles","Create owner accounts","Delete any record","System configuration","Full audit access"] },
-  admin:    { label:"ADMIN",    color:"#f87171", bg:"rgba(248,113,113,0.18)",  border:"rgba(248,113,113,0.65)", desc:"Full system access",                   perms:["View all records","Create & edit records","Delete records","Run biometric scans","Manage users","Deep search","Export data","System settings"] },
-  operator: { label:"OPERATOR", color:"#fb923c", bg:"rgba(251,146,60,0.18)",   border:"rgba(251,146,60,0.65)",  desc:"Operational access — no user mgmt",    perms:["View all records","Run biometric scans","Deep search","Export data","Create records"] },
-  analyst:  { label:"ANALYST",  color:"#60a5fa", bg:"rgba(96,165,250,0.18)",   border:"rgba(96,165,250,0.65)",  desc:"View & analyse — no modifications",    perms:["View all records","Run biometric scans","Deep search","Export data"] },
+  owner:    { label:t("usr_owner",lang),    color:"#c084fc", bg:"rgba(192,132,252,0.18)", border:"rgba(192,132,252,0.65)", desc:"Full ownership — unrestricted access",  perms:["Everything in Admin","Assign/revoke roles","Create owner accounts","Delete any record","System configuration","Full audit access"] },
+  admin:    { label:t("usr_admin",lang),    color:"#f87171", bg:"rgba(248,113,113,0.18)",  border:"rgba(248,113,113,0.65)", desc:"Full system access",                   perms:["View all records","Create & edit records","Delete records","Run biometric scans","Manage users","Deep search","Export data","System settings"] },
+  operator: { label:t("usr_operator",lang), color:"#fb923c", bg:"rgba(251,146,60,0.18)",   border:"rgba(251,146,60,0.65)",  desc:"Operational access — no user mgmt",    perms:["View all records","Run biometric scans","Deep search","Export data","Create records"] },
+  analyst:  { label:t("usr_analyst",lang),  color:"#60a5fa", bg:"rgba(96,165,250,0.18)",   border:"rgba(96,165,250,0.65)",  desc:"View & analyse — no modifications",    perms:["View all records","Run biometric scans","Deep search","Export data"] },
 };
 
 const emptyForm = () => ({ loginUsername:"", fullName:"", email:"", password:"", confirmPass:"", role:"operator" as UserRole, active:true, biometricId:"" });
@@ -170,7 +170,7 @@ export default function UserManagement() {
               <button key={r} onClick={()=>setFilter(r)} style={{display:"flex",flexDirection:"column" as const,alignItems:"flex-start",padding:"12px 18px",borderRadius:12,cursor:"pointer",...mono,transition:"all .18s",minWidth:90,border:active?`2px solid ${col}`:`1.5px solid ${col}66`,background:active?`${col}28`:`${col}14`}}
                 onMouseEnter={e=>{if(!active)(e.currentTarget as HTMLButtonElement).style.background=`${col}14`;}}
                 onMouseLeave={e=>{if(!active)(e.currentTarget as HTMLButtonElement).style.background=`${col}08`;}}>
-                <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.2em",color:active?col:`${col}88`,marginBottom:4}}>{r==="all"?"ALL USERS":ROLE_META[r as UserRole].label}</span>
+                <span style={{fontSize:9,fontWeight:700,letterSpacing:"0.2em",color:active?col:`${col}88`,marginBottom:4}}>{r==="all"?t("usr_all_users",lang):ROLE_META[r as UserRole].label}</span>
                 <span style={{fontSize:26,fontWeight:700,color:col,lineHeight:1}}>{count}</span>
               </button>
             );
@@ -180,7 +180,7 @@ export default function UserManagement() {
         {/* Table */}
         <div style={{borderRadius:16,overflow:"hidden",border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",marginBottom:24}}>
           <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr auto",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
-            {["USER","ROLE","STATUS","ACTIONS"].map(h=>(
+            {["USER", t("lbl_role",lang),"STATUS", t("usr_actions",lang)].map(h=>(
               <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
             ))}
           </div>
@@ -212,7 +212,7 @@ export default function UserManagement() {
                 <span style={{fontSize:11,fontWeight:700,letterSpacing:"0.14em",padding:"4px 10px",borderRadius:7,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,display:"inline-block"}}>{rm.label}</span>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <div style={{width:7,height:7,borderRadius:"50%",background:u.active?"#4ade80":"#6b7280",boxShadow:u.active?"0 0 8px #4ade80":"none"}}/>
-                  <span style={{fontSize:11,fontWeight:700,letterSpacing:"0.12em",color:u.active?"#4ade80":"rgba(203,178,120,0.35)"}}>{u.active?"ACTIVE":"DISABLED"}</span>
+                  <span style={{fontSize:11,fontWeight:700,letterSpacing:"0.12em",color:u.active?"#4ade80":"rgba(203,178,120,0.35)"}}>{u.active?t("lbl_active",lang):t("lbl_disabled",lang)}</span>
                 </div>
                 <div style={{display:"flex",gap:6}}>
                   <button onClick={()=>openEdit(u)} style={{width:32,height:32,borderRadius:8,border:"1px solid rgba(232,200,112,0.3)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(232,200,112,0.65)",transition:"all .15s",...mono}}
@@ -377,7 +377,7 @@ export default function UserManagement() {
                           <div style={{flex:1,minWidth:0}}>
                             <div style={{fontSize:14,fontWeight:700,color:"#e8dcc8",marginBottom:3}}>{dbMatch.name} {dbMatch.surname}</div>
                             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"3px 10px"}}>
-                              {[["EMAIL",dbMatch.email||"—"],["PHONE",dbMatch.phoneNo||"—"],["NATIONALITY",dbMatch.nationality||"—"],["DOB",dbMatch.dateOfBirth||"—"]].map(([l,v])=>(
+                              {[[t("lbl_email",lang),dbMatch.email||"—"],[t("lbl_phone",lang),dbMatch.phoneNo||"—"],[t("lbl_nationality",lang),dbMatch.nationality||"—"],["DOB",dbMatch.dateOfBirth||"—"]].map(([l,v])=>(
                                 <div key={l}><span style={{fontSize:7,fontWeight:700,letterSpacing:"0.16em",color:"rgba(74,222,128,0.42)",fontFamily:"'Courier New',monospace"}}>{l} </span><span style={{fontSize:9,color:"rgba(220,200,160,0.8)",fontFamily:"'Courier New',monospace"}}>{v}</span></div>
                               ))}
                             </div>
