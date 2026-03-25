@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -88,7 +89,7 @@ const CATEGORIES:Category[] = [
       {id:"cert-employment",    name:"Certificate of Employment",    desc:"Formal proof of employment issued to employee.",               preview:"💼"},
       {id:"cert-training",      name:"Professional Training Cert",   desc:"Awarded on completing a certified training programme.",        preview:"📚"},
     ]},
-  { id:"visa" as any, label:"Visa Applications", icon:"🛂", color:"#f87171", bg:"rgba(248,113,113,0.22)", border:"rgba(248,113,113,0.75)", desc:"Official government visa portals with your data pre-filled",
+  { id:"visa" as any, label:t("cre_visa",lang), icon:"🛂", color:"#f87171", bg:"rgba(248,113,113,0.22)", border:"rgba(248,113,113,0.75)", desc:"Official government visa portals with your data pre-filled",
     templates:[
       {id:"visa-usa",      name:"🇺🇸 United States",   desc:"DS-160 — Official US Nonimmigrant Visa Application",      officialUrl:"https://ceac.state.gov/GENNIV/",              preview:"🇺🇸"},
       {id:"visa-uk",       name:"🇬🇧 United Kingdom",  desc:"UK Visas — GOV.UK Official Portal",                       officialUrl:"https://www.gov.uk/apply-uk-visa",            preview:"🇬🇧"},
@@ -114,6 +115,7 @@ const CATEGORIES:Category[] = [
 const dimBorder = (b:string,a:string) => { const m=b.lastIndexOf(","); const rp=String.fromCharCode(41); return m<0?b:b.slice(0,m+1)+a+rp; };
 
 export default function Create() {
+  const lang = useLang();
   const navigate = useNavigate();
   const me = getCurrentUser();
   const [step,   setStep]   = useState<"categories"|"templates"|"result">("categories");
@@ -142,7 +144,7 @@ export default function Create() {
 
   const pickTemplate = (tpl:Template)=>{
     if(!record){
-      alert("No biometric record found. Please register first via New Registration.");
+      alert(t("cre_no_record",lang));
       return;
     }
     setSelTpl(tpl);
@@ -348,7 +350,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:"24px 24
           </motion.button>
           <div>
             <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,fontWeight:800,letterSpacing:"0.06em",color:"rgba(200,245,255,0.96)"}}>
-              {step==="categories"?"CREATE FOR ME":step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
+              {step==="categories"?t("cre_title",lang):step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
             </div>
             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"rgba(0,190,230,0.45)",marginTop:1,letterSpacing:"0.06em"}}>
               {step==="categories"?"SELECT DOCUMENT TYPE":step==="templates"?`← ${selCat?.label.toUpperCase() || "CATEGORY"}  ›  CHOOSE TEMPLATE`:`← ${selCat?.label.toUpperCase() || "TEMPLATES"}  ›  PREVIEW`}
@@ -365,7 +367,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;padding:"24px 24
       </div>
       <div style={{display:"none"}}>
       <PageHeader
-        title={step==="categories"?"CREATE FOR ME":step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
+        title={step==="categories"?t("cre_title",lang):step==="templates"?(selCat?.label.toUpperCase()||"SELECT TEMPLATE"):(selTpl?.name.toUpperCase()||"DOCUMENT READY")}
         subtitle={step==="categories"?"SELECT DOCUMENT TYPE":step==="templates"?"CHOOSE A TEMPLATE":"PREVIEW & DOWNLOAD"}
         icon={<span style={{fontSize:15}}>✦</span>}
         rightContent={

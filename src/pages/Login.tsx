@@ -224,8 +224,8 @@ const LoginScreen = () => {
       <div style={{display:"flex",gap:0,marginBottom:20,borderRadius:12,overflow:"hidden",
         border:"1px solid rgba(0,175,250,0.18)",background:"rgba(0,10,30,0.4)"}}>
         {([
-          {id:"fingerprint", icon:"🖐", label:"FINGERPRINT"},
-          {id:"password",    icon:"🔑", label:"USERNAME / PASSWORD"},
+          {id:"fingerprint", icon:"🖐", label:t("login_fp_tab",lang)},
+          {id:"password",    icon:"🔑", label:t("login_pw_tab",lang)},
         ] as const).map(tab=>(
           <button key={tab.id} onClick={()=>{setLoginTab(tab.id);setManualErr("");setManualUser("");setManualPass("");setManualPreview(null);resetScan();}}
             style={{flex:1,padding:"11px 8px",border:"none",cursor:"pointer",transition:"all .18s",
@@ -505,7 +505,7 @@ const LoginScreen = () => {
                   value={manualUser}
                   onChange={e=>{setManualUser(e.target.value);setManualErr("");}}
                   onKeyDown={e=>e.key==="Enter"&&handleManual()}
-                  placeholder="Enter your username"
+                  placeholder={t("login_user",lang)}
                   className="input-cyber"
                   autoComplete="username"
                   autoFocus
@@ -525,7 +525,7 @@ const LoginScreen = () => {
                   value={manualPass}
                   onChange={e=>{setManualPass(e.target.value);setManualErr("");}}
                   onKeyDown={e=>e.key==="Enter"&&handleManual()}
-                  placeholder="Enter your password"
+                  placeholder={t("login_pass",lang)}
                   className="input-cyber"
                   autoComplete="current-password"
                   style={{width:"100%"}}

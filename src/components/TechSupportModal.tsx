@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLang, t } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Headphones, Send, CheckCircle, AlertTriangle, Loader2, ArrowLeft, ChevronDown, User } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -52,6 +53,7 @@ export default function TechSupportModal({
     : liveUsername;
   const selectedIssue    = ISSUES.find(i => i.value === issue);
   const selectedPriority = PRIORITY.find(p => p.value === priority)!;
+  const lang = useLang();
   const ticketId = `TKT-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 
   const handleSubmit = () => {
@@ -164,7 +166,7 @@ export default function TechSupportModal({
                 <h2 style={{ fontFamily:"'Orbitron',monospace", fontSize:15, fontWeight:900,
                   letterSpacing:"0.18em", color:"hsl(193,100%,72%)",
                   textShadow:"0 0 20px hsla(192,100%,58%,0.8)", margin:0 }}>
-                  TECHNICAL SUPPORT
+                  {t("tec_title",lang)}
                 </h2>
                 <p style={{ fontFamily:"'Orbitron',monospace", fontSize:8, letterSpacing:"0.24em",
                   color:"hsla(192,80%,55%,0.4)", margin:"3px 0 0" }}>
@@ -237,7 +239,7 @@ export default function TechSupportModal({
 
                     {/* REPORTED BY */}
                     <div>
-                      <label style={fieldLabel}>REPORTED BY</label>
+                      <label style={fieldLabel}>{t("tec_reported_by",lang)}</label>
                       {allowManualReporter ? (
                         <div style={{ position:"relative" }}>
                           <User size={13} style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"hsla(192,80%,55%,0.4)", pointerEvents:"none" }}/>
@@ -261,14 +263,14 @@ export default function TechSupportModal({
                             {liveUsername ? `@${liveUsername.toUpperCase()}` : "NOT LOGGED IN"}
                           </span>
                           <span style={{ marginLeft:"auto", fontFamily:"'Orbitron',monospace", fontSize:7,
-                            letterSpacing:"0.18em", color:"hsla(192,80%,55%,0.38)" }}>AUTO-FILLED</span>
+                            letterSpacing:"0.18em", color:"hsla(192,80%,55%,0.38)" }}>{t("activelang",lang)}</span>
                         </div>
                       )}
                     </div>
 
                     {/* ISSUE TYPE */}
                     <div style={{ position:"relative" }}>
-                      <label style={fieldLabel}>ISSUE TYPE</label>
+                      <label style={fieldLabel}>{t("tec_issue",lang)}</label>
                       <button
                         className="w-full flex items-center gap-3 text-left transition-all"
                         style={{ ...inputBase, padding:"10px 12px",
@@ -334,7 +336,7 @@ export default function TechSupportModal({
 
                     {/* PRIORITY */}
                     <div>
-                      <label style={fieldLabel}>PRIORITY LEVEL</label>
+                      <label style={fieldLabel}>{t("tec_priority",lang)}</label>
                       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6 }}>
                         {PRIORITY.map(p=>(
                           <button key={p.value} onClick={()=>setPriority(p.value)}
@@ -361,7 +363,7 @@ export default function TechSupportModal({
 
                     {/* DESCRIPTION */}
                     <div>
-                      <label style={fieldLabel}>ISSUE DESCRIPTION</label>
+                      <label style={fieldLabel}>{t("tec_describe",lang)}</label>
                       <textarea
                         rows={4}
                         value={description}

@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -131,7 +132,7 @@ export default function UserManagement() {
       <CyberBackground/>
 
       <PageHeader
-        title="USER MANAGEMENT"
+        title={t("usr_title",lang)}
         subtitle="ACCESS CONTROL · ROLES · CREDENTIALS"
         icon={<Users size={16} style={{color:"hsl(193,100%,68%)"}}/>}
         rightContent={
@@ -447,8 +448,8 @@ export default function UserManagement() {
                 {/* Passwords */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                   {[
-                    {label:editTarget?"New Password":"Password",key:"password",val:form.password,show:showPw,setShow:setShowPw,ph:editTarget?"Leave blank to keep":"Min. 4 characters"},
-                    {label:"Confirm Password",key:"confirmPass",val:form.confirmPass,show:showCpw,setShow:setShowCpw,ph:"Re-enter password"},
+                    {label:editTarget?t("newpass",lang):t("usr_password",lang),key:"password",val:form.password,show:showPw,setShow:setShowPw,ph:editTarget?t("usr_password",lang):"Min. 4 characters"},
+                    {label:t("usr_confirm_pw",lang),key:"confirmPass",val:form.confirmPass,show:showCpw,setShow:setShowCpw,ph:"Re-enter password"},
                   ].map(f=>(
                     <div key={f.key}>
                       <label style={{display:"block",fontSize:11,fontWeight:600,letterSpacing:"0.06em",color:"rgba(203,178,120,0.65)",marginBottom:7,fontFamily:"system-ui,-apple-system,'Segoe UI',sans-serif",textTransform:"uppercase" as const}}>{f.label}</label>
@@ -475,7 +476,7 @@ export default function UserManagement() {
                     </button>
                     <div>
                       <span style={{fontSize:13,fontWeight:600,color:form.active?"#4ade80":"rgba(203,178,120,0.4)",fontFamily:"system-ui,sans-serif"}}>
-                        Account {form.active?"Active":"Disabled"}
+                        Account {form.active?t("usr_active",lang):"Disabled"}
                       </span>
                       <p style={{fontSize:11,color:"rgba(203,178,120,0.3)",margin:"2px 0 0",fontFamily:"system-ui,sans-serif"}}>{form.active?"User can sign in":"User cannot sign in"}</p>
                     </div>

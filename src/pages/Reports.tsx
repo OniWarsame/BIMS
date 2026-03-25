@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -29,6 +30,7 @@ const fmt = (ts: string) => {
 };
 
 export default function Reports() {
+  const lang = useLang();
   const navigate = useNavigate();
   const me = getCurrentUser();
   const [logs,    setLogs]    = useState<AccessLog[]>([]);
@@ -90,7 +92,7 @@ export default function Reports() {
       <CyberBackground/>
 
       <PageHeader
-        title="SYSTEM REPORTS"
+        title={t("rep_system",lang)}
         subtitle="ACTIVITY LOGS · USER SESSIONS · RECORDS AUDIT"
         icon={<FileText size={16} style={{color:"hsl(193,100%,68%)"}}/>}
         rightContent={
@@ -114,10 +116,10 @@ export default function Reports() {
 
         {/* Tabs */}
         <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap" as const}}>
-          <TabBtn id="summary"  label="SUMMARY"/>
-          <TabBtn id="activity" label="ACTIVITY LOG"/>
-          <TabBtn id="records"  label="RECORDS"/>
-          <TabBtn id="users"    label="USER SESSIONS"/>
+          <TabBtn id="summary"  label={t("rep_summary",lang)}/>
+          <TabBtn id="activity" label={t("rep_activity",lang)}/>
+          <TabBtn id="records"  label={t("db_records",lang)}/>
+          <TabBtn id="users"    label={t("rep_sessions",lang)}/>
         </div>
 
         {/* ── SUMMARY TAB ── */}
@@ -189,7 +191,7 @@ export default function Reports() {
 
             <div style={{borderRadius:12,border:"1.5px solid rgba(203,178,120,0.38)",background:"rgba(12,22,45,0.78)",overflow:"hidden"}}>
               <div style={{display:"grid",gridTemplateColumns:"3fr 2fr 2fr 2fr 1fr",padding:"10px 20px",borderBottom:"1px solid rgba(203,178,120,0.15)",background:"rgba(6,14,32,0.72)"}}>
-                {["ACTION","OPERATOR","DATE","TIME","RECORDS"].map(h=>(
+                {["ACTION","OPERATOR","DATE","TIME", t("db_records",lang)].map(h=>(
                   <span key={h} style={{fontSize:9,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)"}}>{h}</span>
                 ))}
               </div>

@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,7 +33,7 @@ function applyLang(code:string){
 
 /* ── Real-time UI translation strings ── */
 const T: Record<string, Record<string, string>> = {
-  settings:       {en:"SETTINGS",          so:"GOOBAHA",           ar:"الإعدادات",       fr:"PARAMÈTRES",      sw:"MIPANGILIO",      am:"ቅንብሮች",         ha:"SAITUNA",         de:"EINSTELLUNGEN",   zh:"设置",          es:"CONFIGURACIÓN"},
+  settings:       {en:t("nav_settings",lang),          so:"GOOBAHA",           ar:"الإعدادات",       fr:"PARAMÈTRES",      sw:"MIPANGILIO",      am:"ቅንብሮች",         ha:"SAITUNA",         de:"EINSTELLUNGEN",   zh:"设置",          es:"CONFIGURACIÓN"},
   preferences:    {en:"SYSTEM PREFERENCES",so:"DOORBIDAADA",        ar:"تفضيلات النظام",  fr:"PRÉFÉRENCES",     sw:"MAPENDELEO",      am:"ቅድሚያ ምርጫዎች",   ha:"ZAƁUKA",          de:"SYSTEMEINST.",    zh:"系统偏好",       es:"PREFERENCIAS"},
   language:       {en:"LANGUAGE",          so:"LUQADDA",           ar:"اللغة",           fr:"LANGUE",          sw:"LUGHA",           am:"ቋንቋ",           ha:"HARSHE",          de:"SPRACHE",         zh:"语言",          es:"IDIOMA"},
   changepass:     {en:"CHANGE PASSWORD",   so:"BEDDEL FURAHA",     ar:"تغيير كلمة المرور",fr:"CHANGER MDP",    sw:"BADILISHA NYWILA",am:"የይለፍ ቃል ቀይር",  ha:"CANZA KALMAR",    de:"PASSWORT ÄNDERN", zh:"更改密码",       es:"CAMBIAR CLAVE"},
@@ -110,7 +111,7 @@ export default function Settings() {
       <CyberBackground/>
 
       <PageHeader
-        title="SETTINGS"
+        title={t("nav_settings",lang)}
         subtitle="PREFERENCES · LANGUAGE · DISPLAY"
         icon={<span style={{fontSize:16}}>⚙️</span>}
       />

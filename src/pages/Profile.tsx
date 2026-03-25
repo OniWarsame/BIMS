@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield } from "lucide-react";
@@ -8,6 +9,7 @@ import { getCurrentUser, getUsers, ROLE_COLORS, ROLE_LABELS } from "@/lib/auth";
 import { getRecords, type BiometricRecord } from "@/lib/biometric-store";
 
 export default function Profile() {
+  const lang = useLang();
   const navigate = useNavigate();
   const me = getCurrentUser();
   const [rec, setRec] = useState<BiometricRecord|null>(null);
@@ -38,7 +40,7 @@ export default function Profile() {
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",...mono}}>
       <CyberBackground/>
       <PageHeader
-        title="MY PROFILE"
+        title={t("pro_title",lang)}
         subtitle="IDENTITY · ACCOUNT · CREDENTIALS"
         icon={<span style={{fontSize:16}}>👤</span>}
       />
@@ -90,11 +92,11 @@ export default function Profile() {
           <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:0.1}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.22em",color:"rgba(203,178,120,0.5)",marginBottom:14}}>BIOMETRIC RECORD — {rec.id}</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
-              <F label="FULL NAME"       value={`${rec.name} ${rec.surname}`}/>
-              <F label="BIOMETRIC ID"    value={rec.id}/>
-              <F label="DATE OF BIRTH"   value={rec.dateOfBirth}/>
-              <F label="PLACE OF BIRTH"  value={rec.placeOfBirth}/>
-              <F label="GENDER"          value={rec.gender}/>
+              <F label={t("lbl_name",lang)}       value={`${rec.name} ${rec.surname}`}/>
+              <F label={t("pro_biometric_id",lang)}    value={rec.id}/>
+              <F label={t("pro_dob",lang)}   value={rec.dateOfBirth}/>
+              <F label={t("pro_place_birth",lang)}  value={rec.placeOfBirth}/>
+              <F label={t("lbl_gender",lang)}          value={rec.gender}/>
               <F label="NATIONALITY"     value={rec.nationality}/>
               <F label="NATIONAL ID"     value={rec.nationalId}/>
               <F label="PASSPORT NO."    value={rec.passportNo}/>

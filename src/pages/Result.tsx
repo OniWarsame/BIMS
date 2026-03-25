@@ -1,3 +1,4 @@
+import { useLang, t } from "@/lib/i18n";
 import { useParams, useNavigate } from "react-router-dom";
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +59,7 @@ const Row2 = ({children}:{children:React.ReactNode}) => (
 );
 
 const ResultPage = () => {
+  const lang = useLang();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const record = getRecords().find(r => r.id === id);
@@ -555,22 +557,22 @@ const ResultPage = () => {
               <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
 
                 {/* Personal */}
-                <Section label="PERSONAL INFORMATION" color="33,100%">
+                <Section label={t("res_personal",lang)} color="33,100%">
                   <Row2>
-                    <EF label="FIRST NAME"   v={editDraft.name||""}       k="name"       hc={hc}/>
+                    <EF label={t("res_first_name",lang)}   v={editDraft.name||""}       k="name"       hc={hc}/>
                     <EF label="SURNAME"      v={editDraft.surname||""}     k="surname"    hc={hc}/>
                   </Row2>
                   <Row2>
-                    <EFSel label="GENDER" v={editDraft.gender||""} k="gender" hc={hc}
+                    <EFSel label={t("lbl_gender",lang)} v={editDraft.gender||""} k="gender" hc={hc}
                       opts={["Male","Female","Non-binary","Prefer not to say"]}/>
-                    <EF label="DATE OF BIRTH" v={editDraft.dateOfBirth||""} k="dateOfBirth" hc={hc} placeholder="YYYY-MM-DD"/>
+                    <EF label={t("lbl_dob",lang)} v={editDraft.dateOfBirth||""} k="dateOfBirth" hc={hc} placeholder="YYYY-MM-DD"/>
                   </Row2>
                   <Row2>
                     <EF label="PLACE OF BIRTH"   v={editDraft.placeOfBirth||""} k="placeOfBirth" hc={hc}/>
                     <EF label="SIBLINGS"          v={(editDraft as any).siblings||""} k="siblings" hc={hc}/>
                   </Row2>
                   <Row2>
-                    <EF label="NATIONALITY"       v={editDraft.nationality||""}  k="nationality" hc={hc}/>
+                    <EF label={t("lbl_nationality",lang)}       v={editDraft.nationality||""}  k="nationality" hc={hc}/>
                     <EF label="NATIONAL ID"       v={editDraft.nationalId||""}   k="nationalId"  hc={hc}/>
                   </Row2>
                   <Row2>
@@ -688,12 +690,12 @@ const ResultPage = () => {
                 <Section label="EMERGENCY CONTACTS" color="0,90%">
                   <p className="font-mono text-[10px] font-bold tracking-widest" style={{color:"hsla(0,80%,65%,0.5)"}}>CONTACT 1</p>
                   <Row2>
-                    <EF label="FULL NAME"  v={(editDraft as any).ec1Name||""}  k="ec1Name"  hc={hc} placeholder="Full name"/>
+                    <EF label={t("lbl_name",lang)}  v={(editDraft as any).ec1Name||""}  k="ec1Name"  hc={hc} placeholder="Full name"/>
                     <EF label="PHONE NO."  v={(editDraft as any).ec1Phone||""} k="ec1Phone" hc={hc} placeholder="+254-700-000-000"/>
                   </Row2>
                   <p className="font-mono text-[10px] font-bold tracking-widest mt-1" style={{color:"hsla(0,80%,65%,0.5)"}}>CONTACT 2 (OPTIONAL)</p>
                   <Row2>
-                    <EF label="FULL NAME"  v={(editDraft as any).ec2Name||""}  k="ec2Name"  hc={hc} placeholder="Full name"/>
+                    <EF label={t("lbl_name",lang)}  v={(editDraft as any).ec2Name||""}  k="ec2Name"  hc={hc} placeholder="Full name"/>
                     <EF label="PHONE NO."  v={(editDraft as any).ec2Phone||""} k="ec2Phone" hc={hc} placeholder="+254-700-000-000"/>
                   </Row2>
                 </Section>
@@ -921,15 +923,15 @@ const ResultPage = () => {
 
         {/* ══ ROW 1: Personal + Contacts ══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Sec icon={User} title="Personal Information">
+          <Sec icon={User} title={t("res_personal",lang)}>
             <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <F label="DATE OF BIRTH"    value={record.dateOfBirth}/>
+              <F label={t("lbl_dob",lang)}    value={record.dateOfBirth}/>
               <F label="PLACE OF BIRTH"   value={record.placeOfBirth}/>
-              <F label="NATIONALITY"      value={record.nationality}/>
+              <F label={t("lbl_nationality",lang)}      value={record.nationality}/>
               <F label="NATIONAL ID"      value={record.noNationalId?"NO NATIONAL ID":record.nationalId}/>
               <F label="BLOOD TYPE"       value={record.bloodType}/>
               <F label="MARITAL STATUS"   value={record.maritalStatus}/>
-              <F label="GENDER"           value={record.gender}/>
+              <F label={t("lbl_gender",lang)}           value={record.gender}/>
               <F label="OCCUPATION"       value={record.occupation}/>
               <F label="NO. OF SIBLINGS"  value={(record as any).siblings}/>
               <F label="EMAIL"            value={record.email}/>
@@ -938,7 +940,7 @@ const ResultPage = () => {
               {record.address && <div className="col-span-2"><F label="ADDRESS" value={record.address}/></div>}
             </div>
           </Sec>
-          <Sec icon={Globe} title="Social Media Accounts">
+          <Sec icon={Globe} title={t("db_col_name",lang)}>
             <div className="grid grid-cols-2 gap-x-6 gap-y-4">
               <F label="FACEBOOK"    value={(record as any).facebook}/>
               <F label="INSTAGRAM"   value={(record as any).instagram}/>
@@ -981,7 +983,7 @@ const ResultPage = () => {
 
         {/* ══ ROW 3: Family ══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Sec icon={Heart} title="Family Information">
+          <Sec icon={Heart} title={t("res_kin",lang)}>
             <div className="space-y-5">
               <div>
                 <p className="font-mono text-[9px] font-bold tracking-widest uppercase mb-2" style={{color:"hsla(38,80%,65%,0.5)"}}>FATHER</p>
@@ -1003,7 +1005,7 @@ const ResultPage = () => {
           </Sec>
           <Sec icon={Users} title="Next of Kin">
             <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <F label="FULL NAME"  value={record.kin1?`${record.kin1.name} ${record.kin1.surname}`:null}/>
+              <F label={t("lbl_name",lang)}  value={record.kin1?`${record.kin1.name} ${record.kin1.surname}`:null}/>
               <F label="RELATION"   value={record.kin1?.relation}/>
               <F label="PHONE"      value={record.kin1?.phone}/>
               <F label="ADDRESS"    value={record.kin1?.address}/>
@@ -1012,7 +1014,7 @@ const ResultPage = () => {
         </div>
 
         {/* ══ Emergency Contacts ══ */}
-        <Sec icon={AlertTriangle} title="Emergency Contacts" accent="orange">
+        <Sec icon={AlertTriangle} title={t("reg_emergency",lang)} accent="orange">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
             <F label="CONTACT 1 NAME"  value={record.emergencyContact1?.name}/>
             <F label="CONTACT 1 PHONE" value={record.emergencyContact1?.phone}/>
@@ -1045,7 +1047,7 @@ const ResultPage = () => {
         </Sec>
 
         {/* ══ Work ══ */}
-        <Sec icon={Briefcase} title="Work Experience">
+        <Sec icon={Briefcase} title={t("reg_occupation",lang)}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
             <F label="CURRENTLY WORKING" value={record.isCurrentlyWorking?"YES":"NO"}/>
             {record.isCurrentlyWorking&&<>
