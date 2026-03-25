@@ -219,152 +219,295 @@ const Index = () => {
 
   const runGhostTrace = async () => {
     if (!ghostPhone.trim() || ghostLoading) return;
-
-    // ── Kenya-only validation ──
-    const raw = ghostPhone.trim();
-    const digits = raw.replace(/[^0-9]/g,"");
-
-    // Accept: +254XXXXXXXXX, 254XXXXXXXXX, 07XXXXXXXX, 01XXXXXXXX
-    const isKenya = (
-      raw.startsWith("+254") ||
-      digits.startsWith("254") ||
-      (digits.length === 9 && (digits.startsWith("7") || digits.startsWith("1"))) ||
-      (digits.length === 10 && (digits.startsWith("07") || digits.startsWith("01")))
-    );
-
-    if (!isKenya) {
-      setGhostResults({
-        error: true,
-        errorMsg: "KENYA NUMBERS ONLY — Enter a valid Kenyan number (e.g. +254 712 345678 or 0712 345678)",
-        phone: raw
-      });
-      return;
-    }
-
     setGhostLoading(true);
     setGhostResults(null);
-    const enc = encodeURIComponent;
 
-    // Normalise to full international format
+    const raw    = ghostPhone.trim();
+    const digits = raw.replace(/[^0-9]/g, "");
+    const enc    = encodeURIComponent;
+
+    // ── Normalise to E.164 ──
+    // If user typed +252..., 252..., 07..., 61..., etc.
     let norm = digits;
-    if(norm.startsWith("0") && norm.length === 10) norm = "254" + norm.slice(1);
-    if(norm.startsWith("7") || norm.startsWith("1")) norm = "254" + norm;
-    const e164 = "+" + norm; // e.g. +254712345678
-    const local0 = "0" + norm.slice(3); // e.g. 0712345678
+    // Strip leading zeros for local formats
+    if (norm.startsWith("00")) norm = norm.slice(2);
 
-    // ── 1. Detect carrier from prefix ──
-    const prefix = norm.slice(3,6); // first 3 digits after 254
-    const carrierMap: Record<string,string> = {
-      "700":"Safaricom","701":"Safaricom","702":"Safaricom","703":"Safaricom",
-      "704":"Safaricom","705":"Safaricom","706":"Safaricom","707":"Safaricom",
-      "708":"Safaricom","709":"Safaricom","710":"Safaricom","711":"Safaricom",
-      "712":"Safaricom","713":"Safaricom","714":"Safaricom","715":"Safaricom",
-      "716":"Safaricom","717":"Safaricom","718":"Safaricom","719":"Safaricom",
-      "720":"Safaricom","721":"Safaricom","722":"Safaricom","723":"Safaricom",
-      "724":"Safaricom","725":"Safaricom","726":"Safaricom","727":"Safaricom",
-      "728":"Safaricom","729":"Safaricom","740":"Safaricom","741":"Safaricom",
-      "742":"Safaricom","743":"Safaricom","745":"Safaricom","746":"Safaricom",
-      "747":"Safaricom","748":"Safaricom","757":"Safaricom","758":"Safaricom",
-      "759":"Safaricom","768":"Safaricom","769":"Safaricom","790":"Safaricom",
-      "791":"Safaricom","792":"Safaricom","793":"Safaricom","794":"Safaricom",
-      "795":"Safaricom","796":"Safaricom","797":"Safaricom","798":"Safaricom",
-      "799":"Safaricom",
-      "730":"Airtel","731":"Airtel","732":"Airtel","733":"Airtel","734":"Airtel",
-      "735":"Airtel","736":"Airtel","737":"Airtel","738":"Airtel","739":"Airtel",
-      "750":"Airtel","751":"Airtel","752":"Airtel","753":"Airtel","754":"Airtel",
-      "755":"Airtel","756":"Airtel","762":"Airtel",
-      "780":"Telkom","781":"Telkom","782":"Telkom","783":"Telkom","784":"Telkom",
-      "785":"Telkom","786":"Telkom","787":"Telkom","788":"Telkom","789":"Telkom",
-      "770":"Faiba","100":"Safaricom","101":"Safaricom","102":"Safaricom",
+    // Detect country code from prefix
+    const CC_MAP: Record<string, {country:string, name:string, local_prefix?:string, local_len?:number}> = {
+      "252": {country:"SO", name:"Somalia"},
+      "254": {country:"KE", name:"Kenya",    local_prefix:"0",  local_len:10},
+      "251": {country:"ET", name:"Ethiopia",  local_prefix:"0",  local_len:10},
+      "255": {country:"TZ", name:"Tanzania",  local_prefix:"0",  local_len:10},
+      "256": {country:"UG", name:"Uganda",    local_prefix:"0",  local_len:10},
+      "250": {country:"RW", name:"Rwanda"},
+      "253": {country:"DJ", name:"Djibouti"},
+      "257": {country:"BI", name:"Burundi"},
+      "1":   {country:"US", name:"USA/Canada"},
+      "44":  {country:"GB", name:"UK"},
+      "33":  {country:"FR", name:"France"},
+      "49":  {country:"DE", name:"Germany"},
+      "966": {country:"SA", name:"Saudi Arabia"},
+      "971": {country:"AE", name:"UAE"},
+      "974": {country:"QA", name:"Qatar"},
+      "968": {country:"OM", name:"Oman"},
+      "965": {country:"KW", name:"Kuwait"},
+      "20":  {country:"EG", name:"Egypt"},
+      "212": {country:"MA", name:"Morocco"},
+      "216": {country:"TN", name:"Tunisia"},
+      "213": {country:"DZ", name:"Algeria"},
+      "234": {country:"NG", name:"Nigeria"},
+      "233": {country:"GH", name:"Ghana"},
+      "27":  {country:"ZA", name:"South Africa"},
+      "91":  {country:"IN", name:"India"},
+      "86":  {country:"CN", name:"China"},
+      "81":  {country:"JP", name:"Japan"},
+      "82":  {country:"KR", name:"South Korea"},
+      "55":  {country:"BR", name:"Brazil"},
+      "52":  {country:"MX", name:"Mexico"},
+      "34":  {country:"ES", name:"Spain"},
+      "39":  {country:"IT", name:"Italy"},
+      "7":   {country:"RU", name:"Russia"},
+      "31":  {country:"NL", name:"Netherlands"},
+      "46":  {country:"SE", name:"Sweden"},
+      "47":  {country:"NO", name:"Norway"},
+      "45":  {country:"DK", name:"Denmark"},
+      "358": {country:"FI", name:"Finland"},
     };
-    const carrier = carrierMap[prefix] || "Kenyan carrier";
 
-    // ── 2. Search local BIMS database first ──
+    let ccInfo = {country:"", name:"Unknown", local_prefix:"", local_len:0};
+    let ccDigits = "";   // digits without country code
+    let e164 = "";
+
+    if (raw.startsWith("+")) {
+      // User gave us +XXX format — trust it
+      norm = digits; // already stripped +
+    }
+
+    // Try matching country code (longest match first: 3 digits, then 2, then 1)
+    for (const len of [3, 2, 1]) {
+      const prefix = norm.slice(0, len);
+      if (CC_MAP[prefix]) {
+        ccInfo   = CC_MAP[prefix];
+        ccDigits = norm.slice(len);
+        e164     = "+" + norm;
+        break;
+      }
+    }
+
+    // If no country code matched, assume the user typed a local number
+    // We can't know the country — use as-is and let AI figure it out
+    if (!e164) {
+      e164     = "+" + norm;
+      ccDigits = norm;
+    }
+
+    // Local format (with leading 0) — useful for some lookups
+    const local0 = ccInfo.local_prefix ? ccInfo.local_prefix + ccDigits : norm;
+
+    // ── Somalia-specific carrier detection ──
+    const somaliCarriers: Record<string, string> = {
+      "61":"Hormuud","62":"Hormuud","63":"Hormuud",
+      "65":"Somtel","66":"Somtel",
+      "67":"Golis","68":"Golis",
+      "69":"Telesom","90":"Telesom","63":"Telesom",
+      "77":"Nationlink","78":"Nationlink",
+    };
+    // Kenya carrier detection
+    const kenyaCarriers: Record<string, string> = {
+      "70":"Safaricom","71":"Safaricom","72":"Safaricom","74":"Safaricom","75":"Airtel",
+      "76":"Airtel","78":"Telkom","79":"Safaricom","11":"Safaricom",
+    };
+
+    let carrier = "";
+    if (ccInfo.country === "SO") {
+      const pfx2 = ccDigits.slice(0, 2);
+      carrier = somaliCarriers[pfx2] || "Somali carrier";
+    } else if (ccInfo.country === "KE") {
+      const pfx2 = ccDigits.slice(0, 2);
+      carrier = kenyaCarriers[pfx2] || "Kenyan carrier";
+    }
+
+    // ── 1. BIMS database match ──
     const allRecords = getRecords();
     const dbMatch = allRecords.filter(r => {
-      if(!r.phoneNo) return false;
-      const s = r.phoneNo.replace(/[^0-9]/g,"");
-      const tail9 = norm.slice(-9);
-      return s === norm || s.endsWith(tail9) || norm.endsWith(s.slice(-9)) ||
-             s === digits || s === local0.replace(/[^0-9]/g,"");
+      if (!r.phoneNo) return false;
+      const s = r.phoneNo.replace(/[^0-9]/g, "");
+      const tail9 = digits.slice(-9);
+      return s === digits ||
+             s.endsWith(tail9) ||
+             digits.endsWith(s.slice(-9)) ||
+             s === norm;
     });
 
-    // ── 3. AI intelligence ──
-    let aiInfo: any = { country:"Kenya", carrier, type:"mobile", region:"Kenya", risk:"low",
-      whatsapp_likely:true, telegram_likely:false, notes:`${carrier} Kenya number — ${e164}` };
+    // ── 2. AI number intelligence ──
+    let aiInfo: any = {
+      country:  ccInfo.name || "Unknown",
+      carrier:  carrier || "Unknown carrier",
+      type:     "mobile",
+      region:   ccInfo.name,
+      risk:     "low",
+      whatsapp_likely: true,
+      telegram_likely: ccInfo.country === "SO" ? true : false,
+      notes:    `${e164} — ${ccInfo.name} number${carrier ? ", " + carrier : ""}`,
+      google_dorks: [
+        `"${e164}"`,
+        `"${e164}" site:facebook.com OR site:instagram.com OR site:tiktok.com`,
+        `"${e164}" profile OR contact OR owner`,
+        `"${raw}" social media`,
+      ]
+    };
+
     try {
-      const aiResp = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:250,
-          messages:[{role:"user",content:
-            `Phone number: ${e164} (Kenya, likely ${carrier})
-
-Respond ONLY with valid JSON:
-{"carrier":"${carrier} Kenya","type":"mobile","region":"Kenya","risk":"low","whatsapp_likely":true,"telegram_likely":false,"notes":"${carrier} Kenya mobile number — WhatsApp very common in Kenya"}`
-          }]})
+      const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 350,
+          messages: [{
+            role: "user",
+            content: `Analyse this phone number: ${e164}\n\nReply ONLY with valid JSON (no markdown):\n{"country":"full country name","carrier":"most likely carrier/telecom operator","type":"mobile or landline or voip","region":"city or region if detectable","risk":"low or medium or high","whatsapp_likely":true,"telegram_likely":false,"notes":"one key insight about this number","google_dorks":["dork1","dork2","dork3"]}`
+          }]
+        })
       });
-      if(aiResp.ok){
-        const d=await aiResp.json();
-        const txt=(d.content||[]).map((b:any)=>b.text||"").join("").trim();
-        try{ aiInfo={...aiInfo,...JSON.parse(txt.replace(/```json|```/g,"").trim())}; }catch{}
+      if (aiResp.ok) {
+        const d = await aiResp.json();
+        const txt = (d.content || []).map((b: any) => b.text || "").join("").trim();
+        try {
+          const parsed = JSON.parse(txt.replace(/```json|```/g, "").trim());
+          aiInfo = { ...aiInfo, ...parsed };
+        } catch {}
       }
-    }catch{}
+    } catch {}
 
-    // ── 4. Build Kenya-focused OSINT links ──
+    // ── 3. Build comprehensive OSINT links ──
     const links: any[] = [];
 
-    // BEST for Kenya: Truecaller has 300M+ African numbers with names from contact books
-    links.push({cat:"🏆 Best Name Lookup — Kenya", sub:"These give the highest chance of finding the owner's name", items:[
-      {label:"Truecaller",  url:`https://www.truecaller.com/search/ke/${enc(local0)}`, bold:true,  note:"#1 for Kenyan names — 300M+ users", primary:true},
-      {label:"Truecaller (intl)",url:`https://www.truecaller.com/search/ke/${enc(e164)}`, bold:true, note:"Same with +254 format", primary:true},
-      {label:"Sync.me",     url:`https://sync.me/search/?q=${enc(e164)}`,              bold:true,  note:"Global caller ID — Kenya coverage"},
-      {label:"CallApp",     url:`https://www.google.com/search?q=callapp+"${enc(e164)}"`, bold:false,note:"CallApp caller ID"},
-      {label:"Google Search",url:`https://www.google.com/search?q="${enc(e164)}" OR "${enc(local0)}"`, bold:false, note:"Public mentions of this number"},
-    ]});
+    // ── Section 1: Truecaller — best caller name tool worldwide ──
+    const tcCountry = ccInfo.country?.toLowerCase() || "us";
+    links.push({
+      cat: "🏆 CALLER NAME LOOKUP",
+      sub: "Truecaller has 400M+ registered names globally — best chance of finding owner name",
+      items: [
+        { label: "Truecaller",        url: `https://www.truecaller.com/search/${tcCountry}/${enc(e164)}`,   bold:true, note:"Best for name lookup", primary:true },
+        { label: "Truecaller (alt)",  url: `https://www.truecaller.com/search/${tcCountry}/${enc(raw)}`,    bold:true, note:"Alt format" },
+        { label: "Sync.me",           url: `https://sync.me/search/?q=${enc(e164)}`,                        bold:true, note:"Global caller ID" },
+        { label: "CallApp",           url: `https://www.google.com/search?q=callapp+caller+id+"${enc(e164)}"`, bold:false, note:"CallApp ID" },
+        { label: "NumVerify",         url: `https://numverify.com/phone-number-validation?number=${enc(e164)}`, bold:false, note:"Carrier + validity" },
+        { label: "HLR Lookup",        url: `https://www.hlrlookup.com/`,                                    bold:false, note:"Live SIM status" },
+      ]
+    });
 
-    // WhatsApp — wa.me is the real direct check
-    links.push({cat:"💬 WhatsApp & Messaging", sub:"wa.me opens the chat — if no account exists WhatsApp tells you", items:[
-      {label:"WhatsApp Chat",  url:`https://wa.me/${norm}`,                            bold:true,  note:"Opens if registered", primary:true},
-      {label:"WhatsApp API",   url:`https://api.whatsapp.com/send?phone=${norm}`,      bold:true,  note:"Alt WhatsApp link"},
-      {label:"Telegram",       url:`https://t.me/+${norm}`,                           bold:false, note:"Opens if exists"},
-      {label:"Viber",          url:`viber://chat?number=%2B${norm}`,                  bold:false, note:"If Viber installed"},
-    ]});
+    // ── Section 2: WhatsApp & Telegram direct open ──
+    links.push({
+      cat: "💬 DIRECT MESSAGING OPEN",
+      sub: "wa.me opens WhatsApp — if account exists you see their profile. Telegram same.",
+      items: [
+        { label: "WhatsApp Chat",     url: `https://wa.me/${norm}`,                                         bold:true, note:"Opens if registered", primary:true },
+        { label: "WhatsApp API",      url: `https://api.whatsapp.com/send?phone=${norm}`,                   bold:true, note:"Alt WhatsApp link" },
+        { label: "Telegram",          url: `https://t.me/+${norm}`,                                         bold:true, note:"Opens profile if exists" },
+        { label: "Viber",             url: `viber://chat?number=%2B${norm}`,                                bold:false, note:"Opens Viber app" },
+        { label: "Signal",            url: `https://signal.me/#p/+${norm}`,                                 bold:false, note:"Signal profile" },
+      ]
+    });
 
-    // Social media search with Kenya context
-    links.push({cat:"📱 Social Media Search — Kenya", sub:"Searches for this number on each platform", items:[
-      {label:"Instagram",   url:`https://www.google.com/search?q=site:instagram.com+"${enc(e164)}" OR site:instagram.com+"${enc(local0)}"`, bold:true},
-      {label:"Facebook",    url:`https://www.facebook.com/search/people/?q=${enc(local0)}`,        bold:true,  note:"Search by phone"},
-      {label:"Twitter/X",   url:`https://x.com/search?q="${enc(e164)}"`,                           bold:false},
-      {label:"TikTok",      url:`https://www.google.com/search?q=site:tiktok.com+"${enc(e164)}"`,  bold:false},
-      {label:"LinkedIn",    url:`https://www.google.com/search?q=site:linkedin.com+"${enc(e164)}"`,bold:false},
-      {label:"YouTube",     url:`https://www.google.com/search?q=site:youtube.com+"${enc(e164)}"`, bold:false},
-      {label:"Snapchat",    url:`https://www.snapchat.com/`,                                        bold:false},
-    ]});
+    // ── Section 3: Social media search ──
+    links.push({
+      cat: "📱 SOCIAL MEDIA SEARCH",
+      sub: "Searches each platform for this phone number in public posts and profiles",
+      items: [
+        { label: "Facebook",          url: `https://www.facebook.com/search/people/?q=${enc(e164)}`,        bold:true, note:"People search" },
+        { label: "Facebook (local)",  url: `https://www.facebook.com/search/people/?q=${enc(raw)}`,         bold:true, note:"Local format search" },
+        { label: "Instagram",         url: `https://www.google.com/search?q="site:instagram.com"+"${enc(e164)}"`, bold:false },
+        { label: "TikTok",            url: `https://www.google.com/search?q=site:tiktok.com+"${enc(e164)}"`, bold:false },
+        { label: "Twitter/X",         url: `https://x.com/search?q="${enc(e164)}"`,                         bold:false },
+        { label: "LinkedIn",          url: `https://www.google.com/search?q=site:linkedin.com+"${enc(e164)}"`, bold:false },
+        { label: "YouTube",           url: `https://www.google.com/search?q=site:youtube.com+"${enc(e164)}"`, bold:false },
+        { label: "Snapchat",          url: `https://www.google.com/search?q=site:snapchat.com+"${enc(e164)}"`, bold:false },
+      ]
+    });
 
-    // Kenya-specific lookups
-    links.push({cat:"🇰🇪 Kenya-Specific Intelligence", sub:"Safaricom, M-Pesa, and Kenya public records", items:[
-      {label:"NumVerify",   url:`https://api.numlookupapi.com/v1/validate/${enc(e164)}`,            bold:true,  note:"Carrier + validity"},
-      {label:"Safaricom Portal",url:`https://selfcare.safaricom.co.ke`,                             bold:false, note:"Safaricom self-service"},
-      {label:"KRA iTax",    url:`https://itax.kra.go.ke/KRA-Portal/`,                              bold:false, note:"Tax records — Kenya"},
-      {label:"M-Pesa Lookup",url:`https://www.google.com/search?q="${enc(e164)}" mpesa kenya`,     bold:false, note:"M-Pesa public traces"},
-      {label:"eCitizen",    url:`https://www.ecitizen.go.ke`,                                       bold:false, note:"Kenya govt records"},
-      {label:"Kenya OSINT", url:`https://www.google.com/search?q="${enc(e164)}" kenya`,            bold:false},
-    ]});
+    // ── Section 4: AI dork queries ──
+    const dorks: string[] = (aiInfo.google_dorks || [
+      `"${e164}"`,
+      `"${e164}" site:facebook.com OR site:instagram.com`,
+      `"${raw}" profile OR contact`,
+    ]);
+    links.push({
+      cat: "🧠 AI OSINT QUERIES",
+      sub: "AI-generated targeted Google searches for this number",
+      items: dorks.slice(0, 5).map((q: string) => ({
+        label: q.length > 55 ? q.slice(0, 52) + "…" : q,
+        url:   `https://www.google.com/search?q=${enc(q)}`,
+        bold:  false,
+        note:  "Google search"
+      })).concat([
+        { label: "Bing",     url: `https://www.bing.com/search?q="${enc(e164)}"`,     bold:false, note:"Bing search" },
+        { label: "DuckDuckGo",url:`https://duckduckgo.com/?q="${enc(e164)}"`,         bold:false, note:"Anonymous search" },
+      ])
+    });
 
-    // People search / OSINT
-    links.push({cat:"🔍 Reverse Lookup & OSINT", sub:"People search and breach databases", items:[
-      {label:"PhoneInfoga", url:`https://github.com/sundowndev/phoneinfoga`,                        bold:true,  note:"Run locally for full scan"},
-      {label:"That'sThem",  url:`https://thatsthem.com/phone/${enc(e164)}`,                        bold:false},
-      {label:"Spokeo",      url:`https://www.spokeo.com/phone/${enc(e164)}`,                       bold:false},
-      {label:"IntelligenceX",url:`https://intelx.io/?s=${enc(e164)}`,                             bold:false, note:"Dark web traces"},
-      {label:"HaveIBeenPwned",url:`https://haveibeenpwned.com/`,                                   bold:false, note:"Breach check"},
-    ]});
+    // ── Section 5: Reverse lookup & breach ──
+    links.push({
+      cat: "🔍 REVERSE LOOKUP & BREACH",
+      sub: "Public records, OSINT databases and breach checks",
+      items: [
+        { label: "Spokeo",          url: `https://www.spokeo.com/phone/${enc(e164)}`,               bold:true },
+        { label: "BeenVerified",    url: `https://www.beenverified.com/phone/${enc(e164)}`,          bold:true },
+        { label: "TruePeopleSearch",url: `https://www.truepeoplesearch.com/results?phoneno=${enc(e164)}`, bold:true, note:"Free" },
+        { label: "That'sThem",      url: `https://thatsthem.com/phone/${enc(e164)}`,                 bold:false },
+        { label: "IntelligenceX",   url: `https://intelx.io/?s=${enc(e164)}`,                       bold:false, note:"Dark web" },
+        { label: "PhoneInfoga",     url: `https://github.com/sundowndev/phoneinfoga`,                bold:false, note:"Run locally" },
+        { label: "OpenCNAM",        url: `https://api.opencnam.com/v3/phone/${enc(e164)}?format=text`, bold:false, note:"CNAM lookup" },
+      ]
+    });
 
-    setGhostResults({ dbMatch, links, phone:raw, e164, local0, norm, carrier, ai:aiInfo });
+    // ── Section 6: Regional — only if East Africa ──
+    const isEastAfrica = ["252","254","251","255","250","256","253","257"].some(cc => norm.startsWith(cc));
+    if (isEastAfrica) {
+      links.push({
+        cat: `🌍 ${ccInfo.name?.toUpperCase() || "REGIONAL"} SPECIFIC`,
+        sub: "Local carrier and East Africa public records",
+        items: [
+          ...(ccInfo.country === "SO" ? [
+            { label: "Hormuud",     url: "https://www.hormuud.com",          bold:true,  note:"+252" },
+            { label: "Somtel",      url: "https://www.somtel.so",             bold:false, note:"+252" },
+            { label: "Golis Telecom",url:"https://www.golis.net",             bold:false, note:"+252" },
+            { label: "Telesom",     url: "https://www.telesom.net",           bold:false, note:"+252" },
+            { label: "Nationlink",  url: "https://www.nationlinktel.net",     bold:false, note:"+252" },
+          ] : []),
+          ...(ccInfo.country === "KE" ? [
+            { label: "Safaricom",   url: "https://www.safaricom.co.ke",       bold:true,  note:"Kenya" },
+            { label: "Airtel Kenya",url: "https://www.airtelkenya.com",       bold:false, note:"Kenya" },
+            { label: "Telkom Kenya",url: "https://www.telkom.co.ke",          bold:false, note:"Kenya" },
+          ] : []),
+          ...(ccInfo.country === "ET" ? [
+            { label: "Ethio Telecom",url:"https://www.ethiotelecom.et",       bold:true,  note:"Ethiopia" },
+          ] : []),
+          { label: "Airtel Africa", url: "https://airtel.africa",             bold:false, note:"Multi-country" },
+          { label: `Google: ${ccInfo.name}`, url: `https://www.google.com/search?q="${enc(e164)}"+"${enc(ccInfo.name || "")}"`, bold:false },
+        ].filter((i:any) => i.label)
+      });
+    }
+
+    setGhostView("results");
+    setGhostResults({
+      dbMatch, links,
+      phone:   raw,
+      e164,
+      local0,
+      norm,
+      digits,
+      carrier,
+      country: ccInfo.name,
+      ai:      aiInfo
+    });
     setGhostLoading(false);
   };
-
 
   const handleDeepSearch = () => {
     if (!dsInput.trim() || dsLoading) return;
