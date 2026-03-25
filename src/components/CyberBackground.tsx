@@ -1,5 +1,13 @@
 import React, { useEffect, useRef } from "react";
 
+/*
+  BIMS — Biometric Background
+  
+  Design: The eye image is cropped to a perfect circle (the iris/pupil area only),
+  sitting at screen centre like a glowing portal.
+  Everything else — circuit lines, nodes, scanners — live in the void AROUND it.
+  The eye is NEVER obscured.
+*/
 export default function CyberBackground() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -7,202 +15,294 @@ export default function CyberBackground() {
     const canvas = ref.current; if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     let T = 0, raf = 0;
-    let scanAng = 0, irisRot = 0;
-    let eox = 0, eoy = 0;
     const M = { x:-999, y:-999, px:-999, py:-999, down:false };
     const SM = { x:-999, y:-999 };
-    const RINGS: any[]=[], SPARKS: any[]=[];
-    let nodes: any[]=[], traces: any[]=[], motes: any[]=[];
+    const RINGS: any[] = [], SPARKS: any[] = [];
+    let nodes: any[] = [], motes: any[] = [];
+    // Circuit lines as segments stored globally
+    let circuits: any[] = [];
 
-    const onMove  = (e:MouseEvent)=>{ M.px=M.x; M.py=M.y; M.x=e.clientX; M.y=e.clientY; };
-    const onDown  = ()=>{ M.down=true; setTimeout(()=>M.down=false,250); };
-    const onLeave = ()=>{ M.x=-999; M.y=-999; };
-    const onRz    = ()=>{ canvas.width=innerWidth; canvas.height=innerHeight; init(); };
-    window.addEventListener("mousemove",onMove,{passive:true});
-    window.addEventListener("mousedown",onDown);
-    window.addEventListener("mouseleave",onLeave);
-    window.addEventListener("resize",onRz);
+    const onMove  = (e: MouseEvent) => { M.px=M.x; M.py=M.y; M.x=e.clientX; M.y=e.clientY; };
+    const onDown  = () => { M.down=true; setTimeout(()=>M.down=false,250); };
+    const onLeave = () => { M.x=-999; M.y=-999; };
+    const onRz    = () => { canvas.width=innerWidth; canvas.height=innerHeight; init(); };
+    window.addEventListener("mousemove", onMove, {passive:true});
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseleave", onLeave);
+    window.addEventListener("resize", onRz);
 
     const EYE = new Image(); let eyeOK = false;
-    EYE.onload = ()=>eyeOK=true;
-    EYE.src = "/eye3.jpg";
+    EYE.onload = () => eyeOK = true;
+    EYE.src = "/eye2.jpg";
 
-    function init(){
-      const W=canvas.width, H=canvas.height;
-      nodes = Array.from({length:38},(_,i)=>{
-        const nx=20+Math.random()*(W-40), ny=20+Math.random()*(H-40);
-        return{x:nx,y:ny,ox:nx,oy:ny,vx:0,vy:0,
-          r:i<6?2.5+Math.random()*2:0.7+Math.random()*1.5,
-          hue:[193,42,165,145,210][i%5], phase:Math.random()*Math.PI*2};
-      });
-      traces = Array.from({length:24},()=>{
-        const pts:any[]=[];
-        let px=Math.random()*W, py=Math.random()*H;
-        pts.push({x:px,y:py});
-        for(let s=0;s<2+Math.floor(Math.random()*4);s++){
-          Math.random()>.5?(px+=(Math.random()-.5)*160):(py+=(Math.random()-.5)*130);
-          pts.push({x:Math.max(5,Math.min(W-5,px)),y:Math.max(5,Math.min(H-5,py))});
+    // Eye portal radius — clean circle showing only the iris
+    let ER = 0; // set in init based on screen size
+
+    function init() {
+      const W = canvas.width, H = canvas.height;
+      const CX = W/2, CY = H/2;
+      ER = Math.min(W, H) * 0.23; // portal radius — not too big, gives room for art
+
+      // Scattered nodes — AVOID the eye circle
+      nodes = [];
+      let attempts = 0;
+      while (nodes.length < 52 && attempts < 2000) {
+        attempts++;
+        const nx = 20 + Math.random()*(W-40);
+        const ny = 20 + Math.random()*(H-40);
+        const d = Math.hypot(nx-CX, ny-CY);
+        if (d < ER*1.6) continue; // keep nodes outside eye+buffer
+        const i = nodes.length;
+        nodes.push({ x:nx, y:ny, ox:nx, oy:ny, vx:0, vy:0,
+          r: i<8 ? 2.5+Math.random()*2 : 0.8+Math.random()*1.6,
+          hue: [193,42,165,145,270][i%5], phase:Math.random()*Math.PI*2 });
+      }
+
+      // Circuit traces radiating FROM the eye outward — like veins
+      circuits = [];
+      const numTraces = 22;
+      for (let t=0; t<numTraces; t++) {
+        const startAngle = (t/numTraces)*Math.PI*2 + (Math.random()-.5)*.3;
+        const startR = ER * 1.05; // start just outside eye
+        const pts: any[] = [];
+        let cx = CX + Math.cos(startAngle)*startR;
+        let cy = CY + Math.sin(startAngle)*startR;
+        pts.push({x:cx, y:cy});
+        const segCount = 3 + Math.floor(Math.random()*4);
+        for (let s=0; s<segCount; s++) {
+          const maxStep = 80 + Math.random()*120;
+          // Drift outward mostly
+          const drift = startAngle + (Math.random()-.5)*.8;
+          Math.random() > 0.5
+            ? (cx += Math.cos(drift)*maxStep)
+            : (cy += Math.sin(drift)*maxStep);
+          cx = Math.max(10, Math.min(W-10, cx));
+          cy = Math.max(10, Math.min(H-10, cy));
+          pts.push({x:cx, y:cy});
         }
-        return{pts,hue:[193,42,165,210][Math.floor(Math.random()*4)],
-          alpha:.04+Math.random()*.08, flow:Math.random()};
-      });
-      motes = Array.from({length:50},()=>({
-        x:Math.random()*W, y:Math.random()*H,
-        vx:(Math.random()-.5)*.15, vy:(Math.random()-.5)*.12,
-        r:.3+Math.random()*1.1, life:Math.random()*Math.PI*2, gold:Math.random()<.25
-      }));
+        circuits.push({
+          pts,
+          hue: [193,42,165,270,145][t%5],
+          alpha: .06+Math.random()*.10,
+          flow: Math.random()
+        });
+      }
+
+      // Motes — also kept outside eye zone
+      motes = [];
+      while (motes.length < 55) {
+        const mx = Math.random()*W, my = Math.random()*H;
+        if (Math.hypot(mx-CX, my-CY) < ER*1.3) continue;
+        motes.push({x:mx, y:my, vx:(Math.random()-.5)*.16, vy:(Math.random()-.5)*.14,
+          r:.3+Math.random()*1.2, life:Math.random()*Math.PI*2, gold:Math.random()<.22});
+      }
     }
 
-    function draw(){
-      T+=.016; scanAng=(scanAng+.012)%(Math.PI*2); irisRot+=.0014;
-      const W=canvas.width, H=canvas.height;
+    function drawEyePortal(W:number, H:number) {
       const CX=W/2, CY=H/2;
 
-      // Eye fills full width, centred vertically
-      // Image is 960×549 (ratio 1.749)
-      const IMG_RATIO = 960/549;
-      const ew = W;                    // full width
-      const eh = ew / IMG_RATIO;       // height from ratio
-      const ex = 0;
-      const ey = CY - eh/2;
-
-      // Pupil centre in this image is roughly at 47% x, 52% y of image
-      const pupCX = ex + ew * 0.47;
-      const pupCY = ey + eh * 0.52;
-      // Iris radius in the image is about 22% of image width
-      const irisR = ew * 0.19;
-      const pupilR = irisR * 0.30;
-
-      // Parallax
-      if(M.x>0){
-        eox += ((M.x-CX)/W*18 - eox)*.025;
-        eoy += ((M.y-CY)/H*12 - eoy)*.025;
+      // === DEEP OUTER GLOW — atmospheric cyan corona ===
+      for (let layer=3; layer>=0; layer--) {
+        const lr = ER*(1.0 + layer*0.45);
+        const la = [0.25, 0.14, 0.07, 0.03][layer];
+        const grad = ctx.createRadialGradient(CX,CY,ER*.85,CX,CY,lr);
+        grad.addColorStop(0, `rgba(0,150,255,${la})`);
+        grad.addColorStop(1, "transparent");
+        ctx.fillStyle=grad;
+        ctx.fillRect(0,0,W,H);
       }
 
-      // ── 1. Black void ──
-      ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
+      if (!eyeOK) return;
 
-      // ── 2. THE EYE — full width, dramatic ──
-      if(eyeOK){
-        ctx.save();
-        // No clip — let it bleed to edges, use fades instead
-        ctx.globalAlpha = .90 + .06*Math.sin(T*.32);
-        ctx.drawImage(EYE, ex+eox*.4, ey+eoy*.4, ew, eh);
-        ctx.globalAlpha = 1;
+      // === DRAW EYE — cropped to perfect circle (the iris only) ===
+      // The eye image: iris is centred in the image.
+      // We crop from the centre of the image to show only the iris/pupil.
+      const imgW = EYE.width, imgH = EYE.height;
+      // Sample from centre of image — the iris takes about 70% of image height
+      const cropR = imgH * 0.5; // use the full height as crop radius
+      const sx = imgW/2 - cropR, sy = imgH/2 - cropR;
+      const sSize = cropR*2;
 
-        // Top & bottom fades into black
-        const topFade = ctx.createLinearGradient(0,ey,0,ey+eh*.22);
-        topFade.addColorStop(0,"rgba(0,0,0,1)"); topFade.addColorStop(1,"transparent");
-        ctx.fillStyle=topFade; ctx.fillRect(0,0,W,ey+eh*.22);
-
-        const botFade = ctx.createLinearGradient(0,ey+eh*.78,0,ey+eh);
-        botFade.addColorStop(0,"transparent"); botFade.addColorStop(1,"rgba(0,0,0,1)");
-        ctx.fillStyle=botFade; ctx.fillRect(0,ey+eh*.78,W,H);
-
-        // If eye doesn't fill full height, fill gaps
-        if(ey>0){
-          ctx.fillStyle="#000"; ctx.fillRect(0,0,W,ey);
-          ctx.fillStyle="#000"; ctx.fillRect(0,ey+eh,W,H-ey-eh);
-        }
-
-        ctx.restore();
-      }
-
-      // ── 3. Subtle dark overlay to deepen the scene ──
-      const ovl=ctx.createRadialGradient(CX,CY,irisR*1.2,CX,CY,W*.7);
-      ovl.addColorStop(0,"transparent");
-      ovl.addColorStop(.5,"rgba(0,2,8,.18)");
-      ovl.addColorStop(1,"rgba(0,0,4,.55)");
-      ctx.fillStyle=ovl; ctx.fillRect(0,0,W,H);
-
-      // ── 4. Iris rotating fiber lines (inside iris only) ──
       ctx.save();
-      ctx.beginPath(); ctx.arc(pupCX,pupCY,irisR*.94,0,Math.PI*2); ctx.clip();
-      for(let i=0;i<80;i++){
-        const ang=(i/80)*Math.PI*2+irisRot, jit=Math.sin(T*.4+i*.6)*.04;
-        const r1=pupilR*1.08, r2=irisR*.90;
-        ctx.beginPath();
-        ctx.moveTo(pupCX+Math.cos(ang+jit)*r1, pupCY+Math.sin(ang+jit)*r1);
-        ctx.lineTo(pupCX+Math.cos(ang)*r2,     pupCY+Math.sin(ang)*r2);
-        const hue = i%5===0 ? 42 : i%3===0 ? 165 : 193;
-        ctx.strokeStyle=`hsla(${hue},100%,72%,${.055+.035*Math.sin(T*.5+i)})`;
-        ctx.lineWidth=.5; ctx.stroke();
-      }
+      // Perfect circle clip
+      ctx.beginPath(); ctx.arc(CX, CY, ER, 0, Math.PI*2); ctx.clip();
+      // Draw image — zoom in so only iris fills the circle
+      const scale = (ER*2) / sSize;
+      ctx.globalAlpha = 0.94;
+      ctx.drawImage(EYE, sx, sy, sSize, sSize,
+        CX-ER, CY-ER, ER*2, ER*2);
+      ctx.globalAlpha = 1;
+      // NO vignette inside — we want the eye crystal clear
       ctx.restore();
 
-      // ── 5. SCANNING ARC — around iris outer edge ──
+      // === BRIGHT CYAN RIM — like the eye is lit from within ===
+      const rimPulse = 0.5 + 0.5*Math.sin(T*0.7);
       ctx.save();
-      ctx.shadowBlur=22; ctx.shadowColor="rgba(0,255,160,.95)";
-      ctx.strokeStyle="rgba(0,255,160,.80)"; ctx.lineWidth=2.5;
-      ctx.beginPath();
-      ctx.arc(pupCX,pupCY, irisR*1.06, scanAng, scanAng+Math.PI*.55);
+      ctx.shadowBlur = 32 + 14*rimPulse;
+      ctx.shadowColor = `rgba(0,200,255,${0.90+0.08*rimPulse})`;
+      ctx.strokeStyle = `rgba(0,215,255,${0.55+0.28*rimPulse})`;
+      ctx.lineWidth = 2.8;
+      ctx.beginPath(); ctx.arc(CX,CY,ER,0,Math.PI*2); ctx.stroke();
+      ctx.shadowBlur=0; ctx.restore();
+
+      // Thin outer ring
+      ctx.beginPath(); ctx.arc(CX,CY,ER+5,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(0,180,255,${0.12+0.08*rimPulse})`;
+      ctx.lineWidth=1; ctx.stroke();
+    }
+
+    function drawScanners(W:number, H:number) {
+      const CX=W/2, CY=H/2;
+      const T1=T;
+      const sa1 = (T1*0.55)%(Math.PI*2); // scanner 1 angle
+      const sa2 = -(T1*0.38)%(Math.PI*2); // scanner 2 counter
+
+      // === SCANNER 1 — cyan, orbits just outside eye ===
+      const orb1 = ER*1.22;
+      ctx.save();
+      ctx.shadowBlur=18; ctx.shadowColor="rgba(0,255,160,1)";
+      ctx.strokeStyle="rgba(0,255,160,.75)"; ctx.lineWidth=2.2;
+      ctx.beginPath(); ctx.arc(CX,CY,orb1, sa1, sa1+Math.PI*.55);
       ctx.stroke();
-      // Bright endpoint cap
-      ctx.beginPath();
-      ctx.arc(
-        pupCX+Math.cos(scanAng)*irisR*1.06,
-        pupCY+Math.sin(scanAng)*irisR*1.06,
-        4.5, 0, Math.PI*2
-      );
+      // Bright cap at leading edge
+      ctx.shadowBlur=24; ctx.shadowColor="rgba(0,255,160,1)";
+      ctx.beginPath(); ctx.arc(
+        CX+Math.cos(sa1)*orb1, CY+Math.sin(sa1)*orb1, 5.5, 0, Math.PI*2);
       ctx.fillStyle="rgba(0,255,160,1)"; ctx.fill();
       ctx.shadowBlur=0; ctx.restore();
 
-      // Counter blue arc — slightly further out
+      // === SCANNER 2 — blue, slightly wider orbit ===
+      const orb2 = ER*1.42;
       ctx.save();
-      ctx.shadowBlur=14; ctx.shadowColor="rgba(60,190,255,.9)";
-      ctx.strokeStyle="rgba(60,190,255,.55)"; ctx.lineWidth=1.6;
-      ctx.beginPath();
-      ctx.arc(pupCX,pupCY, irisR*1.22, -scanAng*.65, -scanAng*.65+Math.PI*.38);
-      ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
-
-      // Gold accent arc (matches the gold lines in the image)
-      ctx.save();
-      ctx.shadowBlur=10; ctx.shadowColor="rgba(255,195,30,.8)";
-      ctx.strokeStyle="rgba(255,195,30,.40)"; ctx.lineWidth=1.2;
-      ctx.beginPath();
-      ctx.arc(pupCX,pupCY, irisR*1.38, scanAng*.4+1, scanAng*.4+1+Math.PI*.28);
-      ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
-
-      // ── 6. Pulse rings from iris ──
-      for(let i=0;i<4;i++){
-        const ph=((T*.30+i*1.85)%(Math.PI*2));
-        const pr=irisR*(1.08+.40*(ph/(Math.PI*2)));
-        const pa=Math.max(0,.20*(1-ph/(Math.PI*2)));
-        ctx.beginPath(); ctx.arc(pupCX,pupCY,pr,0,Math.PI*2);
-        ctx.strokeStyle=`rgba(0,165,255,${pa})`; ctx.lineWidth=.9; ctx.stroke();
-      }
-
-      // ── 7. Iris border glow ──
-      const bp=.5+.5*Math.sin(T*.65);
-      ctx.save();
-      ctx.shadowBlur=44+18*bp; ctx.shadowColor=`rgba(0,190,255,${.80+.14*bp})`;
-      ctx.strokeStyle=`rgba(0,205,255,${.28+.22*bp})`; ctx.lineWidth=2.2;
-      ctx.beginPath(); ctx.arc(pupCX,pupCY,irisR*1.06,0,Math.PI*2); ctx.stroke();
+      ctx.shadowBlur=14; ctx.shadowColor="rgba(60,160,255,.9)";
+      ctx.strokeStyle="rgba(60,160,255,.55)"; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(CX,CY,orb2, sa2, sa2+Math.PI*.38);
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(
+        CX+Math.cos(sa2)*orb2, CY+Math.sin(sa2)*orb2, 3.5, 0, Math.PI*2);
+      ctx.fillStyle="rgba(80,180,255,.9)"; ctx.fill();
       ctx.shadowBlur=0; ctx.restore();
 
-      // ── 8. Pupil dot highlight ──
-      const pg=ctx.createRadialGradient(pupCX-pupilR*.25,pupCY-pupilR*.25,0,pupCX,pupCY,pupilR*1.1);
-      pg.addColorStop(0,"rgba(180,240,255,.10)");
-      pg.addColorStop(.6,"rgba(0,120,200,.04)");
-      pg.addColorStop(1,"transparent");
-      ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(pupCX,pupCY,pupilR*1.1,0,Math.PI*2); ctx.fill();
+      // === DASHED ORBIT RING — shows the orbit path ===
+      ctx.save();
+      ctx.setLineDash([4,8]);
+      ctx.strokeStyle="rgba(0,180,255,0.10)"; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(CX,CY,orb1,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle="rgba(60,140,255,0.07)"; ctx.lineWidth=.8;
+      ctx.beginPath(); ctx.arc(CX,CY,orb2,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
 
-      // ── 9. Ambient motes (very faint) ──
+      // === PULSE RINGS — expand from iris outward ===
+      for(let i=0;i<4;i++){
+        const ph=((T*.28+i*1.6)%(Math.PI*2));
+        const pr=ER*(1.0+.5*(ph/(Math.PI*2)));
+        const pa=Math.max(0,.22*(1-ph/(Math.PI*2)));
+        ctx.beginPath(); ctx.arc(CX,CY,pr,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(0,175,255,${pa})`; ctx.lineWidth=.8; ctx.stroke();
+      }
+
+      // === HUD TICK MARKS around the outer orbit — like a clock ===
+      const tickR = orb2*1.08;
+      for(let i=0;i<24;i++){
+        const ang=(i/24)*Math.PI*2;
+        const isMain=i%6===0, isSub=i%3===0;
+        const inner=tickR*(isMain?.88:isSub?.92:.95);
+        const outer=tickR;
+        const bright=isMain?.55:isSub?.30:.15;
+        ctx.beginPath();
+        ctx.moveTo(CX+Math.cos(ang)*inner, CY+Math.sin(ang)*inner);
+        ctx.lineTo(CX+Math.cos(ang)*outer, CY+Math.sin(ang)*outer);
+        ctx.strokeStyle=`rgba(0,180,255,${bright})`; ctx.lineWidth=isMain?1.5:.8; ctx.stroke();
+      }
+
+      // === 4 FLOATING HUD PANELS — at corners of eye, wired to it ===
+      const panels=[
+        { ang:-Math.PI*.22, r:ER*2.1, label:"RETINA SCAN", val:`${Math.floor(94+4*Math.abs(Math.sin(T*.4)))}%` },
+        { ang: Math.PI*.22, r:ER*2.1, label:"IRIS DEPTH",  val:`${Math.floor(99-3*Math.abs(Math.sin(T*.55)))}%` },
+        { ang:-Math.PI*.78, r:ER*2.1, label:"NEURAL MAP",  val:`${Math.floor(88+7*Math.abs(Math.sin(T*.32)))}%` },
+        { ang: Math.PI*.78, r:ER*2.1, label:"VASCULAR",    val:`${Math.floor(92+5*Math.abs(Math.sin(T*.48)))}%` },
+      ];
+
+      panels.forEach(({ang, r, label, val})=>{
+        const px=CX+Math.cos(ang)*r, py=CY+Math.sin(ang)*r;
+        const pa=0.30+0.20*Math.sin(T*1.4+ang);
+
+        // Wire from eye rim to panel
+        ctx.beginPath();
+        ctx.moveTo(CX+Math.cos(ang)*ER*1.02, CY+Math.sin(ang)*ER*1.02);
+        ctx.lineTo(px, py);
+        ctx.strokeStyle=`rgba(0,190,255,${pa*.6})`; ctx.lineWidth=.7;
+        ctx.setLineDash([3,6]); ctx.stroke(); ctx.setLineDash([]);
+
+        // Panel box
+        const bw=88, bh=22;
+        ctx.save();
+        ctx.shadowBlur=10; ctx.shadowColor=`rgba(0,200,255,${pa*.8})`;
+        ctx.strokeStyle=`rgba(0,200,255,${pa})`;
+        ctx.lineWidth=1;
+        ctx.strokeRect(px-bw/2, py-bh/2, bw, bh);
+        ctx.shadowBlur=0; ctx.restore();
+        ctx.fillStyle=`rgba(0,8,20,${.75})`;
+        ctx.fillRect(px-bw/2+.5, py-bh/2+.5, bw-1, bh-1);
+
+        // Panel text
+        ctx.font=`bold 7px 'Orbitron','Courier New',monospace`;
+        ctx.textAlign="center"; ctx.fillStyle=`rgba(0,220,255,${pa+.2})`;
+        ctx.fillText(label, px, py-3);
+        ctx.font=`bold 8px 'Orbitron','Courier New',monospace`;
+        ctx.fillStyle=`rgba(0,255,160,${pa+.3})`;
+        ctx.fillText(val, px, py+9);
+      });
+
+      // === TOP LABEL — floating above the eye ===
+      const lp=0.5+0.5*Math.sin(T*2.5);
+      ctx.font="bold 12px 'Orbitron','Courier New',monospace";
+      ctx.textAlign="center";
+      ctx.save(); ctx.shadowBlur=12; ctx.shadowColor="rgba(0,255,160,.8)";
+      ctx.fillStyle=`rgba(0,255,160,${.7+.25*lp})`;
+      ctx.fillText("● IRIS BIOMETRIC ACTIVE", CX, CY-ER*1.62);
+      ctx.shadowBlur=0; ctx.restore();
+      ctx.font="7.5px 'Courier New',monospace";
+      ctx.fillStyle=`rgba(0,200,255,${.5+.2*lp})`;
+      ctx.fillText(`IDENTITY CONFIRMED  ·  MATCH ${Math.floor(89+8*Math.abs(Math.sin(T*.4)))}%  ·  SECURE`, CX, CY-ER*1.44);
+    }
+
+    function draw() {
+      T += 0.016;
+      const W=canvas.width, H=canvas.height;
+      const CX=W/2, CY=H/2;
+
+      // 1. Absolute void
+      ctx.fillStyle="#000913"; ctx.fillRect(0,0,W,H);
+
+      // 2. Very subtle deep blue ambient behind eye area
+      const deep=ctx.createRadialGradient(CX,CY,0,CX,CY,W*.65);
+      deep.addColorStop(0,"rgba(0,15,45,.55)");
+      deep.addColorStop(.4,"rgba(0,8,25,.20)");
+      deep.addColorStop(1,"transparent");
+      ctx.fillStyle=deep; ctx.fillRect(0,0,W,H);
+
+      // 3. Motes
       for(const m of motes){
         m.x+=m.vx; m.y+=m.vy; m.life+=.006;
         if(m.x<0)m.x=W; if(m.x>W)m.x=0;
         if(m.y<0)m.y=H; if(m.y>H)m.y=0;
-        const a=.12+.12*Math.sin(m.life);
+        const a=.18+.16*Math.sin(m.life);
         ctx.beginPath(); ctx.arc(m.x,m.y,m.r,0,Math.PI*2);
-        ctx.fillStyle=m.gold?`rgba(255,185,25,${a*.55})`:`rgba(0,185,255,${a*.32})`; ctx.fill();
+        ctx.fillStyle=m.gold?`rgba(255,190,30,${a*.55})`:`rgba(0,195,255,${a*.32})`; ctx.fill();
       }
 
-      // ── 10. Circuit traces (very subtle) ──
-      for(const tr of traces){
+      // 4. Circuit traces (radiating from eye, NO cursor interaction)
+      for(const tr of circuits){
         tr.flow=(tr.flow+.0018)%1;
         ctx.beginPath(); ctx.moveTo(tr.pts[0].x,tr.pts[0].y);
         for(let i=1;i<tr.pts.length;i++) ctx.lineTo(tr.pts[i].x,tr.pts[i].y);
-        ctx.strokeStyle=`hsla(${tr.hue},100%,58%,${tr.alpha*.65})`; ctx.lineWidth=.55; ctx.stroke();
+        ctx.strokeStyle=`hsla(${tr.hue},100%,58%,${tr.alpha})`; ctx.lineWidth=.6; ctx.stroke();
+        for(const p of tr.pts){
+          ctx.beginPath(); ctx.arc(p.x,p.y,1.1,0,Math.PI*2);
+          ctx.fillStyle=`hsla(${tr.hue},100%,68%,${tr.alpha*1.8})`; ctx.fill();
+        }
         // Photon
         const tot=tr.pts.slice(1).reduce((a,p,i)=>a+Math.hypot(p.x-tr.pts[i].x,p.y-tr.pts[i].y),0);
         let tgt=tr.flow*tot,wlk=0;
@@ -212,160 +312,150 @@ export default function CyberBackground() {
             const t2=(tgt-wlk)/seg;
             const px=tr.pts[i-1].x+t2*(tr.pts[i].x-tr.pts[i-1].x);
             const py=tr.pts[i-1].y+t2*(tr.pts[i].y-tr.pts[i-1].y);
-            ctx.save(); ctx.shadowBlur=8; ctx.shadowColor=`hsla(${tr.hue},100%,80%,1)`;
-            ctx.beginPath(); ctx.arc(px,py,1.9,0,Math.PI*2);
-            ctx.fillStyle=`hsla(${tr.hue},100%,88%,.9)`; ctx.fill();
+            ctx.save(); ctx.shadowBlur=9; ctx.shadowColor=`hsla(${tr.hue},100%,82%,1)`;
+            ctx.beginPath(); ctx.arc(px,py,2,0,Math.PI*2);
+            ctx.fillStyle=`hsla(${tr.hue},100%,88%,.92)`; ctx.fill();
             ctx.shadowBlur=0; ctx.restore(); break;
           } wlk+=seg;
         }
       }
 
-      // ── 11. Magnetic nodes ──
+      // 5. Fine dot grid — very subtle
+      for(let gx=0;gx<W;gx+=46)for(let gy=0;gy<H;gy+=46){
+        const d=Math.hypot(gx-CX,gy-CY);
+        if(d<ER*1.5)continue; // skip near eye
+        const a=.016+.012*Math.sin(T*.4+gx*.04+gy*.03);
+        ctx.beginPath(); ctx.arc(gx,gy,.6,0,Math.PI*2);
+        ctx.fillStyle=`hsla(210,100%,65%,${a})`; ctx.fill();
+      }
+
+      // 6. Nodes — pulled by cursor, scattered in void
       for(const n of nodes){
-        n.phase+=.011;
+        n.phase+=.012;
         const pulse=.5+.5*Math.sin(n.phase);
         if(M.x>0){
           const dx=M.x-n.x,dy=M.y-n.y,d=Math.hypot(dx,dy);
-          if(d<155&&d>.5){const f=.015*(1-d/155);n.vx+=dx/d*f;n.vy+=dy/d*f;}
+          // Don't let nodes drift INTO the eye area
+          const ndCX=Math.hypot(n.x-CX,n.y-CY);
+          if(d<170&&d>.5&&ndCX>ER*1.55){const f=.016*(1-d/170);n.vx+=dx/d*f;n.vy+=dy/d*f;}
         }
         n.vx+=(n.ox-n.x)*.014; n.vy+=(n.oy-n.y)*.014;
         n.vx*=.87; n.vy*=.87; n.x+=n.vx; n.y+=n.vy;
-        ctx.save(); ctx.shadowBlur=n.r>2?8:4; ctx.shadowColor=`hsla(${n.hue},100%,70%,.7)`;
+        // Keep outside eye buffer
+        const dC=Math.hypot(n.x-CX,n.y-CY);
+        if(dC<ER*1.45){const ang=Math.atan2(n.y-CY,n.x-CX);n.x=CX+Math.cos(ang)*ER*1.46;n.y=CY+Math.sin(ang)*ER*1.46;n.vx*=-.3;n.vy*=-.3;}
+        ctx.save(); ctx.shadowBlur=n.r>2?9:4; ctx.shadowColor=`hsla(${n.hue},100%,70%,.75)`;
         ctx.beginPath(); ctx.arc(n.x,n.y,n.r*(.85+.15*pulse),0,Math.PI*2);
-        ctx.strokeStyle=`hsla(${n.hue},100%,70%,${.25+.25*pulse})`; ctx.lineWidth=n.r>2?1.1:.75; ctx.stroke();
+        ctx.strokeStyle=`hsla(${n.hue},100%,72%,${.32+.32*pulse})`; ctx.lineWidth=n.r>2?1.2:.85; ctx.stroke();
         ctx.shadowBlur=0; ctx.restore();
       }
+      // Node connections
       for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
         const d=Math.hypot(nodes[i].x-nodes[j].x,nodes[i].y-nodes[j].y);
         if(d>115)continue;
         ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y);
-        ctx.strokeStyle=`rgba(0,180,255,${(1-d/115)*.042})`; ctx.lineWidth=.4; ctx.stroke();
+        ctx.strokeStyle=`rgba(0,185,255,${(1-d/115)*.07})`; ctx.lineWidth=.45; ctx.stroke();
       }
 
-      // ── 12. HUD — floats ABOVE iris, INSIDE eye area ──
-      const lp=.5+.5*Math.sin(T*2.0);
-      // Top label — above iris, below eyelid
-      ctx.font="bold 11px 'Orbitron','Courier New',monospace"; ctx.textAlign="center";
-      ctx.fillStyle=`rgba(0,255,160,${.68+.28*lp})`;
-      ctx.fillText("● IRIS BIOMETRIC SCAN", pupCX, pupCY-irisR*1.42);
-      ctx.font="7.5px 'Courier New',monospace";
-      ctx.fillStyle=`rgba(0,205,255,${.52+.24*lp})`;
-      ctx.fillText(`MATCH ${Math.floor(88+8*Math.abs(Math.sin(T*.35)))}%  ·  LOCK  ·  DEPTH`, pupCX, pupCY-irisR*1.25);
+      // 7. THE EYE PORTAL — drawn here so it's above the background but below HUD
+      drawEyePortal(W,H);
 
-      // Side orbit labels — in the dark corners of the eye image
-      ctx.font="7px 'Courier New',monospace";
-      const orbitData=[
-        {label:"RETINA",   ang:-.52, dist:1.68},
-        {label:"VASCULAR", ang:.52,  dist:1.68},
-        {label:"NEURAL",   ang:Math.PI+.45, dist:1.62},
-        {label:"DEPTH",    ang:Math.PI-.45, dist:1.62},
-      ];
-      orbitData.forEach(({label,ang,dist},i)=>{
-        const lx=pupCX+Math.cos(ang)*irisR*dist;
-        const ly=pupCY+Math.sin(ang)*irisR*dist;
-        const a=.35+.25*Math.sin(T*1.5+i*.9);
-        ctx.textAlign="center";
-        ctx.fillStyle=`rgba(0,200,255,${a})`;
-        ctx.fillText(`◆ ${label}`,lx,ly);
-        ctx.fillStyle=`rgba(255,185,25,${a*.7})`;
-        ctx.fillText(`${"█".repeat(Math.floor(3+2*Math.abs(Math.sin(T*.4+i))))+"░"}`,lx,ly+10);
-      });
+      // 8. SCANNERS + HUD — orbiting the eye
+      drawScanners(W,H);
 
-      // ── 13. Global corner brackets ──
+      // 9. Global scan line
+      const gsY=((T*.015)%1)*H;
+      const gsl=ctx.createLinearGradient(0,gsY-1,0,gsY+1);
+      gsl.addColorStop(0,"transparent"); gsl.addColorStop(.5,"rgba(0,185,255,.009)"); gsl.addColorStop(1,"transparent");
+      ctx.fillStyle=gsl; ctx.fillRect(0,gsY-1,W,2);
+
+      // 10. Corner brackets
       [[18,18,1,1],[W-18,18,-1,1],[W-18,H-18,-1,-1],[18,H-18,1,-1]].forEach(([cx,cy,sx,sy]:any,i)=>{
         const hue=i%2===0?193:42, sz=18;
-        ctx.strokeStyle=`hsla(${hue},100%,62%,.22)`; ctx.lineWidth=1.2;
+        ctx.strokeStyle=`hsla(${hue},100%,62%,.20)`; ctx.lineWidth=1.2;
         ctx.beginPath(); ctx.moveTo(cx+sx*sz,cy); ctx.lineTo(cx,cy); ctx.lineTo(cx,cy+sy*sz); ctx.stroke();
-        const pa=.22+.20*Math.sin(T*1.4+i);
-        ctx.save(); ctx.shadowBlur=6; ctx.shadowColor=`hsla(${hue},100%,72%,.8)`;
-        ctx.beginPath(); ctx.arc(cx,cy,2.4,0,Math.PI*2);
+        const pa=.20+.18*Math.sin(T*1.4+i);
+        ctx.save(); ctx.shadowBlur=5; ctx.shadowColor=`hsla(${hue},100%,72%,.8)`;
+        ctx.beginPath(); ctx.arc(cx,cy,2.2,0,Math.PI*2);
         ctx.fillStyle=`hsla(${hue},100%,76%,${pa})`; ctx.fill();
         ctx.shadowBlur=0; ctx.restore();
       });
 
-      // ── 14. MOUSE — precision iris targeting reticle ──
+      // 11. MOUSE — precision reticle
       if(M.x>0){
         SM.x=SM.x<0?M.x:SM.x+(M.x-SM.x)*.09;
         SM.y=SM.y<0?M.y:SM.y+(M.y-SM.y)*.09;
         const cx=SM.x, cy=SM.y;
         const spd=Math.hypot(M.x-M.px,M.y-M.py), hot=spd>1.8;
-        const dist=Math.hypot(cx-pupCX,cy-pupCY);
-        const onPupil=dist<pupilR;
-        const onIris=dist<irisR;
-        const col=(a:number)=>onPupil?`rgba(255,220,80,${a})`:onIris?`rgba(0,255,160,${a})`:`rgba(0,200,255,${a})`;
+        const onEye=Math.hypot(cx-CX,cy-CY)<ER;
+        const col=(a:number)=>onEye?`rgba(0,255,180,${a})`:`rgba(0,195,255,${a})`;
 
         // Bloom
-        const bl=ctx.createRadialGradient(cx,cy,0,cx,cy,50);
-        bl.addColorStop(0,col(hot?.18:.09)); bl.addColorStop(1,"transparent");
-        ctx.fillStyle=bl; ctx.beginPath(); ctx.arc(cx,cy,50,0,Math.PI*2); ctx.fill();
+        const bl=ctx.createRadialGradient(cx,cy,0,cx,cy,46);
+        bl.addColorStop(0,col(hot?.20:.10)); bl.addColorStop(1,"transparent");
+        ctx.fillStyle=bl; ctx.beginPath(); ctx.arc(cx,cy,46,0,Math.PI*2); ctx.fill();
 
-        // Outer rotating arc
-        ctx.save(); ctx.translate(cx,cy); ctx.rotate(T*2.0+spd*.05);
-        ctx.beginPath(); ctx.arc(0,0,30,0,Math.PI*1.58);
+        // Outer rotating arc (3/4 open)
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(T*2.1+spd*.05);
+        ctx.beginPath(); ctx.arc(0,0,27,0,Math.PI*1.6);
         ctx.strokeStyle=col(.62+.20*Math.sin(T*2.5)); ctx.lineWidth=1.9; ctx.stroke();
-        const ec=Math.PI*1.58;
-        ctx.save(); ctx.shadowBlur=8; ctx.shadowColor=col(1);
-        ctx.beginPath(); ctx.arc(Math.cos(ec)*30,Math.sin(ec)*30,2.5,0,Math.PI*2);
+        const ec=Math.PI*1.6;
+        ctx.save(); ctx.shadowBlur=7; ctx.shadowColor=col(1);
+        ctx.beginPath(); ctx.arc(Math.cos(ec)*27,Math.sin(ec)*27,2.4,0,Math.PI*2);
         ctx.fillStyle=col(.95); ctx.fill(); ctx.shadowBlur=0; ctx.restore();
         ctx.restore();
 
         // Inner counter-arc
         ctx.save(); ctx.translate(cx,cy); ctx.rotate(-T*1.5);
-        ctx.beginPath(); ctx.arc(0,0,19,Math.PI*.22,Math.PI*1.78);
-        ctx.strokeStyle=col(.40+.18*Math.sin(T*3)); ctx.lineWidth=1.1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(0,0,17,Math.PI*.2,Math.PI*1.8);
+        ctx.strokeStyle=col(.38+.18*Math.sin(T*3.1)); ctx.lineWidth=1; ctx.stroke();
         ctx.restore();
 
-        // Micro iris ring
-        ctx.beginPath(); ctx.arc(cx,cy,12,0,Math.PI*2);
-        ctx.strokeStyle=col(.22+.12*Math.sin(T*2.2)); ctx.lineWidth=.8; ctx.stroke();
-
         // Diamond
-        ctx.save(); ctx.shadowBlur=9; ctx.shadowColor=col(.88);
-        ctx.strokeStyle=col(.78); ctx.lineWidth=1.4;
+        ctx.save(); ctx.shadowBlur=8; ctx.shadowColor=col(.85);
+        ctx.strokeStyle=col(.74); ctx.lineWidth=1.3;
         ctx.beginPath();
-        ctx.moveTo(cx,cy-11); ctx.lineTo(cx+6.5,cy); ctx.lineTo(cx,cy+11); ctx.lineTo(cx-6.5,cy);
+        ctx.moveTo(cx,cy-10); ctx.lineTo(cx+6,cy); ctx.lineTo(cx,cy+10); ctx.lineTo(cx-6,cy);
         ctx.closePath(); ctx.stroke(); ctx.shadowBlur=0; ctx.restore();
 
         // Centre dot
-        ctx.save(); ctx.shadowBlur=hot?20:11;
-        ctx.shadowColor=hot?"rgba(255,220,80,1)":col(.9);
-        ctx.beginPath(); ctx.arc(cx,cy,hot?4:2.8,0,Math.PI*2);
-        ctx.fillStyle=hot?(onPupil?"rgba(255,220,80,1)":"rgba(0,255,160,1)"):"rgba(195,238,255,.97)";
-        ctx.fill(); ctx.shadowBlur=0; ctx.restore();
+        ctx.save(); ctx.shadowBlur=hot?20:10; ctx.shadowColor=hot?"rgba(0,255,180,1)":col(.9);
+        ctx.beginPath(); ctx.arc(cx,cy,hot?4:2.6,0,Math.PI*2);
+        ctx.fillStyle=hot?"rgba(0,255,180,1)":"rgba(195,240,255,.97)"; ctx.fill();
+        ctx.shadowBlur=0; ctx.restore();
 
-        // 4 ticks
-        ctx.strokeStyle=col(hot?.88:.54); ctx.lineWidth=hot?1.6:1.1;
+        // 4 tick marks
+        ctx.strokeStyle=col(hot?.88:.54); ctx.lineWidth=hot?1.6:1.05;
         [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{
           ctx.beginPath();
-          ctx.moveTo(cx+dx*7,cy+dy*7); ctx.lineTo(cx+dx*18,cy+dy*18);
-          ctx.stroke();
+          ctx.moveTo(cx+dx*6,cy+dy*6); ctx.lineTo(cx+dx*17,cy+dy*17); ctx.stroke();
         });
 
         // HUD text
         if(hot){
           ctx.font="6.5px 'Courier New',monospace"; ctx.textAlign="left";
-          ctx.fillStyle=col(.74);
-          ctx.fillText(`X:${String(Math.floor(cx)).padStart(4,"0")}`,cx+44,cy-2);
-          ctx.fillText(`Y:${String(Math.floor(cy)).padStart(4,"0")}`,cx+44,cy+10);
-          ctx.fillStyle=col(.50);
-          ctx.fillText(onPupil?"● PUPIL LOCK":onIris?"● IRIS LOCK":"● TRACKING",cx+44,cy+24);
+          ctx.fillStyle=col(.72);
+          ctx.fillText(`X:${String(Math.floor(cx)).padStart(4,"0")}`,cx+40,cy-2);
+          ctx.fillText(`Y:${String(Math.floor(cy)).padStart(4,"0")}`,cx+40,cy+10);
+          ctx.fillStyle=col(.45);
+          ctx.fillText(onEye?"● IRIS LOCK":"● TRACKING",cx+40,cy+24);
         }
       }
 
-      // ── 15. Click effects ──
+      // 12. Click effects
       if(M.down&&M.x>0){
-        for(let i=0;i<5;i++) RINGS.push({x:M.x,y:M.y,r:5,max:78+i*30,a:.92-i*.16,hue:193+i*18});
-        for(let i=0;i<22;i++){
-          const a=Math.random()*Math.PI*2,s=1.5+Math.random()*5.5;
-          SPARKS.push({x:M.x,y:M.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,age:0,life:30+Math.random()*48,hue:[193,42,145,210,165][i%5]});
+        for(let i=0;i<5;i++) RINGS.push({x:M.x,y:M.y,r:4,max:72+i*28,a:.92-i*.16,hue:193+i*18});
+        for(let i=0;i<20;i++){
+          const a=Math.random()*Math.PI*2,s=1.5+Math.random()*5;
+          SPARKS.push({x:M.x,y:M.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,age:0,life:28+Math.random()*44,hue:[193,42,145,210,165][i%5]});
         }
       }
       for(let i=RINGS.length-1;i>=0;i--){
-        const r=RINGS[i]; r.r+=3.8; r.a*=.89;
+        const r=RINGS[i]; r.r+=3.6; r.a*=.90;
         if(r.r>r.max||r.a<.01){RINGS.splice(i,1);continue;}
-        ctx.save(); ctx.shadowBlur=13; ctx.shadowColor=`hsla(${r.hue},100%,72%,.8)`;
+        ctx.save(); ctx.shadowBlur=12; ctx.shadowColor=`hsla(${r.hue},100%,72%,.8)`;
         ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
-        ctx.strokeStyle=`hsla(${r.hue},100%,72%,${r.a})`; ctx.lineWidth=2.1; ctx.stroke();
+        ctx.strokeStyle=`hsla(${r.hue},100%,72%,${r.a})`; ctx.lineWidth=2; ctx.stroke();
         ctx.shadowBlur=0; ctx.restore();
       }
       for(let i=SPARKS.length-1;i>=0;i--){
