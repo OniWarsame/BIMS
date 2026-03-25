@@ -54,11 +54,11 @@
   html {
     scroll-behavior: smooth;
     /* #000610 only shows before canvas mounts — acts as loading bg */
-    background: #000610;
+    background: #00051a;
   }
 
   body {
-    background: #000610;
+    background: #00051a;
     font-family: 'Exo 2', system-ui, sans-serif;
     font-weight: 400;
     color: rgba(195,240,255,0.97);
@@ -86,8 +86,8 @@
    Override EVERY Tailwind background class to be semi-transparent
    so the canvas shows through.
 ══════════════════════════════════════════════════════ */
-.bg-background { background-color: rgba(0,6,18,0.78) !important; }
-.bg-card       { background-color: rgba(0,6,20,0.80) !important; }
+.bg-background { background-color: rgba(0,4,18,0.75) !important; }
+.bg-card       { background-color: rgba(0,5,20,0.78) !important; }
 .bg-muted      { background-color: rgba(0,5,16,0.72) !important; }
 .bg-popover    { background-color: rgba(0,6,20,0.92) !important; }
 .bg-secondary  { background-color: rgba(0,5,18,0.68) !important; }
